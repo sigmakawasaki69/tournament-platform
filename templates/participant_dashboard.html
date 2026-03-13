@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Панель учасника</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6fb;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .card {
+            background: white;
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+            text-align: center;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        a {
+            display: inline-block;
+            margin-top: 16px;
+            text-decoration: none;
+            color: white;
+            background: #2563eb;
+            padding: 10px 14px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Панель учасника</h1>
+        <p>Вітаю, {{ request.user.username }}</p>
+        <p>Твоя роль: {{ request.user.role }}</p>
+        <a href="/logout/">Вийти</a>
+    </div>
+</body>
+</html>

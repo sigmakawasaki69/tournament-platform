@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Адмін-панель</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6fb;
+            color: #1f2937;
+        }
+
+        .wrap {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .title {
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .logout {
+            text-decoration: none;
+            background: #dc2626;
+            color: white;
+            padding: 10px 14px;
+            border-radius: 10px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+        }
+
+        h2 {
+            margin-top: 0;
+        }
+
+        .item {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .name {
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .meta {
+            font-size: 14px;
+            color: #555;
+            line-height: 1.5;
+        }
+
+        .approve {
+            display: inline-block;
+            margin-top: 10px;
+            text-decoration: none;
+            background: #16a34a;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+
+        .empty {
+            color: #777;
+        }
+
+        .section-title {
+            margin: 30px 0 16px;
+            font-size: 26px;
+            font-weight: 700;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat {
+            background: white;
+            border-radius: 16px;
+            padding: 18px;
+            box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+        }
+
+        .stat-number {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            color: #666;
+            margin-top: 4px;
+        }
+
+        @media (max-width: 1000px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+       <div class="topbar">
+    <div>
+        <div class="title">Адмін-панель</div>
+        <div>Вітаю, {{ request.user.username }}</div>
+    </div>
+    <div>
+        <a style="text-decoration:none;background:#16a34a;color:white;padding:10px 14px;border-radius:10px;margin-right:10px;" href="/create-tournament/">Створити турнір</a>
+        <a class="logout" href="/logout/">Вийти</a>
+    </div>
+</div>
+
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-number">{{ tournaments|length }}</div>
+                <div class="stat-label">Турніри</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">{{ teams|length }}</div>
+                <div class="stat-label">Команди</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">{{ submissions|length }}</div>
+                <div class="stat-label">Роботи</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">{{ evaluations|length }}</div>
+                <div class="stat-label">Оцінювання</div>
+            </div>
+        </div>
+
+        <div class="section-title">Користувачі</div>
+        <div class="grid">
+            <div class="card">
+                <h2>Чекають схвалення</h2>
+                {% for user in pending_users %}
+                    <div class="item">
+                        <div class="name">{{ user.username }}</div>
+                        <div class="meta">
+                            Email: {{ user.email|default:"-" }}<br>
+                            Роль: {{ user.role }}
+                        </div>
+                        <a class="approve" href="/approve-user/{{ user.id }}/">Схвалити</a>
+                    </div>
+                {% empty %}
+                    <div class="empty">Немає заявок.</div>
+                {% endfor %}
+            </div>
+
+            <div class="card">
+                <h2>Схвалені</h2>
+                {% for user in approved_users %}
+                    <div class="item">
+                        <div class="name">{{ user.username }}</div>
+                        <div class="meta">
+                            Email: {{ user.email|default:"-" }}<br>
+                            Роль: {{ user.role }}
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="empty">Немає користувачів.</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="section-title">Турніри</div>
+        <div class="card">
+            {% for tournament in tournaments %}
+                <div class="item">
+                    <div class="name">{{ tournament.name }}</div>
+                    <div class="meta">
+                        Статус: {{ tournament.status }}<br>
+                        Дата початку: {{ tournament.start_date }}<br>
+                        Реєстрація: {{ tournament.registration_start }} — {{ tournament.registration_end }}<br>
+                        Макс. команд: {{ tournament.max_teams|default:"без ліміту" }}<br>
+                        Створив: {{ tournament.created_by }}
+                    </div>
+                </div>
+            {% empty %}
+                <div class="empty">Турнірів поки немає.</div>
+            {% endfor %}
+        </div>
+
+        <div class="section-title">Команди</div>
+        <div class="card">
+            {% for team in teams %}
+                <div class="item">
+                    <div class="name">{{ team.name }}</div>
+                    <div class="meta">
+                        Турнір: {{ team.tournament.name }}<br>
+                        Капітан: {{ team.captain_name }}<br>
+                        Email: {{ team.captain_email }}<br>
+                        Школа: {{ team.school|default:"-" }}<br>
+                        Telegram: {{ team.telegram|default:"-" }}
+                    </div>
+                </div>
+            {% empty %}
+                <div class="empty">Команд поки немає.</div>
+            {% endfor %}
+        </div>
+
+        <div class="section-title">Завдання</div>
+        <div class="card">
+            {% for task in tasks %}
+                <div class="item">
+                    <div class="name">{{ task.title }}</div>
+                    <div class="meta">
+                        Турнір: {{ task.tournament.name }}<br>
+                        Статус: {{ task.status }}<br>
+                        Початок: {{ task.start_time }}<br>
+                        Дедлайн: {{ task.deadline }}<br>
+                        Створив: {{ task.created_by }}
+                    </div>
+                </div>
+            {% empty %}
+                <div class="empty">Завдань поки немає.</div>
+            {% endfor %}
+        </div>
+
+        <div class="section-title">Надіслані роботи</div>
+        <div class="card">
+            {% for submission in submissions %}
+                <div class="item">
+                    <div class="name">{{ submission.team.name }} — {{ submission.task.title }}</div>
+                    <div class="meta">
+                        GitHub: <a href="{{ submission.github_link }}" target="_blank">{{ submission.github_link }}</a><br>
+                        Video: <a href="{{ submission.video_link }}" target="_blank">{{ submission.video_link }}</a><br>
+                        Live demo: 
+                        {% if submission.live_demo %}
+                            <a href="{{ submission.live_demo }}" target="_blank">{{ submission.live_demo }}</a>
+                        {% else %}
+                            -
+                        {% endif %}
+                        <br>
+                        Фінальна версія: {{ submission.is_final }}<br>
+                        Подано: {{ submission.submitted_at }}
+                    </div>
+                </div>
+            {% empty %}
+                <div class="empty">Робіт поки немає.</div>
+            {% endfor %}
+        </div>
+
+        <div class="section-title">Призначення журі</div>
+        <div class="card">
+            {% for assignment in jury_assignments %}
+                <div class="item">
+                    <div class="name">{{ assignment.jury_user.username }}</div>
+                    <div class="meta">
+                        Робота: {{ assignment.submission }}
+                    </div>
+                </div>
+            {% empty %}
+                <div class="empty">Призначень поки немає.</div>
+            {% endfor %}
+        </div>
+
+        <div class="section-title">Оцінювання</div>
+        <div class="card">
+            {% for evaluation in evaluations %}
+                <div class="item">
+                    <div class="name">{{ evaluation.assignment }}</div>
+                    <div class="meta">
+                        Backend: {{ evaluation.score_backend }}<br>
+                        Frontend: {{ evaluation.score_frontend }}<br>
+                        Functionality: {{ evaluation.score_functionality }}<br>
+                        UX: {{ evaluation.score_ux }}<br>
+                        Середній бал: {{ evaluation.total_score }}<br>
+                        Коментар: {{ evaluation.comment|default:"-" }}
+                    </div>
+                </div>
+            {% empty %}
+                <div class="empty">Оцінок поки немає.</div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

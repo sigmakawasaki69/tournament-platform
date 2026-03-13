@@ -8,14 +8,15 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 
-# загрузка переменных из .env
+# загрузка .env
 load_dotenv()
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# BASE
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # SECURITY
+
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 DEBUG = os.getenv("DEBUG") == "True"
@@ -23,7 +24,7 @@ DEBUG = os.getenv("DEBUG") == "True"
 ALLOWED_HOSTS = []
 
 
-# Application definition
+# APPLICATIONS
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -32,8 +33,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # твои приложения
     'tournament',
+    'users',
 ]
+
+
+# MIDDLEWARE
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -45,13 +52,23 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+
+# URLS
+
 ROOT_URLCONF = 'core.urls'
+
+
+# TEMPLATES
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+
+        # папка templates в корне проекта
+        'DIRS': [BASE_DIR / 'templates'],
+
         'APP_DIRS': True,
+
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.request',
@@ -61,6 +78,9 @@ TEMPLATES = [
         },
     },
 ]
+
+
+# WSGI
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
@@ -79,7 +99,19 @@ DATABASES = {
 }
 
 
-# Password validation
+# AUTH USER MODEL (очень важно)
+
+AUTH_USER_MODEL = 'users.CustomUser'
+
+
+# LOGIN SETTINGS
+
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/redirect/'
+LOGOUT_REDIRECT_URL = '/login/'
+
+
+# PASSWORD VALIDATION
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -97,7 +129,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# Internationalization
+# INTERNATIONALIZATION
 
 LANGUAGE_CODE = 'uk'
 
@@ -108,8 +140,17 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files
+# STATIC FILES
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
+
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+
+# DEFAULT FIELD
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
