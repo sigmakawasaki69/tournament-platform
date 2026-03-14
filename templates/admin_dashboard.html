@@ -305,6 +305,8 @@
 
         <div class="section-title">Завдання</div>
         <div class="card">
+            <a class="create-btn" href="/create-task/">Створити завдання</a>
+
             {% for task in tasks %}
                 <div class="item">
                     <div class="name">{{ task.title }}</div>
@@ -315,6 +317,7 @@
                         Дедлайн: {{ task.deadline }}<br>
                         Створив: {{ task.created_by }}
                     </div>
+                    <a class="edit-btn" href="/edit-task/{{ task.id }}/">Редагувати</a>
                 </div>
             {% empty %}
                 <div class="empty">Завдань поки немає.</div>

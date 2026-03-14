@@ -1,5 +1,5 @@
 from django import forms
-from .models import Tournament, Team, Participant, TournamentRegistration
+from .models import Tournament, Team, Participant, TournamentRegistration, Task
 
 
 class TournamentForm(forms.ModelForm):
@@ -102,3 +102,37 @@ class TournamentRegistrationForm(forms.ModelForm):
             queryset = queryset.exclude(id__in=used_team_ids)
 
         self.fields['team'].queryset = queryset
+
+
+class TaskForm(forms.ModelForm):
+    start_time = forms.DateTimeField(
+        input_formats=['%Y-%m-%dT%H:%M'],
+        widget=forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-input'}),
+        label='Час початку',
+    )
+    deadline = forms.DateTimeField(
+        input_formats=['%Y-%m-%dT%H:%M'],
+        widget=forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-input'}),
+        label='Дедлайн',
+    )
+
+    class Meta:
+        model = Task
+        fields = [
+            'tournament',
+            'title',
+            'description',
+            'requirements',
+            'must_have',
+            'start_time',
+            'deadline',
+            'status',
+        ]
+        widgets = {
+            'tournament': forms.Select(attrs={'class': 'form-input'}),
+            'title': forms.TextInput(attrs={'class': 'form-input'}),
+            'description': forms.Textarea(attrs={'class': 'form-input', 'rows': 4}),
+            'requirements': forms.Textarea(attrs={'class': 'form-input', 'rows': 3}),
+            'must_have': forms.Textarea(attrs={'class': 'form-input', 'rows': 3}),
+            'status': forms.Select(attrs={'class': 'form-input'}),
+        }

@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 
@@ -41,6 +42,26 @@ class Tournament(models.Model):
 
     def __str__(self):
         return self.name
+
+    @classmethod
+    def auto_update_statuses(cls):
+        """
+        Простое авто-обновление статусов по времени.
+        - если турнир уже стартовал, а статус ещё draft/registration → running
+        - если уже началась реєстрація, а статус draft → registration
+        """
+        now = timezone.now()
+
+        cls.objects.filter(
+            start_date__lte=now,
+            status__in=[cls.Status.DRAFT, cls.Status.REGISTRATION],
+        ).update(status=cls.Status.RUNNING)
+
+        cls.objects.filter(
+            registration_start__lte=now,
+            registration_end__gt=now,
+            status=cls.Status.DRAFT,
+        ).update(status=cls.Status.REGISTRATION)
 
 
 class Team(models.Model):
@@ -164,7 +185,7 @@ class Task(models.Model):
     status = models.CharField(
         max_length=30,
         choices=Status.choices,
-        default=Status.DRAFT,
+        default=Status.ACTIVE,
         verbose_name="Статус",
     )
     created_by = models.ForeignKey(

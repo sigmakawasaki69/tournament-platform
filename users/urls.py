@@ -9,6 +9,8 @@ from .views import (
     approve_user,
     create_tournament,
     edit_tournament,
+    create_task,
+    edit_task,
     jury_dashboard,
     participant_dashboard,
     create_team,
@@ -33,6 +35,8 @@ urlpatterns = [
     path('approve-user/<int:user_id>/', approve_user, name='approve_user'),
     path('create-tournament/', create_tournament, name='create_tournament'),
     path('edit-tournament/<int:tournament_id>/', edit_tournament, name='edit_tournament'),
+    path('create-task/', create_task, name='create_task'),
+    path('edit-task/<int:task_id>/', edit_task, name='edit_task'),
 
     path('jury-dashboard/', jury_dashboard, name='jury_dashboard'),
 

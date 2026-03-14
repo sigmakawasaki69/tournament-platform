@@ -21,6 +21,7 @@ from tournament.forms import (
     TeamForm,
     ParticipantForm,
     TournamentRegistrationForm,
+    TaskForm,
 )
 
 
@@ -105,6 +106,8 @@ def admin_dashboard(request):
     if not (request.user.is_superuser or request.user.role == 'admin'):
         return redirect('redirect_by_role')
 
+    Tournament.auto_update_statuses()
+
     pending_users = CustomUser.objects.filter(is_approved=False).exclude(role='participant')
     approved_users = CustomUser.objects.filter(is_approved=True)
 
@@ -187,6 +190,46 @@ def edit_tournament(request, tournament_id):
 
 
 @login_required
+def create_task(request):
+    if not (request.user.is_superuser or request.user.role == 'admin'):
+        return redirect('redirect_by_role')
+
+    if request.method == 'POST':
+        form = TaskForm(request.POST)
+        if form.is_valid():
+            task = form.save(commit=False)
+            task.created_by = request.user
+            task.save()
+            return redirect('admin_dashboard')
+    else:
+        form = TaskForm()
+
+    return render(request, 'create_task.html', {'form': form, 'mode': 'create'})
+
+
+@login_required
+def edit_task(request, task_id):
+    if not (request.user.is_superuser or request.user.role == 'admin'):
+        return redirect('redirect_by_role')
+
+    task = get_object_or_404(Task, id=task_id)
+
+    if request.method == 'POST':
+        form = TaskForm(request.POST, instance=task)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_dashboard')
+    else:
+        form = TaskForm(instance=task)
+
+    return render(request, 'create_task.html', {
+        'form': form,
+        'mode': 'edit',
+        'task': task,
+    })
+
+
+@login_required
 def jury_dashboard(request):
     if request.user.role != 'jury' and not request.user.is_superuser:
         return redirect('redirect_by_role')
@@ -209,6 +252,8 @@ def jury_dashboard(request):
 def participant_dashboard(request):
     if request.user.role not in ['participant', 'captain'] and not request.user.is_superuser:
         return redirect('redirect_by_role')
+
+    Tournament.auto_update_statuses()
 
     my_teams = Team.objects.filter(
         Q(captain_user=request.user) | Q(participants__email=request.user.email)
@@ -287,6 +332,8 @@ def create_team(request):
 def register_team_for_tournament(request, tournament_id):
     if request.user.role != 'captain' and not request.user.is_superuser:
         return redirect('redirect_by_role')
+
+    Tournament.auto_update_statuses()
 
     tournament = get_object_or_404(Tournament, id=tournament_id, status='registration')
 
