@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<title>Лідерборд {{ tournament.name }}</title>
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(180deg,#eef4ff 0%,#f7f9fc 100%);padding:30px 20px;color:#0f172a;}
+.wrap{max-width:1100px;margin:0 auto;}
+.hero,.card{background:white;padding:24px;border-radius:18px;box-shadow:0 14px 32px rgba(15,23,42,.08);border:1px solid #dbe3ee;margin-bottom:20px;}
+.hero{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;}
+.muted{color:#64748b;line-height:1.6;}
+.back,.btn{display:inline-flex;align-items:center;justify-content:center;padding:8px 12px;border-radius:9px;text-decoration:none;border:none;cursor:pointer;font-size:13px;min-height:36px;line-height:1.2;font-weight:600;}
+.back{background:#eef4ff;color:#2563eb;}
+.btn{background:#2563eb;color:white;}
+.table{display:grid;gap:12px;}
+.row{display:grid;grid-template-columns:70px 1.2fr .7fr .7fr .7fr .7fr;gap:12px;align-items:center;padding:16px;border:1px solid #e5e7eb;border-radius:14px;background:#fbfdff;}
+.row.header{background:#eff6ff;font-weight:700;color:#1e3a8a;}
+.place{display:inline-flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:14px;background:#e0ecff;color:#1d4ed8;font-weight:700;}
+.my-team{border:1px solid #f5df8f;background:#fff9db;}
+.cell-muted{color:#64748b;font-size:13px;line-height:1.5;}
+@media (max-width: 900px){
+    .row{grid-template-columns:1fr;gap:8px;}
+    .row.header{display:none;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+    <div class="hero">
+        <div>
+            <a class="back" href="{% url 'tournament_tasks' tournament.id %}">Назад до турніру</a>
+            <h1 style="margin:14px 0 10px;">Лідерборд {{ tournament.name }}</h1>
+            <div class="muted">Рейтинг будується за середнім балом команди по оцінених роботах. При однаковому середньому вище стоїть команда з кращим окремим результатом, а потім з більшою кількістю оцінених задач.</div>
+        </div>
+        {% if my_team %}
+            <div class="muted">Ваша команда: <strong>{{ my_team.name }}</strong></div>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <div class="table">
+            <div class="row header">
+                <div>Місце</div>
+                <div>Команда</div>
+                <div>Середній бал</div>
+                <div>Кращий бал</div>
+                <div>Оцінених задач</div>
+                <div>Поданих робіт</div>
+            </div>
+
+            {% for row in leaderboard %}
+                <div class="row{% if my_team and row.team.id == my_team.id %} my-team{% endif %}">
+                    <div><span class="place">#{{ row.place }}</span></div>
+                    <div>
+                        <strong>{{ row.team.name }}</strong>
+                        <div class="cell-muted">Капітан: {{ row.team.captain_name }}</div>
+                    </div>
+                    <div>
+                        {% if row.overall_average is not None %}
+                            {{ row.overall_average|floatformat:1 }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </div>
+                    <div>
+                        {% if row.best_score is not None %}
+                            {{ row.best_score|floatformat:1 }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </div>
+                    <div>{{ row.scored_tasks }}</div>
+                    <div>{{ row.submitted_tasks }}</div>
+                </div>
+            {% empty %}
+                <div class="muted">Поки що немає команд для рейтингу.</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+</body>
+</html>

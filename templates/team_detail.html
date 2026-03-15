@@ -5,80 +5,146 @@
 <title>{{ team.name }}</title>
 
 <style>
-body{
-margin:0;
-font-family:Arial,sans-serif;
-background:#f4f6fb;
-padding:30px 20px;
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(180deg, #eef4ff 0%, #f7f9fc 100%);
+    padding: 30px 20px;
+    color: #172033;
 }
 
-.wrap{
-max-width:980px;
-margin:0 auto;
+.wrap {
+    max-width: 1040px;
+    margin: 0 auto;
 }
 
-.card{
-background:white;
-padding:24px;
-border-radius:16px;
-box-shadow:0 10px 24px rgba(0,0,0,.06);
-margin-bottom:20px;
+.hero,
+.card {
+    background: white;
+    padding: 24px;
+    border-radius: 18px;
+    box-shadow: 0 14px 32px rgba(17, 24, 39, 0.08);
+    margin-bottom: 20px;
+    border: 1px solid #dbe3ee;
 }
 
-.item{
-border:1px solid #e5e7eb;
-border-radius:12px;
-padding:14px;
-margin-bottom:12px;
+.hero {
+    display: grid;
+    grid-template-columns: 1.3fr .7fr;
+    gap: 18px;
 }
 
-.btn{
-display:inline-block;
-text-decoration:none;
-color:white;
-padding:10px 14px;
-border-radius:10px;
-margin-right:10px;
-border:none;
-cursor:pointer;
+.hero h1 {
+    margin: 0 0 12px;
 }
 
-.btn-green{
-background:#16a34a;
+.muted {
+    color: #64748b;
+    line-height: 1.6;
 }
 
-.btn-red{
-background:#dc2626;
+.stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
 }
 
-.btn-red:hover{
-background:#b91c1c;
+.stat {
+    background: #f8fbff;
+    border: 1px solid #dbe7f3;
+    border-radius: 14px;
+    padding: 14px;
 }
 
-.back{
-color:#2563eb;
-text-decoration:none;
+.stat-label {
+    color: #64748b;
+    font-size: 14px;
 }
 
-.name{
-font-weight:700;
-margin-bottom:6px;
+.stat-value {
+    margin-top: 6px;
+    font-size: 24px;
+    font-weight: 700;
 }
 
-.meta{
-color:#555;
-line-height:1.5;
+.btn,
+.back {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 9px;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    min-height: 36px;
+    line-height: 1.2;
+    font-weight: 600;
+    box-sizing: border-box;
+    white-space: nowrap;
+    vertical-align: top;
 }
 
-.section-title{
-margin-top:0;
+.btn {
+    color: white;
+    background: #2563eb;
 }
 
-.actions{
-margin-top:15px;
-display:flex;
-gap:10px;
-align-items:center;
+.btn-green {
+    background: #16a34a;
+}
+
+.btn-red {
+    background: #dc2626;
+}
+
+.back {
+    color: #2563eb;
+    background: #eef4ff;
+}
+
+.actions {
+    margin-top: 18px;
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+    flex-wrap: wrap;
+}
+
+.actions form {
+    margin: 0;
+    display: flex;
+    align-items: stretch;
+}
+
+.section-title {
+    margin: 0 0 16px;
+}
+
+.item {
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 12px;
+    background: #fbfdff;
+}
+
+.name {
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.links a {
+    color: #2563eb;
+    text-decoration: none;
+    word-break: break-all;
+}
+
+@media (max-width: 820px) {
+    .hero {
+        grid-template-columns: 1fr;
+    }
 }
 </style>
 </head>
@@ -87,110 +153,94 @@ align-items:center;
 
 <div class="wrap">
 
-<div class="card">
+<div class="hero">
+    <div>
+        <a class="back" href="/participant-dashboard/">Назад</a>
+        <h1>{{ team.name }}</h1>
+        <div class="muted">
+            Капітан: {{ team.captain_name }}<br>
+            Email: {{ team.captain_email }}<br>
+            Школа: {{ team.school|default:"-" }}<br>
+            Telegram: {{ team.telegram|default:"-" }}
+        </div>
 
-<h1>{{ team.name }}</h1>
+        <div class="actions">
+            <a class="btn" href="{% url 'team_participants' team.id %}">Учасники</a>
+            <a class="btn btn-green" href="{% url 'team_results' team.id %}">Результати</a>
+            {% if can_manage_team %}
+                <a class="btn btn-green" href="{% url 'add_participant' team.id %}">Додати учасника</a>
+                <form method="post" action="{% url 'delete_team' team.id %}" style="margin:0;">
+                    {% csrf_token %}
+                    <button class="btn btn-red" type="submit">Видалити команду</button>
+                </form>
+            {% endif %}
+            {% if can_leave_team %}
+                <form method="post" action="{% url 'leave_team' team.id %}" style="margin:0;">
+                    {% csrf_token %}
+                    <button class="btn btn-red" type="submit">Вийти з команди</button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
 
-<p><strong>Капітан:</strong> {{ team.captain_name }}</p>
-<p><strong>Email:</strong> {{ team.captain_email }}</p>
-<p><strong>Школа:</strong> {{ team.school|default:"-" }}</p>
-<p><strong>Telegram:</strong> {{ team.telegram|default:"-" }}</p>
-
-<p>
-<strong>Турніри:</strong>
-{% for reg in team.registrations.all %}
-{{ reg.tournament.name }}{% if not forloop.last %}, {% endif %}
-{% empty %}
-команда ще не зареєстрована на турніри
-{% endfor %}
-</p>
-
-<div class="actions">
-
-<a class="btn btn-green" href="/team/{{ team.id }}/add-participant/">
-Додати учасника
-</a>
-
-<form method="post" action="{% url 'delete_team' team.id %}">
-{% csrf_token %}
-<button class="btn btn-red" type="submit">
-Видалити команду
-</button>
-</form>
-
-<a class="back" href="/participant-dashboard/">
-Назад
-</a>
-
-</div>
-
-</div>
-
-<div class="card">
-
-<h2 class="section-title">Учасники команди</h2>
-
-{% for participant in participants %}
-<div class="item">
-<div class="name">{{ participant.full_name }}</div>
-<div class="meta">{{ participant.email }}</div>
-<form method="post" action="{% url 'delete_participant' team.id participant.id %}" style="margin-top:8px;">
-{% csrf_token %}
-<button class="btn btn-red" type="submit">Видалити учасника</button>
-</form>
-</div>
-{% empty %}
-<div>У команді поки немає учасників.</div>
-{% endfor %}
-
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-label">Учасників</div>
+            <div class="stat-value">{{ participants_count }}</div>
+        </div>
+        <div class="stat">
+            <div class="stat-label">Турнірів</div>
+            <div class="stat-value">{{ team.registrations.count }}</div>
+        </div>
+        <div class="stat">
+            <div class="stat-label">Робіт</div>
+            <div class="stat-value">{{ submissions|length }}</div>
+        </div>
+        <div class="stat">
+            <div class="stat-label">Статус</div>
+            <div class="stat-value" style="font-size:18px;">{% if can_manage_team %}Керування{% else %}Учасник{% endif %}</div>
+        </div>
+    </div>
 </div>
 
 <div class="card">
-
-<h2 class="section-title">Надіслані роботи команди</h2>
-
-{% for submission in submissions %}
-<div class="item">
-
-<div class="name">{{ submission.task.title }}</div>
-
-<div class="meta">
-
-Турнір: {{ submission.task.tournament.name }}<br>
-
-GitHub:
-<a href="{{ submission.github_link }}" target="_blank">
-{{ submission.github_link }}
-</a>
-<br>
-
-Video:
-<a href="{{ submission.video_link }}" target="_blank">
-{{ submission.video_link }}
-</a>
-<br>
-
-Live demo:
-{% if submission.live_demo %}
-<a href="{{ submission.live_demo }}" target="_blank">
-{{ submission.live_demo }}
-</a>
-{% else %}
--
-{% endif %}
-
-<br>
-Подано: {{ submission.submitted_at }}<br>
-Фінальна версія: {{ submission.is_final }}
-
+    <h2 class="section-title">Турніри команди</h2>
+    {% for reg in team.registrations.all %}
+        <div class="item">
+            <div class="name">{{ reg.tournament.name }}</div>
+            <div class="muted">
+                Статус заявки: {{ reg.status }}<br>
+                Подано: {{ reg.created_at }}
+            </div>
+        </div>
+    {% empty %}
+        <div class="muted">Команда ще не зареєстрована на турніри.</div>
+    {% endfor %}
 </div>
 
-</div>
-
-{% empty %}
-<div>Команда ще не надсилала робіт.</div>
-{% endfor %}
-
+<div class="card">
+    <h2 class="section-title">Надіслані роботи</h2>
+    {% for submission in submissions %}
+        <div class="item">
+            <div class="name">{{ submission.task.title }}</div>
+            <div class="muted links">
+                Турнір: {{ submission.task.tournament.name }}<br>
+                GitHub: <a href="{{ submission.github_link }}" target="_blank">{{ submission.github_link }}</a><br>
+                Video: <a href="{{ submission.video_link }}" target="_blank">{{ submission.video_link }}</a><br>
+                Live demo:
+                {% if submission.live_demo %}
+                    <a href="{{ submission.live_demo }}" target="_blank">{{ submission.live_demo }}</a>
+                {% else %}
+                    -
+                {% endif %}
+                <br>
+                Подано: {{ submission.submitted_at }}<br>
+                Фінальна версія: {{ submission.is_final|yesno:"так,ні" }}
+            </div>
+        </div>
+    {% empty %}
+        <div class="muted">Команда ще не надсилала робіт.</div>
+    {% endfor %}
 </div>
 
 </div>

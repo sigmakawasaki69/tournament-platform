@@ -5,7 +5,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from tournament.models import Submission, Task, Team, Tournament, TournamentRegistration
+from tournament.models import Evaluation, Participant, Submission, Task, Team, Tournament, TournamentRegistration
 
 
 User = get_user_model()
@@ -19,6 +19,20 @@ class TournamentPlatformViewTests(TestCase):
             role="captain",
             is_approved=True,
             email="captain@example.com",
+        )
+        self.jury_user = User.objects.create_user(
+            username="jury1",
+            password="secret123",
+            role="jury",
+            is_approved=True,
+            email="jury@example.com",
+        )
+        self.participant_user = User.objects.create_user(
+            username="member1",
+            password="secret123",
+            role="participant",
+            is_approved=True,
+            email="member@example.com",
         )
         self.admin_user = User.objects.create_superuser(
             username="admin",
@@ -358,3 +372,334 @@ class TournamentPlatformViewTests(TestCase):
         response = self.client.get(reverse("edit_task", args=[task.id]))
 
         self.assertRedirects(response, reverse("admin_dashboard"))
+
+    def test_jury_dashboard_shows_tournaments_with_submissions(self):
+        tournament = self.create_tournament()
+        team = Team.objects.create(
+            name="Jury Team",
+            captain_user=self.captain,
+            captain_name="Captain",
+            captain_email="captain@example.com",
+        )
+        task = Task.objects.create(
+            tournament=tournament,
+            title="Demo task",
+            description="desc",
+            requirements="req",
+            must_have="must",
+            is_draft=False,
+            created_by=self.admin_user,
+        )
+        Submission.objects.create(
+            team=team,
+            task=task,
+            github_link="https://github.com/example/repo",
+            video_link="https://example.com/video",
+        )
+        self.client.force_login(self.jury_user)
+
+        response = self.client.get(reverse("jury_dashboard"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, tournament.name)
+
+    def test_jury_can_open_tournament_detail_with_team_submissions(self):
+        tournament = self.create_tournament()
+        team = Team.objects.create(
+            name="Folder Team",
+            captain_user=self.captain,
+            captain_name="Captain",
+            captain_email="captain@example.com",
+        )
+        task = Task.objects.create(
+            tournament=tournament,
+            title="Folder task",
+            description="desc",
+            requirements="req",
+            must_have="must",
+            is_draft=False,
+            created_by=self.admin_user,
+        )
+        Submission.objects.create(
+            team=team,
+            task=task,
+            github_link="https://github.com/example/repo",
+            video_link="https://example.com/video",
+            description="Submission for jury",
+        )
+        self.client.force_login(self.jury_user)
+
+        response = self.client.get(reverse("jury_tournament_detail", args=[tournament.id]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, team.name)
+        self.assertContains(response, task.title)
+
+    def test_jury_can_submit_evaluation(self):
+        tournament = self.create_tournament()
+        team = Team.objects.create(
+            name="Scored Team",
+            captain_user=self.captain,
+            captain_name="Captain",
+            captain_email="captain@example.com",
+        )
+        task = Task.objects.create(
+            tournament=tournament,
+            title="Score task",
+            description="desc",
+            requirements="req",
+            must_have="must",
+            is_draft=False,
+            created_by=self.admin_user,
+        )
+        submission = Submission.objects.create(
+            team=team,
+            task=task,
+            github_link="https://github.com/example/repo",
+            video_link="https://example.com/video",
+        )
+        self.client.force_login(self.jury_user)
+
+        response = self.client.post(
+            reverse("submit_evaluation", args=[submission.id]),
+            {
+                f"eval-{submission.id}-score_backend": 80,
+                f"eval-{submission.id}-score_frontend": 90,
+                f"eval-{submission.id}-score_functionality": 85,
+                f"eval-{submission.id}-score_ux": 95,
+                f"eval-{submission.id}-comment": "Strong work",
+            },
+        )
+
+        self.assertRedirects(response, reverse("jury_tournament_detail", args=[tournament.id]))
+        evaluation = Evaluation.objects.get(assignment__submission=submission, assignment__jury_user=self.jury_user)
+        self.assertEqual(evaluation.score_backend, 80)
+        self.assertEqual(evaluation.comment, "Strong work")
+
+    def test_captain_sees_jury_evaluation_in_team_results(self):
+        tournament = self.create_tournament()
+        team = Team.objects.create(
+            name="Visible Team",
+            captain_user=self.captain,
+            captain_name="Captain",
+            captain_email="captain@example.com",
+        )
+        task = Task.objects.create(
+            tournament=tournament,
+            title="Results task",
+            description="desc",
+            requirements="req",
+            must_have="must",
+            is_draft=False,
+            created_by=self.admin_user,
+        )
+        submission = Submission.objects.create(
+            team=team,
+            task=task,
+            github_link="https://github.com/example/repo",
+            video_link="https://example.com/video",
+        )
+        self.client.force_login(self.jury_user)
+        self.client.post(
+            reverse("submit_evaluation", args=[submission.id]),
+            {
+                f"eval-{submission.id}-score_backend": 80,
+                f"eval-{submission.id}-score_frontend": 90,
+                f"eval-{submission.id}-score_functionality": 85,
+                f"eval-{submission.id}-score_ux": 95,
+                f"eval-{submission.id}-comment": "Visible comment",
+            },
+        )
+        self.client.force_login(self.captain)
+
+        response = self.client.get(reverse("team_results", args=[team.id]))
+
+        self.assertContains(response, "Visible comment")
+        self.assertContains(response, "87,5")
+
+    def test_participant_sees_jury_evaluation_in_team_results(self):
+        tournament = self.create_tournament()
+        team = Team.objects.create(
+            name="Member Team",
+            captain_user=self.captain,
+            captain_name="Captain",
+            captain_email="captain@example.com",
+        )
+        Participant.objects.create(
+            team=team,
+            full_name="Member",
+            email=self.participant_user.email,
+        )
+        task = Task.objects.create(
+            tournament=tournament,
+            title="Participant results task",
+            description="desc",
+            requirements="req",
+            must_have="must",
+            is_draft=False,
+            created_by=self.admin_user,
+        )
+        submission = Submission.objects.create(
+            team=team,
+            task=task,
+            github_link="https://github.com/example/repo",
+            video_link="https://example.com/video",
+        )
+        self.client.force_login(self.jury_user)
+        self.client.post(
+            reverse("submit_evaluation", args=[submission.id]),
+            {
+                f"eval-{submission.id}-score_backend": 70,
+                f"eval-{submission.id}-score_frontend": 75,
+                f"eval-{submission.id}-score_functionality": 80,
+                f"eval-{submission.id}-score_ux": 85,
+                f"eval-{submission.id}-comment": "Seen by participant",
+            },
+        )
+        self.client.force_login(self.participant_user)
+
+        response = self.client.get(reverse("team_results", args=[team.id]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Seen by participant")
+
+    def test_captain_can_delete_team(self):
+        team = Team.objects.create(
+            name="Delete Team",
+            captain_user=self.captain,
+            captain_name="Captain",
+            captain_email="captain@example.com",
+        )
+        self.client.force_login(self.captain)
+
+        response = self.client.post(reverse("delete_team", args=[team.id]))
+
+        self.assertRedirects(response, reverse("participant_dashboard"))
+        self.assertFalse(Team.objects.filter(id=team.id).exists())
+
+    def test_participant_can_leave_team(self):
+        team = Team.objects.create(
+            name="Leave Team",
+            captain_user=self.captain,
+            captain_name="Captain",
+            captain_email="captain@example.com",
+        )
+        Participant.objects.create(
+            team=team,
+            full_name="Member",
+            email=self.participant_user.email,
+        )
+        self.client.force_login(self.participant_user)
+
+        response = self.client.post(reverse("leave_team", args=[team.id]))
+
+        self.assertRedirects(response, reverse("participant_dashboard"))
+        self.assertFalse(team.participants.filter(email=self.participant_user.email).exists())
+
+    def test_participant_can_open_team_participants_page(self):
+        team = Team.objects.create(
+            name="Participants Team",
+            captain_user=self.captain,
+            captain_name="Captain",
+            captain_email="captain@example.com",
+        )
+        Participant.objects.create(
+            team=team,
+            full_name="Member",
+            email=self.participant_user.email,
+        )
+        self.client.force_login(self.participant_user)
+
+        response = self.client.get(reverse("team_participants", args=[team.id]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Member")
+
+    def test_tournament_leaderboard_orders_teams_by_average_score(self):
+        tournament = self.create_tournament(
+            start_date=timezone.now() - timedelta(hours=1),
+            end_date=timezone.now() + timedelta(hours=3),
+            registration_end=timezone.now() - timedelta(hours=2),
+        )
+        task = Task.objects.create(
+            tournament=tournament,
+            title="Leaderboard task",
+            description="desc",
+            requirements="req",
+            must_have="must",
+            is_draft=False,
+            created_by=self.admin_user,
+        )
+        first_team = Team.objects.create(
+            name="Alpha Team",
+            captain_user=self.captain,
+            captain_name="Captain",
+            captain_email="captain@example.com",
+        )
+        second_captain = User.objects.create_user(
+            username="captain_b",
+            password="secret123",
+            role="captain",
+            is_approved=True,
+            email="captainb@example.com",
+        )
+        second_team = Team.objects.create(
+            name="Beta Team",
+            captain_user=second_captain,
+            captain_name="Captain B",
+            captain_email="captainb@example.com",
+        )
+        TournamentRegistration.objects.create(
+            tournament=tournament,
+            team=first_team,
+            registered_by=self.captain,
+            status=TournamentRegistration.Status.APPROVED,
+        )
+        TournamentRegistration.objects.create(
+            tournament=tournament,
+            team=second_team,
+            registered_by=second_captain,
+            status=TournamentRegistration.Status.APPROVED,
+        )
+        first_submission = Submission.objects.create(
+            team=first_team,
+            task=task,
+            github_link="https://github.com/example/a",
+            video_link="https://example.com/a",
+        )
+        second_submission = Submission.objects.create(
+            team=second_team,
+            task=task,
+            github_link="https://github.com/example/b",
+            video_link="https://example.com/b",
+        )
+        self.client.force_login(self.jury_user)
+        self.client.post(
+            reverse("submit_evaluation", args=[first_submission.id]),
+            {
+                f"eval-{first_submission.id}-score_backend": 95,
+                f"eval-{first_submission.id}-score_frontend": 90,
+                f"eval-{first_submission.id}-score_functionality": 95,
+                f"eval-{first_submission.id}-score_ux": 100,
+                f"eval-{first_submission.id}-comment": "Alpha first",
+            },
+        )
+        self.client.post(
+            reverse("submit_evaluation", args=[second_submission.id]),
+            {
+                f"eval-{second_submission.id}-score_backend": 70,
+                f"eval-{second_submission.id}-score_frontend": 75,
+                f"eval-{second_submission.id}-score_functionality": 80,
+                f"eval-{second_submission.id}-score_ux": 85,
+                f"eval-{second_submission.id}-comment": "Beta second",
+            },
+        )
+        self.client.force_login(self.captain)
+
+        response = self.client.get(reverse("tournament_leaderboard", args=[tournament.id]))
+
+        self.assertEqual(response.status_code, 200)
+        leaderboard = response.context["leaderboard"]
+        self.assertEqual(leaderboard[0]["team"].name, "Alpha Team")
+        self.assertEqual(leaderboard[0]["place"], 1)
+        self.assertEqual(leaderboard[1]["team"].name, "Beta Team")

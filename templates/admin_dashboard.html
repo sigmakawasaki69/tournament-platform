@@ -20,16 +20,21 @@
         .item { background: #f8fbff; border: 1px solid #d7e0ea; border-radius: 12px; padding: 12px; margin-bottom: 12px; }
         .name { font-weight: 700; margin-bottom: 6px; }
         .meta { font-size: 14px; color: #555; line-height: 1.5; }
-        .actions, .inline-form { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 10px; }
+        .actions, .inline-form { display: flex; gap: 8px; flex-wrap: wrap; align-items: stretch; margin-top: 10px; }
         .approve, .edit-btn, .secondary-btn, .create-btn, .reject-btn, .danger-btn, .save-btn {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             text-decoration: none;
             color: white;
             padding: 8px 12px;
-            border-radius: 8px;
+            border-radius: 9px;
             border: none;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
+            min-height: 36px;
+            line-height: 1.2;
+            font-weight: 600;
         }
         .approve, .create-btn, .save-btn { background: #16a34a; }
         .edit-btn { background: #2563eb; }
@@ -41,11 +46,13 @@
             pointer-events: none;
             opacity: 0.8;
         }
-        .create-btn { padding: 10px 14px; border-radius: 10px; margin-bottom: 18px; }
+        .create-btn { padding: 8px 12px; border-radius: 9px; margin-bottom: 18px; }
+        .inline-form { margin-top: 0; }
+        .inline-form button, .inline-form select { margin: 0; }
         .empty { color: #777; }
         .links a, .task-link { color: #2563eb; text-decoration: none; word-break: break-all; }
         .task-list { margin-top: 12px; padding-top: 12px; border-top: 1px solid #d8e1ec; }
-        .task-row { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; padding: 10px 0; border-bottom: 1px solid #dde5ef; }
+        .task-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; padding: 10px 0; border-bottom: 1px solid #dde5ef; }
         .task-row:last-child { border-bottom: none; }
         .role-badge, .status-badge { display: inline-block; padding: 3px 8px; border-radius: 999px; font-size: 12px; font-weight: 700; margin-left: 8px; }
         .role-participant { background: #dbeafe; color: #1d4ed8; }
@@ -64,7 +71,7 @@
         details.card summary::-webkit-details-marker { display: none; }
         details.card summary::after { content: "Розгорнути"; float: right; font-size: 14px; color: #6b7280; font-weight: 400; }
         details.card[open] summary::after { content: "Згорнути"; }
-        select { min-width: 150px; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; }
+        select { min-width: 150px; min-height: 36px; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 9px; font-size: 13px; }
         @media (max-width: 1000px) { .grid { grid-template-columns: 1fr; } .stats { grid-template-columns: 1fr 1fr; } }
         @media (max-width: 600px) { .stats { grid-template-columns: 1fr; } }
     </style>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ tournament.name }} - роботи команд</title>
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; background: #f4f6fb; }
+        .wrap { max-width: 1200px; margin: 0 auto; padding: 30px 20px; }
+        .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 12px; }
+        .card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 10px 24px rgba(0,0,0,.06); }
+        details.team-folder { border: 1px solid #dbe1ea; border-radius: 14px; background: #fbfdff; padding: 14px 16px; margin-bottom: 14px; }
+        details.team-folder summary { cursor: pointer; font-size: 18px; font-weight: 700; }
+        .submission { border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px; margin-top: 12px; background: white; }
+        .meta { color: #555; line-height: 1.6; }
+        .links a { color: #2563eb; text-decoration: none; word-break: break-all; }
+        .btn, .logout { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; color: white; padding: 8px 12px; border-radius: 9px; min-height: 36px; font-size: 13px; line-height: 1.2; font-weight: 600; }
+        .btn { background: #2563eb; }
+        .logout { background: #dc2626; }
+        .section { margin-top: 12px; }
+        .eval-box { margin-top: 14px; padding: 14px; border-radius: 12px; background: #f8fbff; border: 1px solid #dbe5f0; }
+        .eval-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 12px; }
+        .eval-box label { display: block; margin-bottom: 6px; font-weight: 700; }
+        .eval-box input, .eval-box textarea { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid #cbd5e1; font: inherit; }
+        .save-btn { border: none; background: #16a34a; color: white; padding: 8px 12px; border-radius: 9px; cursor: pointer; min-height: 36px; font-size: 13px; line-height: 1.2; font-weight: 600; }
+        .score-note { color: #0f766e; font-weight: 700; margin-top: 10px; }
+        @media (max-width: 800px) { .eval-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <div class="top">
+            <div>
+                <h1>{{ tournament.name }}</h1>
+                <div>Роботи команд для журі</div>
+            </div>
+            <div>
+                <a class="btn" href="{% url 'jury_dashboard' %}">Назад до турнірів</a>
+                <a class="logout" href="/logout/">Вийти</a>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 20px;">
+            <h2 style="margin-top: 0;">Неоцінені роботи</h2>
+            {% for row in pending_team_rows %}
+                <details class="team-folder">
+                    <summary>{{ row.team.name }}</summary>
+                    <div class="section meta">
+                        Капітан: {{ row.team.captain_name }}<br>
+                        Email: {{ row.team.captain_email }}
+                    </div>
+
+                    {% for row_submission in row.submissions %}
+                        <div class="submission">
+                            <div><strong>{{ row_submission.submission.task.title }}</strong></div>
+                            <div class="meta links">
+                                GitHub: <a href="{{ row_submission.submission.github_link }}" target="_blank">{{ row_submission.submission.github_link }}</a><br>
+                                Video: <a href="{{ row_submission.submission.video_link }}" target="_blank">{{ row_submission.submission.video_link }}</a><br>
+                                Live demo:
+                                {% if row_submission.submission.live_demo %}
+                                    <a href="{{ row_submission.submission.live_demo }}" target="_blank">{{ row_submission.submission.live_demo }}</a>
+                                {% else %}
+                                    -
+                                {% endif %}
+                                <br>
+                                Опис: {{ row_submission.submission.description|default:"-" }}<br>
+                                Фінальна версія: {{ row_submission.submission.is_final|yesno:"так,ні" }}<br>
+                                Подано: {{ row_submission.submission.submitted_at }}
+                            </div>
+
+                            <div class="eval-box">
+                                <form method="post" action="{% url 'submit_evaluation' row_submission.submission.id %}">
+                                    {% csrf_token %}
+                                    <div class="eval-grid">
+                                        <div>
+                                            <label for="{{ row_submission.evaluation_form.score_backend.id_for_label }}">Backend</label>
+                                            {{ row_submission.evaluation_form.score_backend }}
+                                        </div>
+                                        <div>
+                                            <label for="{{ row_submission.evaluation_form.score_frontend.id_for_label }}">Frontend</label>
+                                            {{ row_submission.evaluation_form.score_frontend }}
+                                        </div>
+                                        <div>
+                                            <label for="{{ row_submission.evaluation_form.score_functionality.id_for_label }}">Functionality</label>
+                                            {{ row_submission.evaluation_form.score_functionality }}
+                                        </div>
+                                        <div>
+                                            <label for="{{ row_submission.evaluation_form.score_ux.id_for_label }}">UX</label>
+                                            {{ row_submission.evaluation_form.score_ux }}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label for="{{ row_submission.evaluation_form.comment.id_for_label }}">Коментар</label>
+                                        {{ row_submission.evaluation_form.comment }}
+                                    </div>
+                                    <button class="save-btn" type="submit">Зберегти оцінку</button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </details>
+            {% empty %}
+                <div>Неоцінених робіт зараз немає.</div>
+            {% endfor %}
+        </div>
+
+        <div class="card">
+            <h2 style="margin-top: 0;">Оцінені роботи</h2>
+            {% for row in evaluated_team_rows %}
+                <details class="team-folder">
+                    <summary>{{ row.team.name }}</summary>
+                    <div class="section meta">
+                        Капітан: {{ row.team.captain_name }}<br>
+                        Email: {{ row.team.captain_email }}
+                    </div>
+
+                    {% for row_submission in row.submissions %}
+                        <div class="submission">
+                            <div><strong>{{ row_submission.submission.task.title }}</strong></div>
+                            <div class="meta links">
+                                GitHub: <a href="{{ row_submission.submission.github_link }}" target="_blank">{{ row_submission.submission.github_link }}</a><br>
+                                Video: <a href="{{ row_submission.submission.video_link }}" target="_blank">{{ row_submission.submission.video_link }}</a><br>
+                                Live demo:
+                                {% if row_submission.submission.live_demo %}
+                                    <a href="{{ row_submission.submission.live_demo }}" target="_blank">{{ row_submission.submission.live_demo }}</a>
+                                {% else %}
+                                    -
+                                {% endif %}
+                                <br>
+                                Опис: {{ row_submission.submission.description|default:"-" }}<br>
+                                Фінальна версія: {{ row_submission.submission.is_final|yesno:"так,ні" }}<br>
+                                Подано: {{ row_submission.submission.submitted_at }}
+                            </div>
+
+                            <div class="eval-box">
+                                <form method="post" action="{% url 'submit_evaluation' row_submission.submission.id %}">
+                                    {% csrf_token %}
+                                    <div class="eval-grid">
+                                        <div>
+                                            <label for="{{ row_submission.evaluation_form.score_backend.id_for_label }}">Backend</label>
+                                            {{ row_submission.evaluation_form.score_backend }}
+                                        </div>
+                                        <div>
+                                            <label for="{{ row_submission.evaluation_form.score_frontend.id_for_label }}">Frontend</label>
+                                            {{ row_submission.evaluation_form.score_frontend }}
+                                        </div>
+                                        <div>
+                                            <label for="{{ row_submission.evaluation_form.score_functionality.id_for_label }}">Functionality</label>
+                                            {{ row_submission.evaluation_form.score_functionality }}
+                                        </div>
+                                        <div>
+                                            <label for="{{ row_submission.evaluation_form.score_ux.id_for_label }}">UX</label>
+                                            {{ row_submission.evaluation_form.score_ux }}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label for="{{ row_submission.evaluation_form.comment.id_for_label }}">Коментар</label>
+                                        {{ row_submission.evaluation_form.comment }}
+                                    </div>
+                                    <button class="save-btn" type="submit">Оновити оцінку</button>
+                                </form>
+
+                                {% if row_submission.my_evaluation %}
+                                    <div class="score-note">
+                                        Ваша поточна середня оцінка: {{ row_submission.my_evaluation.total_score|floatformat:1 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </details>
+            {% empty %}
+                <div>Оцінених робіт поки немає.</div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

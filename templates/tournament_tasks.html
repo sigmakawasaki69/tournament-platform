@@ -4,38 +4,115 @@
 <meta charset="UTF-8">
 <title>{{ tournament.name }}</title>
 <style>
-body{margin:0;font-family:Arial,sans-serif;background:#f4f6fb;padding:30px 20px;color:#0f172a;}
-.wrap{max-width:980px;margin:0 auto;}
-.card{background:white;padding:24px;border-radius:16px;box-shadow:0 10px 24px rgba(0,0,0,.06);margin-bottom:20px;}
-.item{border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin-bottom:12px;}
-.btn{display:inline-block;padding:10px 14px;border-radius:10px;background:#2563eb;color:white;text-decoration:none;margin-top:12px;}
-.muted{color:#64748b;}
-.pill{display:inline-block;padding:6px 10px;border-radius:999px;background:#dcfce7;color:#166534;font-size:13px;margin-bottom:10px;}
+body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(180deg,#eef4ff 0%,#f7f9fc 100%);padding:30px 20px;color:#0f172a;}
+.wrap{max-width:1180px;margin:0 auto;}
+.hero,.card{background:white;padding:24px;border-radius:18px;box-shadow:0 14px 32px rgba(15,23,42,.08);border:1px solid #dbe3ee;margin-bottom:20px;}
+.hero{display:grid;grid-template-columns:1.2fr .8fr;gap:18px;}
+.muted{color:#64748b;line-height:1.6;}
+.grid{display:grid;grid-template-columns:1.35fr .65fr;gap:20px;align-items:start;}
+.item{border:1px solid #e5e7eb;border-radius:14px;padding:18px;margin-bottom:14px;background:#fbfdff;}
+.btn,.back,.ghost-btn{display:inline-flex;align-items:center;justify-content:center;padding:8px 12px;border-radius:9px;text-decoration:none;border:none;cursor:pointer;font-size:13px;min-height:36px;line-height:1.2;font-weight:600;}
+.btn{background:#2563eb;color:white;}
+.ghost-btn{background:#16a34a;color:white;}
+.back{background:#eef4ff;color:#2563eb;}
+.pill{display:inline-block;padding:6px 10px;border-radius:999px;background:#dcfce7;color:#166534;font-size:12px;margin-bottom:10px;font-weight:700;}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+.stat{background:#f8fbff;border:1px solid #dbe7f3;border-radius:14px;padding:14px;}
+.stat-label{color:#64748b;font-size:13px;}
+.stat-value{margin-top:6px;font-size:22px;font-weight:700;}
+.leader-row{display:grid;grid-template-columns:54px 1fr auto;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid #e8edf5;}
+.leader-row:last-child{border-bottom:none;}
+.place{width:42px;height:42px;border-radius:12px;background:#eff6ff;color:#1d4ed8;display:flex;align-items:center;justify-content:center;font-weight:700;}
+.leader-meta{color:#64748b;font-size:13px;line-height:1.5;}
+.score{font-size:24px;font-weight:700;color:#0f766e;text-align:right;}
+.highlight{background:#fff9db;border:1px solid #f5df8f;padding:12px;border-radius:14px;margin-bottom:14px;}
+@media (max-width: 920px){.hero,.grid{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
 <div class="wrap">
-<div class="card">
-<a href="/participant-dashboard/" style="color:#2563eb;text-decoration:none;">← Назад</a>
-<h1>{{ tournament.name }}</h1>
-<p class="muted">{{ tournament.description }}</p>
-<p><strong>Турнір триває до:</strong> {{ tournament.end_date }}</p>
+<div class="hero">
+    <div>
+        <a class="back" href="/participant-dashboard/">Назад</a>
+        <h1 style="margin:14px 0 10px;">{{ tournament.name }}</h1>
+        <p class="muted">{{ tournament.description }}</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;">
+            <a class="ghost-btn" href="{% url 'tournament_leaderboard' tournament.id %}">Повний лідерборд</a>
+        </div>
+    </div>
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-label">Завдань</div>
+            <div class="stat-value">{{ tasks|length }}</div>
+        </div>
+        <div class="stat">
+            <div class="stat-label">Команд у рейтингу</div>
+            <div class="stat-value">{{ leaderboard_total }}</div>
+        </div>
+        <div class="stat">
+            <div class="stat-label">Початок</div>
+            <div class="stat-value" style="font-size:16px;">{{ tournament.start_date|date:"d.m.Y H:i" }}</div>
+        </div>
+        <div class="stat">
+            <div class="stat-label">Завершення</div>
+            <div class="stat-value" style="font-size:16px;">{{ tournament.end_date|date:"d.m.Y H:i" }}</div>
+        </div>
+    </div>
 </div>
 
-<div class="card">
-<h2>Завдання</h2>
-{% for task in tasks %}
-<div class="item">
-<span class="pill">Доступно протягом всього турніру</span>
-<h3 style="margin-top:0;">{{ task.title }}</h3>
-<p>{{ task.description }}</p>
-<p><strong>Вимоги:</strong><br>{{ task.requirements }}</p>
-<p><strong>Обов'язково має бути:</strong><br>{{ task.must_have }}</p>
-<a class="btn" href="/task/{{ task.id }}/submit/">Відправити рішення</a>
-</div>
-{% empty %}
-<p>Немає завдань.</p>
-{% endfor %}
+<div class="grid">
+    <div class="card">
+        <h2 style="margin-top:0;">Завдання турніру</h2>
+        {% for task in tasks %}
+            <div class="item">
+                <span class="pill">Доступно протягом усього турніру</span>
+                <h3 style="margin:0 0 10px;">{{ task.title }}</h3>
+                <p class="muted">{{ task.description }}</p>
+                <p><strong>Вимоги:</strong><br>{{ task.requirements }}</p>
+                <p><strong>Обов'язково має бути:</strong><br>{{ task.must_have }}</p>
+                <a class="btn" href="/task/{{ task.id }}/submit/">Відправити рішення</a>
+            </div>
+        {% empty %}
+            <p class="muted">Немає завдань.</p>
+        {% endfor %}
+    </div>
+
+    <div class="card">
+        <h2 style="margin-top:0;">Топ команд</h2>
+        {% if my_team %}
+            <div class="highlight">
+                Ваша команда: <strong>{{ my_team.name }}</strong>
+            </div>
+        {% endif %}
+
+        {% for row in leaderboard_preview %}
+            <div class="leader-row">
+                <div class="place">#{{ row.place }}</div>
+                <div>
+                    <strong>{{ row.team.name }}</strong>
+                    <div class="leader-meta">
+                        Оцінених завдань: {{ row.scored_tasks }}<br>
+                        Надіслано робіт: {{ row.submitted_tasks }}
+                    </div>
+                </div>
+                <div class="score">
+                    {% if row.overall_average is not None %}
+                        {{ row.overall_average|floatformat:1 }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </div>
+            </div>
+        {% empty %}
+            <p class="muted">Поки що в рейтингу немає оцінених команд.</p>
+        {% endfor %}
+
+        {% if leaderboard_total > 5 %}
+            <div style="margin-top:14px;">
+                <a class="back" href="{% url 'tournament_leaderboard' tournament.id %}">Показати весь рейтинг</a>
+            </div>
+        {% endif %}
+    </div>
 </div>
 </div>
 </body>

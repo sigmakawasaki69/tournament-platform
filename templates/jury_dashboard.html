@@ -4,14 +4,16 @@
     <meta charset="UTF-8">
     <title>Панель журі</title>
     <style>
-        body { margin:0; font-family:Arial,sans-serif; background:#f4f6fb; }
-        .wrap { max-width:1000px; margin:0 auto; padding:30px 20px; }
-        .top { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
-        .card { background:white; padding:20px; border-radius:16px; box-shadow:0 10px 24px rgba(0,0,0,.06); }
-        .item { border:1px solid #e5e7eb; border-radius:12px; padding:14px; margin-bottom:12px; }
-        .name { font-weight:700; margin-bottom:6px; }
-        .meta { color:#555; line-height:1.5; }
-        a.logout { text-decoration:none; background:#dc2626; color:white; padding:10px 14px; border-radius:10px; }
+        body { margin: 0; font-family: Arial, sans-serif; background: #f4f6fb; }
+        .wrap { max-width: 1100px; margin: 0 auto; padding: 30px 20px; }
+        .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 12px; }
+        .card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 10px 24px rgba(0,0,0,.06); }
+        .item { border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+        .name { font-weight: 700; margin-bottom: 8px; font-size: 18px; }
+        .meta { color: #555; line-height: 1.6; }
+        .btn, .logout { display: inline-block; text-decoration: none; color: white; padding: 10px 14px; border-radius: 10px; }
+        .btn { background: #2563eb; margin-top: 12px; }
+        .logout { background: #dc2626; }
     </style>
 </head>
 <body>
@@ -25,25 +27,21 @@
         </div>
 
         <div class="card">
-            <h2>Призначені вам роботи</h2>
+            <h2>Турніри</h2>
 
-            {% for assignment in assignments %}
+            {% for row in tournament_rows %}
                 <div class="item">
-                    <div class="name">{{ assignment.submission.team.name }} — {{ assignment.submission.task.title }}</div>
+                    <div class="name">{{ row.tournament.name }}</div>
                     <div class="meta">
-                        Турнір: {{ assignment.submission.task.tournament.name }}<br>
-                        GitHub: <a href="{{ assignment.submission.github_link }}" target="_blank">{{ assignment.submission.github_link }}</a><br>
-                        Video: <a href="{{ assignment.submission.video_link }}" target="_blank">{{ assignment.submission.video_link }}</a><br>
-                        Live demo:
-                        {% if assignment.submission.live_demo %}
-                            <a href="{{ assignment.submission.live_demo }}" target="_blank">{{ assignment.submission.live_demo }}</a>
-                        {% else %}
-                            -
-                        {% endif %}
+                        Початок: {{ row.tournament.start_date }}<br>
+                        Завершення: {{ row.tournament.end_date }}<br>
+                        Команд з роботами: {{ row.teams_count }}<br>
+                        Усього робіт: {{ row.submissions_count }}
                     </div>
+                    <a class="btn" href="{% url 'jury_tournament_detail' row.tournament.id %}">Відкрити турнір</a>
                 </div>
             {% empty %}
-                <div>Поки що вам не призначено жодної роботи.</div>
+                <div>Поки що немає доступних турнірів.</div>
             {% endfor %}
         </div>
     </div>

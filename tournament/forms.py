@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Participant, Submission, Task, Team, Tournament, TournamentRegistration
+from .models import Evaluation, Participant, Submission, Task, Team, Tournament, TournamentRegistration
 
 
 class TournamentForm(forms.ModelForm):
@@ -159,4 +159,23 @@ class SubmissionForm(forms.ModelForm):
             'live_demo': forms.URLInput(attrs={'class': 'form-input'}),
             'description': forms.Textarea(attrs={'class': 'form-input', 'rows': 5}),
             'is_final': forms.CheckboxInput(),
+        }
+
+
+class EvaluationForm(forms.ModelForm):
+    class Meta:
+        model = Evaluation
+        fields = [
+            'score_backend',
+            'score_frontend',
+            'score_functionality',
+            'score_ux',
+            'comment',
+        ]
+        widgets = {
+            'score_backend': forms.NumberInput(attrs={'class': 'form-input', 'min': 0, 'max': 100}),
+            'score_frontend': forms.NumberInput(attrs={'class': 'form-input', 'min': 0, 'max': 100}),
+            'score_functionality': forms.NumberInput(attrs={'class': 'form-input', 'min': 0, 'max': 100}),
+            'score_ux': forms.NumberInput(attrs={'class': 'form-input', 'min': 0, 'max': 100}),
+            'comment': forms.Textarea(attrs={'class': 'form-input', 'rows': 4}),
         }
