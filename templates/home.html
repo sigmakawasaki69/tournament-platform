@@ -73,7 +73,7 @@
         .hero p {
             margin: 0;
             line-height: 1.7;
-            color: rgba(255,255,255,0.88);
+            color: rgba(255, 255, 255, 0.88);
         }
         .hero-stats {
             display: grid;
@@ -82,8 +82,8 @@
             min-width: 320px;
         }
         .hero-stat {
-            background: rgba(255,255,255,0.12);
-            border: 1px solid rgba(255,255,255,0.16);
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.16);
             border-radius: 18px;
             padding: 16px;
         }
@@ -192,15 +192,18 @@
                 {% if request.user.is_authenticated %}
                     <div class="nav-links">
                         <a class="button-secondary" href="{% url 'home' %}">Головна</a>
-                        {% if request.user.role == 'participant' or request.user.role == 'captain' %}
+                        {% if request.user.is_superuser or request.user.role == 'admin' %}
+                            <a class="button-secondary" href="{% url 'admin_dashboard' %}">Адмінка</a>
+                            <a class="button-secondary" href="{% url 'create_tournament' %}">Створити турнір</a>
+                            <a class="button-secondary" href="{% url 'create_user_by_admin' %}">Створити користувача</a>
+                        {% elif request.user.role == 'participant' or request.user.role == 'captain' %}
                             <a class="button-secondary" href="{% url 'profile' %}">Профіль</a>
                             <a class="button-secondary" href="{% url 'my_team' %}">Моя команда</a>
                         {% elif request.user.role == 'jury' %}
                             <a class="button-secondary" href="{% url 'jury_dashboard' %}">Журі</a>
                         {% elif request.user.role == 'organizer' %}
                             <a class="button-secondary" href="{% url 'organizer_dashboard' %}">Мої турніри</a>
-                        {% else %}
-                            <a class="button-secondary" href="{% url 'admin_dashboard' %}">Адмінка</a>
+                            <a class="button-secondary" href="{% url 'create_tournament' %}">Створити турнір</a>
                         {% endif %}
                     </div>
                     <a class="button" href="{% url 'logout' %}">Вийти</a>

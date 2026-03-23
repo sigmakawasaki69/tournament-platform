@@ -107,6 +107,17 @@ class TournamentPlatformViewTests(TestCase):
         self.assertContains(response, "Public Cup")
         self.assertContains(response, reverse("public_tournament_detail", args=[tournament.id]))
 
+    def test_admin_login_redirects_to_home_with_admin_actions(self):
+        self.client.force_login(self.admin_user)
+
+        response = self.client.get(reverse("redirect_by_role"))
+
+        self.assertRedirects(response, reverse("home"))
+        home_response = self.client.get(reverse("home"))
+        self.assertContains(home_response, reverse("admin_dashboard"))
+        self.assertContains(home_response, reverse("create_tournament"))
+        self.assertContains(home_response, reverse("create_user_by_admin"))
+
     def test_public_tournament_detail_prompts_guest_to_register(self):
         self.client.logout()
         tournament = self.create_tournament(

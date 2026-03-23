@@ -354,10 +354,8 @@ def logout_view(request):
 def redirect_by_role(request):
     user = request.user
 
-    if is_admin_user(user):
-        return redirect('admin_dashboard')
-    if is_organizer_user(user):
-        return redirect('organizer_dashboard')
+    if is_admin_user(user) or is_organizer_user(user):
+        return redirect('home')
     if user.role == 'jury':
         return redirect('jury_dashboard')
     return redirect('home')
