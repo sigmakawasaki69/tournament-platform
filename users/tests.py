@@ -114,9 +114,32 @@ class TournamentPlatformViewTests(TestCase):
 
         self.assertRedirects(response, reverse("home"))
         home_response = self.client.get(reverse("home"))
-        self.assertContains(home_response, reverse("admin_dashboard"))
-        self.assertContains(home_response, reverse("create_tournament"))
-        self.assertContains(home_response, reverse("create_user_by_admin"))
+        self.assertContains(home_response, reverse("admin_users"))
+        self.assertContains(home_response, reverse("admin_active_tournaments"))
+        self.assertContains(home_response, reverse("admin_registrations"))
+        self.assertContains(home_response, reverse("admin_active_tournaments") + "?action=create-tournament")
+        self.assertContains(home_response, reverse("admin_users") + "?action=create-user")
+
+    def test_admin_actions_return_to_requested_dashboard_section(self):
+        self.client.force_login(self.admin_user)
+        target_user = User.objects.create_user(
+            username="pending_mod",
+            password="secret123",
+            role="jury",
+            is_approved=False,
+            email="pending_mod@example.com",
+        )
+
+        response = self.client.post(
+            reverse("approve_user", args=[target_user.id]),
+            {"next": reverse("admin_dashboard") + "#users"},
+        )
+
+        self.assertRedirects(
+            response,
+            reverse("admin_dashboard") + "#users",
+            fetch_redirect_response=False,
+        )
 
     def test_public_tournament_detail_prompts_guest_to_register(self):
         self.client.logout()
@@ -193,7 +216,7 @@ class TournamentPlatformViewTests(TestCase):
             },
         )
 
-        self.assertRedirects(response, reverse("admin_dashboard"))
+        self.assertRedirects(response, reverse("admin_users"))
         created_user = User.objects.get(username="manual_jury")
         self.assertEqual(created_user.role, "jury")
         self.assertFalse(created_user.is_approved)
@@ -234,10 +257,11 @@ class TournamentPlatformViewTests(TestCase):
 
         response = self.client.get(reverse("create_user_by_admin"))
 
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Створити користувача")
-        self.assertContains(response, "Назад до адмінки")
-
+        self.assertRedirects(
+            response,
+            reverse("admin_users") + "?action=create-user",
+            fetch_redirect_response=False,
+        )
     def test_participant_dashboard_shows_running_tournaments(self):
         tournament = self.create_tournament(
             name="Running Cup",
@@ -355,7 +379,7 @@ class TournamentPlatformViewTests(TestCase):
             },
         )
 
-        self.assertRedirects(response, reverse("admin_dashboard"))
+        self.assertRedirects(response, reverse("admin_active_tournaments"))
         tournament.refresh_from_db()
         self.assertEqual(
             tournament.registration_fields_config,
@@ -702,7 +726,7 @@ class TournamentPlatformViewTests(TestCase):
             },
         )
 
-        self.assertRedirects(response, reverse("admin_dashboard"))
+        self.assertRedirects(response, reverse("admin_users"))
         created_user = User.objects.get(username="manualjury")
         self.assertEqual(created_user.role, "jury")
         self.assertFalse(created_user.is_approved)
@@ -797,7 +821,7 @@ class TournamentPlatformViewTests(TestCase):
             },
         )
 
-        self.assertRedirects(response, reverse("admin_dashboard"))
+        self.assertRedirects(response, reverse("admin_active_tournaments"))
         tournament = Tournament.objects.latest("id")
         self.assertTrue(tournament.is_draft)
         self.assertIsNone(tournament.start_date)
@@ -824,7 +848,7 @@ class TournamentPlatformViewTests(TestCase):
             },
         )
 
-        self.assertRedirects(response, reverse("admin_dashboard"))
+        self.assertRedirects(response, reverse("admin_active_tournaments"))
         tournament = Tournament.objects.latest("id")
         self.assertTrue(tournament.is_draft)
         self.assertEqual(

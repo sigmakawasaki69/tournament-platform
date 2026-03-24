@@ -67,7 +67,7 @@ def can_manage_registration_instance(user, registration):
 
 def get_dashboard_url_for_user(user):
     if is_admin_user(user):
-        return reverse('admin_dashboard')
+        return reverse('admin_users')
     if is_organizer_user(user):
         return reverse('organizer_dashboard')
     if user.role == 'jury':
@@ -241,6 +241,37 @@ def build_admin_dashboard_context(current_user, admin_create_user_form=None):
     }
 
 
+def build_admin_nav_items():
+    return [
+        {'url': reverse('admin_users'), 'label': 'Користувачі'},
+        {'url': reverse('admin_users') + '?action=create-user', 'label': 'Створити користувача'},
+        {'url': reverse('admin_active_tournaments'), 'label': 'Активні турніри'},
+        {'url': reverse('admin_inactive_tournaments'), 'label': 'Неактивні турніри'},
+        {'url': reverse('admin_active_tournaments') + '?action=create-tournament', 'label': 'Створити турнір'},
+        {'url': reverse('admin_teams'), 'label': 'Команди'},
+        {'url': reverse('admin_registrations'), 'label': 'Заявки'},
+        {'url': reverse('admin_submissions'), 'label': 'Роботи'},
+    ]
+
+
+def render_admin_section(request, section, action=None, admin_create_user_form=None, tournament_form=None):
+    if not is_admin_user(request.user):
+        return redirect('redirect_by_role')
+    if action is None:
+        action = request.GET.get('action')
+    context = build_admin_dashboard_context(request.user)
+    context.update({
+        'current_section': section,
+        'admin_nav_items': build_admin_nav_items(),
+        'current_action': action,
+        'admin_create_user_form': admin_create_user_form or AdminCreateUserForm(
+            available_roles=get_available_admin_roles(request.user),
+        ),
+        'tournament_form': tournament_form or TournamentForm(),
+    })
+    return render(request, 'admin_section.html', context)
+
+
 def get_safe_redirect(request, candidate, fallback):
     if candidate and url_has_allowed_host_and_scheme(
         url=candidate,
@@ -249,6 +280,10 @@ def get_safe_redirect(request, candidate, fallback):
     ):
         return candidate
     return fallback
+
+
+def get_post_redirect(request, fallback):
+    return get_safe_redirect(request, request.POST.get('next'), fallback)
 
 
 def build_public_tournament_rows():
@@ -457,9 +492,37 @@ def public_tournament_detail(request, tournament_id):
 
 @login_required
 def admin_dashboard(request):
-    if not is_admin_user(request.user):
-        return redirect('redirect_by_role')
-    return render(request, 'admin_dashboard.html', build_admin_dashboard_context(request.user))
+    return redirect('admin_users')
+
+
+@login_required
+def admin_users(request):
+    return render_admin_section(request, 'users')
+
+
+@login_required
+def admin_active_tournaments(request):
+    return render_admin_section(request, 'active_tournaments')
+
+
+@login_required
+def admin_inactive_tournaments(request):
+    return render_admin_section(request, 'inactive_tournaments')
+
+
+@login_required
+def admin_teams(request):
+    return render_admin_section(request, 'teams')
+
+
+@login_required
+def admin_registrations(request):
+    return render_admin_section(request, 'registrations')
+
+
+@login_required
+def admin_submissions(request):
+    return render_admin_section(request, 'submissions')
 
 
 @login_required
@@ -482,15 +545,7 @@ def create_user_by_admin(request):
     if not is_admin_user(request.user):
         return redirect('redirect_by_role')
     if request.method == 'GET':
-        return render(
-            request,
-            'create_user.html',
-            {
-                'form': AdminCreateUserForm(available_roles=get_available_admin_roles(request.user)),
-                'mode': 'create',
-                'dashboard_url': get_dashboard_url_for_user(request.user),
-            },
-        )
+        return redirect(reverse('admin_users') + '?action=create-user')
     if request.method != 'POST':
         return HttpResponseNotAllowed(['GET', 'POST'])
 
@@ -499,11 +554,13 @@ def create_user_by_admin(request):
         user = form.save(commit=False)
         user.is_approved = user.role == 'participant'
         user.save()
-        return redirect('admin_dashboard')
-    return render(
+        fallback = reverse('admin_users') if is_admin_user(request.user) else get_dashboard_url_for_user(request.user)
+        return redirect(get_post_redirect(request, fallback))
+    return render_admin_section(
         request,
-        'create_user.html',
-        {'form': form, 'mode': 'create', 'dashboard_url': get_dashboard_url_for_user(request.user)},
+        'users',
+        action='create-user',
+        admin_create_user_form=form,
     )
 
 
@@ -516,11 +573,11 @@ def approve_user(request, user_id):
 
     user = get_object_or_404(CustomUser, id=user_id)
     if user.id == request.user.id and not request.user.is_superuser:
-        return redirect('admin_dashboard')
+        return redirect(reverse('admin_users'))
 
     user.is_approved = True
     user.save(update_fields=['is_approved'])
-    return redirect('admin_dashboard')
+    return redirect(get_post_redirect(request, reverse('admin_users')))
 
 
 @login_required
@@ -528,21 +585,21 @@ def update_user_role(request, user_id):
     if not can_manage_users(request.user):
         return redirect('redirect_by_role')
     if request.method != 'POST':
-        return redirect('admin_dashboard')
+        return redirect(reverse('admin_users'))
 
     user = get_object_or_404(CustomUser, id=user_id)
     new_role = request.POST.get('role')
     allowed_roles = get_available_admin_roles(request.user)
     if new_role not in allowed_roles:
-        return redirect('admin_dashboard')
+        return redirect(reverse('admin_users'))
     if user.is_superuser:
-        return redirect('admin_dashboard')
+        return redirect(reverse('admin_users'))
 
     user.role = new_role
     if new_role == 'participant':
         user.is_approved = True
     user.save(update_fields=['role', 'is_approved'])
-    return redirect('admin_dashboard')
+    return redirect(get_post_redirect(request, reverse('admin_users')))
 
 
 @login_required
@@ -550,14 +607,14 @@ def delete_user(request, user_id):
     if not can_manage_users(request.user):
         return redirect('redirect_by_role')
     if request.method != 'POST':
-        return redirect('admin_dashboard')
+        return redirect(reverse('admin_users'))
 
     user = get_object_or_404(CustomUser, id=user_id)
     if user.id == request.user.id or user.is_superuser:
-        return redirect('admin_dashboard')
+        return redirect(reverse('admin_users'))
 
     user.delete()
-    return redirect('admin_dashboard')
+    return redirect(get_post_redirect(request, reverse('admin_users')))
 
 
 @login_required
@@ -572,7 +629,8 @@ def approve_registration(request, registration_id):
         return redirect('redirect_by_role')
     registration.status = TournamentRegistration.Status.APPROVED
     registration.save(update_fields=['status'])
-    return redirect(get_dashboard_url_for_user(request.user))
+    fallback = reverse('admin_registrations') if is_admin_user(request.user) else get_dashboard_url_for_user(request.user)
+    return redirect(get_post_redirect(request, fallback))
 
 
 @login_required
@@ -587,13 +645,17 @@ def reject_registration(request, registration_id):
         return redirect('redirect_by_role')
     registration.status = TournamentRegistration.Status.REJECTED
     registration.save(update_fields=['status'])
-    return redirect(get_dashboard_url_for_user(request.user))
+    fallback = reverse('admin_registrations') if is_admin_user(request.user) else get_dashboard_url_for_user(request.user)
+    return redirect(get_post_redirect(request, fallback))
 
 
 @login_required
 def create_tournament(request):
     if not can_manage_tournaments(request.user):
         return redirect('redirect_by_role')
+
+    if request.method == 'GET' and is_admin_user(request.user):
+        return redirect(reverse('admin_active_tournaments') + '?action=create-tournament')
 
     if request.method == 'POST':
         form = TournamentForm(request.POST)
@@ -602,14 +664,25 @@ def create_tournament(request):
             tournament.created_by = request.user
             tournament.save()
             form.save_m2m()
-            return redirect(get_dashboard_url_for_user(request.user))
+            return redirect(reverse('admin_active_tournaments') if is_admin_user(request.user) else get_dashboard_url_for_user(request.user))
+        if is_admin_user(request.user):
+            return render_admin_section(
+                request,
+                'active_tournaments',
+                action='create-tournament',
+                tournament_form=form,
+            )
     else:
         form = TournamentForm()
 
     return render(
         request,
         'create_tournament.html',
-        {'form': form, 'mode': 'create', 'dashboard_url': get_dashboard_url_for_user(request.user)},
+        {
+            'form': form,
+            'mode': 'create',
+            'dashboard_url': reverse('admin_active_tournaments') if is_admin_user(request.user) else get_dashboard_url_for_user(request.user),
+        },
     )
 
 
@@ -628,7 +701,7 @@ def edit_tournament(request, tournament_id):
         form = TournamentForm(request.POST, instance=tournament)
         if form.is_valid():
             form.save()
-            return redirect(get_dashboard_url_for_user(request.user))
+            return redirect(reverse('admin_active_tournaments') if is_admin_user(request.user) else get_dashboard_url_for_user(request.user))
     else:
         form = TournamentForm(instance=tournament)
 
@@ -637,7 +710,7 @@ def edit_tournament(request, tournament_id):
         'mode': 'edit',
         'tournament': tournament,
         'tasks': tournament.tasks.all(),
-        'dashboard_url': get_dashboard_url_for_user(request.user),
+        'dashboard_url': reverse('admin_active_tournaments') if is_admin_user(request.user) else get_dashboard_url_for_user(request.user),
     })
 
 
@@ -646,13 +719,14 @@ def delete_tournament(request, tournament_id):
     if not can_manage_tournaments(request.user):
         return redirect('redirect_by_role')
     if request.method != 'POST':
-        return redirect('admin_dashboard')
+        return redirect(get_dashboard_url_for_user(request.user))
 
     tournament = get_object_or_404(Tournament, id=tournament_id)
     if not can_manage_tournament_instance(request.user, tournament):
         return redirect('redirect_by_role')
     tournament.delete()
-    return redirect(get_dashboard_url_for_user(request.user))
+    fallback = reverse('admin_active_tournaments') if is_admin_user(request.user) else get_dashboard_url_for_user(request.user)
+    return redirect(get_post_redirect(request, fallback))
 
 
 @login_required
@@ -684,7 +758,9 @@ def create_task(request, tournament_id=None):
         'tournament': tournament,
         'back_url': (
             reverse('edit_tournament', args=[tournament.id])
-            if tournament is not None else get_dashboard_url_for_user(request.user)
+            if tournament is not None else (
+                reverse('admin_active_tournaments') if is_admin_user(request.user) else get_dashboard_url_for_user(request.user)
+            )
         ),
     })
 
@@ -722,13 +798,14 @@ def delete_task(request, task_id):
     if not can_manage_tournaments(request.user):
         return redirect('redirect_by_role')
     if request.method != 'POST':
-        return redirect('admin_dashboard')
+        return redirect(get_dashboard_url_for_user(request.user))
 
     task = get_object_or_404(Task, id=task_id)
     if not can_manage_tournament_instance(request.user, task.tournament):
         return redirect('redirect_by_role')
     task.delete()
-    return redirect(get_dashboard_url_for_user(request.user))
+    fallback = reverse('admin_active_tournaments') if is_admin_user(request.user) else get_dashboard_url_for_user(request.user)
+    return redirect(get_post_redirect(request, fallback))
 
 
 @login_required

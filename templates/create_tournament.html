@@ -256,7 +256,7 @@
                     <h1>{% if mode == 'edit' %}Редагувати турнір{% else %}Створити турнір{% endif %}</h1>
                     <div class="page-subtitle">Налаштуй основні параметри, анкету реєстрації та завдання турніру в одному місці.</div>
                 </div>
-                <a class="back-link" href="{{ dashboard_url|default:'/admin-dashboard/' }}">Назад до кабінету</a>
+                <a class="back-link" href="{{ dashboard_url|default:'/dashboard/tournaments/active/' }}">Назад до кабінету</a>
             </div>
 
             {% if form.non_field_errors %}
@@ -388,7 +388,7 @@
 
                     <div class="actions-bar">
                         <button type="submit" class="btn">{% if mode == 'edit' %}Зберегти{% else %}Створити{% endif %}</button>
-                        <a class="back-link" href="{{ dashboard_url|default:'/admin-dashboard/' }}">Назад</a>
+                        <a class="back-link" href="{{ dashboard_url|default:'/dashboard/tournaments/active/' }}">Назад</a>
                     </div>
                 </div>
             </form>
