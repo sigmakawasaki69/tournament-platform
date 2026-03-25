@@ -148,6 +148,30 @@ class TournamentPlatformViewTests(TestCase):
         self.assertContains(response, "Public Cup")
         self.assertContains(response, reverse("public_tournament_detail", args=[tournament.id]))
 
+    def test_home_page_filters_tournaments_by_status(self):
+        now = timezone.now()
+        registration_tournament = self.create_tournament(
+            name="Registration Cup",
+            registration_start=now - timedelta(days=1),
+            registration_end=now + timedelta(days=1),
+            start_date=now + timedelta(days=2),
+            end_date=now + timedelta(days=3),
+        )
+        self.create_tournament(
+            name="Finished Cup",
+            registration_start=now - timedelta(days=4),
+            registration_end=now - timedelta(days=3),
+            start_date=now - timedelta(days=2),
+            end_date=now - timedelta(hours=2),
+        )
+
+        response = self.client.get(reverse("home"), {"status": "registration"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, registration_tournament.name)
+        filtered_names = [row["tournament"].name for row in response.context["filtered_tournament_rows"]]
+        self.assertEqual(filtered_names, ["Registration Cup"])
+
     def test_admin_login_redirects_to_home_with_admin_actions(self):
         self.client.force_login(self.admin_user)
 
@@ -450,6 +474,34 @@ class TournamentPlatformViewTests(TestCase):
         self.assertContains(response, f"Старт турніру {tournament.name}")
         self.assertContains(response, "24 години до дедлайну")
 
+    def test_public_tournament_detail_hides_leaderboard_until_finish(self):
+        tournament = self.create_tournament(
+            start_date=timezone.now() - timedelta(hours=2),
+            end_date=timezone.now() + timedelta(hours=5),
+            registration_end=timezone.now() - timedelta(hours=3),
+        )
+        self.client.logout()
+
+        response = self.client.get(reverse("public_tournament_detail", args=[tournament.id]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Лідерборд з'явиться тільки після завершення турніру")
+        self.assertNotContains(response, "Відкрити повний лідерборд")
+
+    def test_messages_page_shows_registration_open_event(self):
+        tournament = self.create_tournament(
+            registration_start=timezone.now() - timedelta(hours=2),
+            registration_end=timezone.now() + timedelta(days=1),
+            start_date=timezone.now() + timedelta(days=2),
+            end_date=timezone.now() + timedelta(days=3),
+        )
+        self.client.force_login(self.participant_user)
+
+        response = self.client.get(reverse("messages"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, f"Старт реєстрації: {tournament.name}")
+
     def test_archive_page_shows_finished_tournament_and_my_results_link(self):
         tournament = self.create_tournament(
             start_date=timezone.now() - timedelta(days=2),
@@ -686,10 +738,10 @@ class TournamentPlatformViewTests(TestCase):
         self.assertEqual(response["Content-Type"], "text/csv; charset=utf-8")
         self.assertIn("CSV Team", response.content.decode("utf-8-sig"))
 
-    def test_leaderboard_json_endpoint_returns_live_rows(self):
+    def test_leaderboard_json_endpoint_returns_rows_after_finish(self):
         tournament = self.create_tournament(
-            start_date=timezone.now() - timedelta(hours=1),
-            end_date=timezone.now() + timedelta(hours=3),
+            start_date=timezone.now() - timedelta(days=1),
+            end_date=timezone.now() - timedelta(hours=1),
             registration_end=timezone.now() - timedelta(hours=2),
         )
         task = Task.objects.create(
@@ -1188,8 +1240,8 @@ class TournamentPlatformViewTests(TestCase):
             email="outsider@example.com",
         )
         tournament = self.create_tournament(
-            start_date=timezone.now() - timedelta(hours=1),
-            end_date=timezone.now() + timedelta(days=1),
+            start_date=timezone.now() - timedelta(days=1),
+            end_date=timezone.now() - timedelta(hours=1),
             registration_end=timezone.now() - timedelta(hours=2),
         )
         self.client.force_login(outsider)
@@ -2061,8 +2113,8 @@ class TournamentPlatformViewTests(TestCase):
 
     def test_tournament_leaderboard_orders_teams_by_average_score(self):
         tournament = self.create_tournament(
-            start_date=timezone.now() - timedelta(hours=1),
-            end_date=timezone.now() + timedelta(hours=3),
+            start_date=timezone.now() - timedelta(days=1),
+            end_date=timezone.now() - timedelta(hours=1),
             registration_end=timezone.now() - timedelta(hours=2),
         )
         task = Task.objects.create(
@@ -2147,3 +2199,30 @@ class TournamentPlatformViewTests(TestCase):
         self.assertEqual(leaderboard[0]["team"].name, "Alpha Team")
         self.assertEqual(leaderboard[0]["place"], 1)
         self.assertEqual(leaderboard[1]["team"].name, "Beta Team")
+
+    def test_messages_page_includes_system_tournament_events(self):
+        tournament = self.create_tournament(
+            start_date=timezone.now() - timedelta(hours=1),
+            end_date=timezone.now() + timedelta(hours=20),
+            registration_end=timezone.now() - timedelta(hours=2),
+        )
+        team = Team.objects.create(
+            name="Messages Team",
+            captain_user=self.captain,
+            captain_name="Captain",
+            captain_email="captain@example.com",
+        )
+        TournamentRegistration.objects.create(
+            tournament=tournament,
+            team=team,
+            registered_by=self.captain,
+            status=TournamentRegistration.Status.APPROVED,
+        )
+        self.client.force_login(self.captain)
+
+        response = self.client.get(reverse("messages"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, f"Старт реєстрації: {tournament.name}")
+        self.assertContains(response, f"Старт завдань: {tournament.name}")
+        self.assertContains(response, "24 години до дедлайну")

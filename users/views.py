@@ -451,7 +451,7 @@ def build_public_tournament_rows():
                 tournament=tournament,
                 status=TournamentRegistration.Status.PENDING,
             ).count(),
-            'leaderboard_preview': build_tournament_leaderboard(tournament)[:3],
+            'leaderboard_preview': build_tournament_leaderboard(tournament)[:3] if tournament.is_finished else [],
         })
     return rows
 
@@ -473,9 +473,18 @@ def build_user_certificates_queryset(user):
 def build_user_message_items(user):
     items = []
     seen_keys = set()
+    now = timezone.now()
+    kind_labels = {
+        'announcement': 'Оголошення',
+        'status': 'Статус',
+        'event': 'Подія',
+        'deadline': 'Дедлайн',
+        'finished': 'Завершено',
+        'system': 'Система',
+    }
 
     def add_item(*, key, title, body, created_at, kind='system', tournament=None):
-        if created_at is None or key in seen_keys:
+        if created_at is None or created_at > now or key in seen_keys:
             return
         seen_keys.add(key)
         items.append({
@@ -484,6 +493,7 @@ def build_user_message_items(user):
             'body': body,
             'created_at': created_at,
             'kind': kind,
+            'kind_label': kind_labels.get(kind, 'Система'),
             'tournament': tournament,
         })
 
@@ -497,6 +507,19 @@ def build_user_message_items(user):
             tournament=announcement.tournament,
         )
 
+    if getattr(user, 'is_authenticated', False):
+        public_tournaments = Tournament.objects.filter(is_draft=False).order_by('-registration_start', '-start_date')
+        for tournament in public_tournaments:
+            if tournament.registration_start is not None:
+                add_item(
+                    key=f"registration-open:{tournament.id}",
+                    title=f"Старт реєстрації: {tournament.name}",
+                    body="Реєстрацію на турнір відкрито. Можна подавати заявки команди.",
+                    created_at=tournament.registration_start,
+                    kind='event',
+                    tournament=tournament,
+                )
+
     if getattr(user, 'is_authenticated', False) and user.role in ['participant', 'captain']:
         registrations = TournamentRegistration.objects.select_related(
             'tournament',
@@ -504,7 +527,6 @@ def build_user_message_items(user):
         ).prefetch_related('members').filter(
             Q(team__captain_user=user) | Q(members__user=user)
         ).distinct()
-        now = timezone.now()
         for registration in registrations:
             tournament = registration.tournament
             add_item(
@@ -519,8 +541,8 @@ def build_user_message_items(user):
                 if tournament.start_date is not None:
                     add_item(
                         key=f"start:{tournament.id}",
-                        title=f"Старт турніру {tournament.name}",
-                        body="Турнір уже стартував або має скоро стартувати. Перевірте завдання та дедлайни.",
+                        title=f"Старт завдань: {tournament.name}",
+                        body="Завдання турніру вже доступні. Перевірте умови, дедлайни та подайте сабміти вчасно.",
                         created_at=tournament.start_date,
                         kind='event',
                         tournament=tournament,
@@ -637,9 +659,34 @@ def home(request):
     tournament_rows = build_public_tournament_rows()
     announcements = build_public_announcements()
     notification_context = build_notification_nav_context(request.user)
-    featured_tournaments = [row for row in tournament_rows if row['tournament'].is_registration_open][:3]
-    active_tournaments = [row for row in tournament_rows if row['tournament'].is_running][:3]
-    finished_tournaments = [row for row in tournament_rows if row['tournament'].is_finished][:3]
+    filter_status = request.GET.get('status', 'all')
+    filter_options = {'all', 'registration', 'running', 'finished', 'scheduled'}
+    if filter_status not in filter_options:
+        filter_status = 'all'
+
+    featured_tournaments = [row for row in tournament_rows if row['tournament'].is_registration_open]
+    active_tournaments = [row for row in tournament_rows if row['tournament'].is_running]
+    finished_tournaments = [row for row in tournament_rows if row['tournament'].is_finished]
+    upcoming_tournaments = [
+        row for row in tournament_rows
+        if (
+            not row['tournament'].is_registration_open
+            and not row['tournament'].is_running
+            and not row['tournament'].is_finished
+        )
+    ]
+
+    if filter_status == 'registration':
+        filtered_tournament_rows = featured_tournaments
+    elif filter_status == 'running':
+        filtered_tournament_rows = active_tournaments
+    elif filter_status == 'finished':
+        filtered_tournament_rows = finished_tournaments
+    elif filter_status == 'scheduled':
+        filtered_tournament_rows = upcoming_tournaments
+    else:
+        filtered_tournament_rows = tournament_rows
+
     news_rows = []
     for row in tournament_rows[:4]:
         tournament = row['tournament']
@@ -655,9 +702,19 @@ def home(request):
 
     return render(request, 'home.html', {
         'tournament_rows': tournament_rows,
-        'featured_tournaments': featured_tournaments,
-        'active_tournaments': active_tournaments,
-        'finished_tournaments': finished_tournaments,
+        'filtered_tournament_rows': filtered_tournament_rows,
+        'filter_status': filter_status,
+        'filter_choices': [
+            {'value': 'all', 'label': 'Усі'},
+            {'value': 'registration', 'label': 'Реєстрація'},
+            {'value': 'running', 'label': 'Тривають'},
+            {'value': 'finished', 'label': 'Завершені'},
+            {'value': 'scheduled', 'label': 'Майбутні'},
+        ],
+        'featured_tournaments': featured_tournaments[:3],
+        'active_tournaments': active_tournaments[:3],
+        'finished_tournaments': finished_tournaments[:3],
+        'upcoming_tournaments': upcoming_tournaments[:3],
         'news_rows': news_rows,
         'announcements': announcements,
         **notification_context,
@@ -828,7 +885,7 @@ def public_tournament_detail(request, tournament_id):
         id=tournament_id,
         is_draft=False,
     )
-    leaderboard = build_tournament_leaderboard(tournament)
+    leaderboard = build_tournament_leaderboard(tournament) if tournament.is_finished else []
     existing_registration = None
     registration_form = None
     can_submit_registration = False
@@ -894,6 +951,7 @@ def public_tournament_detail(request, tournament_id):
         'tasks': tournament.tasks.filter(is_draft=False),
         'leaderboard_preview': leaderboard[:5],
         'leaderboard_total': len(leaderboard),
+        'show_public_leaderboard': tournament.is_finished,
         'registration_form': registration_form,
         'existing_registration': existing_registration,
         'viewer_can_register': viewer_can_register,
@@ -1692,7 +1750,7 @@ def profile_view(request):
             'can_view_leaderboard': (
                 active_registration is not None
                 and active_registration.status == TournamentRegistration.Status.APPROVED
-                and tournament.start_date <= timezone.now()
+                and tournament.is_finished
             ),
         })
 
@@ -1995,7 +2053,7 @@ def tournament_tasks(request, tournament_id):
         return redirect('participant_dashboard')
 
     tasks = Task.objects.filter(tournament=tournament, is_draft=False)
-    leaderboard = build_tournament_leaderboard(tournament)
+    leaderboard = build_tournament_leaderboard(tournament) if tournament.is_finished else []
     my_team = my_registration.team if my_registration is not None else None
     preview_rows = leaderboard[:5]
     return render(request, 'tournament_tasks.html', {
@@ -2006,12 +2064,15 @@ def tournament_tasks(request, tournament_id):
         'my_team': my_team,
         'can_submit_solutions': tournament.is_running,
         'show_official_solutions': tournament.is_finished,
+        'show_leaderboard': tournament.is_finished,
     })
 
 
 @login_required
 def tournament_leaderboard(request, tournament_id):
     tournament = get_object_or_404(Tournament, id=tournament_id, is_draft=False)
+    if not tournament.is_finished and not request.user.is_superuser:
+        return redirect('tournament_tasks', tournament_id=tournament.id)
     approved_registrations = TournamentRegistration.objects.filter(
         tournament=tournament,
         status=TournamentRegistration.Status.APPROVED,

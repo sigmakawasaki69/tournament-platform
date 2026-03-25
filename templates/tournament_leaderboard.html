@@ -40,7 +40,8 @@ body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(180deg,#ee
             <h1 style="margin:14px 0 10px;">Лідерборд {{ tournament.name }}</h1>
             <div class="muted">
                 Рейтинг оновлюється автоматично кожні 10 секунд після нових оцінок журі.
-                При однаковому середньому вище стоїть команда з кращим окремим результатом, а потім з більшою кількістю оцінених задач.
+                При однаковому середньому вище стоїть команда з кращим окремим результатом,
+                а потім з більшою кількістю оцінених задач.
             </div>
         </div>
         <div class="toolbar">
@@ -128,9 +129,7 @@ function renderRows(rows) {
 async function refreshLeaderboard() {
     try {
         const response = await fetch(endpoint, {
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-            },
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
             credentials: 'same-origin',
         });
         if (!response.ok) {
