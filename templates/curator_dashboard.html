@@ -14,9 +14,14 @@
             border-radius: 10px; text-decoration: none; border: none; font-weight: 600; cursor: pointer;
         }
         .btn { background: #2563eb; color: white; }
-        .btn-secondary { background: white; color: #2563eb; border: 1px solid #cbd5e1; }
+        .btn-secondary { background: white; color: #2563eb; border: 1px solid #cbd5e1; position: relative; }
         .item { border: 1px solid #e2e8f0; border-radius: 14px; padding: 16px; background: #fbfdff; margin-bottom: 12px; }
         .badge { display: inline-flex; padding: 5px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #dbeafe; color: #1d4ed8; }
+        .notify-dot {
+            position: absolute; top: 4px; right: 4px; min-width: 18px; height: 18px; padding: 0 5px;
+            border-radius: 999px; background: #dc2626; color: white; font-size: 11px;
+            display: inline-flex; align-items: center; justify-content: center; font-weight: 800;
+        }
     </style>
 </head>
 <body>
@@ -28,6 +33,8 @@
         </div>
         <div class="actions">
             <a class="btn-secondary" href="{% url 'home' %}">Головна</a>
+            <a class="btn-secondary" href="{% url 'messages' %}">Повідомлення{% if has_unread_announcements %}<span class="notify-dot">{{ unread_announcements_count }}</span>{% endif %}</a>
+            <a class="btn-secondary" href="{% url 'certificates' %}">Сертифікати{% if has_unread_certificates %}<span class="notify-dot">{{ unread_certificates_count }}</span>{% endif %}</a>
             <a class="btn-secondary" href="{% url 'logout' %}">Вийти</a>
         </div>
     </div>

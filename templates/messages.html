@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Повідомлення</title>
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; background: #eef4ff; color: #172033; padding: 30px 20px; }
+        .wrap { max-width: 1080px; margin: 0 auto; }
+        .card { background: white; border: 1px solid #dbe3ee; border-radius: 18px; box-shadow: 0 14px 32px rgba(17,24,39,.08); padding: 24px; margin-bottom: 20px; }
+        .topbar, .actions { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center; }
+        .meta { color: #64748b; line-height: 1.6; }
+        .btn, .btn-secondary {
+            display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 10px 14px;
+            border-radius: 10px; text-decoration: none; border: none; font-weight: 700; cursor: pointer;
+        }
+        .btn { background: #2563eb; color: white; }
+        .btn-secondary { background: white; color: #2563eb; border: 1px solid #cbd5e1; }
+        .item { border: 1px solid #e2e8f0; border-radius: 14px; padding: 16px; background: #fbfdff; margin-bottom: 12px; }
+        .badge { display: inline-flex; padding: 5px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+        .announcement { background: #dbeafe; color: #1d4ed8; }
+        .status { background: #fef3c7; color: #92400e; }
+        .event { background: #dcfce7; color: #166534; }
+        .deadline { background: #fde68a; color: #92400e; }
+        .finished { background: #fee2e2; color: #991b1b; }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <div class="card topbar">
+        <div>
+            <h1 style="margin:0 0 6px;">Повідомлення</h1>
+            <div class="meta">Тут зібрані внутрішні повідомлення сайту: оголошення адміністратора, статуси заявок, старт турнірів, нагадування про дедлайн і закриття сабмітів.</div>
+        </div>
+        <div class="actions">
+            <a class="btn-secondary" href="{% url 'home' %}">Головна</a>
+            <a class="btn-secondary" href="{% url 'certificates' %}">Сертифікати{% if has_unread_certificates %} ({{ unread_certificates_count }}){% endif %}</a>
+        </div>
+    </div>
+
+    <div class="card">
+        {% for item in message_items %}
+            <div class="item">
+                <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;">
+                    <strong>{{ item.title }}</strong>
+                    <span class="badge {{ item.kind }}">{{ item.kind }}</span>
+                </div>
+                <div class="meta">
+                    {% if item.tournament %}Турнір: {{ item.tournament.name }}<br>{% endif %}
+                    Дата: {{ item.created_at }}
+                </div>
+                <p style="margin:10px 0 0; line-height:1.7;">{{ item.body }}</p>
+            </div>
+        {% empty %}
+            <div class="meta">Повідомлень поки немає.</div>
+        {% endfor %}
+    </div>
+</div>
+</body>
+</html>

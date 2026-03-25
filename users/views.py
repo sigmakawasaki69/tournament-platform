@@ -470,6 +470,86 @@ def build_user_certificates_queryset(user):
     ).select_related('tournament', 'team', 'issued_by', 'recipient_user').distinct().order_by('-issued_at')
 
 
+def build_user_message_items(user):
+    items = []
+    seen_keys = set()
+
+    def add_item(*, key, title, body, created_at, kind='system', tournament=None):
+        if created_at is None or key in seen_keys:
+            return
+        seen_keys.add(key)
+        items.append({
+            'key': key,
+            'title': title,
+            'body': body,
+            'created_at': created_at,
+            'kind': kind,
+            'tournament': tournament,
+        })
+
+    for announcement in build_user_announcements_queryset(user):
+        add_item(
+            key=f"announcement:{announcement.id}",
+            title=announcement.title,
+            body=announcement.message,
+            created_at=announcement.created_at,
+            kind='announcement',
+            tournament=announcement.tournament,
+        )
+
+    if getattr(user, 'is_authenticated', False) and user.role in ['participant', 'captain']:
+        registrations = TournamentRegistration.objects.select_related(
+            'tournament',
+            'team',
+        ).prefetch_related('members').filter(
+            Q(team__captain_user=user) | Q(members__user=user)
+        ).distinct()
+        now = timezone.now()
+        for registration in registrations:
+            tournament = registration.tournament
+            add_item(
+                key=f"registration:{registration.id}:{registration.status}",
+                title=f"Статус заявки: {tournament.name}",
+                body=f"Заявка команди {registration.team.name} має статус «{registration.get_status_display()}».",
+                created_at=registration.created_at,
+                kind='status',
+                tournament=tournament,
+            )
+            if registration.status == TournamentRegistration.Status.APPROVED:
+                if tournament.start_date is not None:
+                    add_item(
+                        key=f"start:{tournament.id}",
+                        title=f"Старт турніру {tournament.name}",
+                        body="Турнір уже стартував або має скоро стартувати. Перевірте завдання та дедлайни.",
+                        created_at=tournament.start_date,
+                        kind='event',
+                        tournament=tournament,
+                    )
+                if tournament.end_date is not None:
+                    deadline_24h = tournament.end_date - timedelta(hours=24)
+                    if deadline_24h <= now:
+                        add_item(
+                            key=f"deadline:{tournament.id}",
+                            title=f"24 години до дедлайну: {tournament.name}",
+                            body="До завершення турніру залишилася доба. Перевірте, чи всі сабміти подані.",
+                            created_at=deadline_24h,
+                            kind='deadline',
+                            tournament=tournament,
+                        )
+                    if tournament.is_finished:
+                        add_item(
+                            key=f"finished:{tournament.id}",
+                            title=f"Сабміти закрито: {tournament.name}",
+                            body="Турнір завершено. Тепер можна переглядати підсумкові результати та офіційні відповіді.",
+                            created_at=tournament.end_date,
+                            kind='finished',
+                            tournament=tournament,
+                        )
+
+    items.sort(key=lambda item: item['created_at'], reverse=True)
+    return items
+
+
 def build_notification_nav_context(user):
     if not getattr(user, 'is_authenticated', False):
         return {
@@ -479,24 +559,25 @@ def build_notification_nav_context(user):
             'unread_certificates_count': 0,
         }
 
-    announcements_seen_at = user.announcements_seen_at
+    messages_seen_at = user.announcements_seen_at
     certificates_seen_at = user.certificates_seen_at
 
-    announcements_qs = build_user_announcements_queryset(user)
+    message_items = build_user_message_items(user)
     certificates_qs = build_user_certificates_queryset(user)
 
-    unread_announcements_qs = announcements_qs
-    if announcements_seen_at is not None:
-        unread_announcements_qs = unread_announcements_qs.filter(created_at__gt=announcements_seen_at)
+    unread_messages_count = sum(
+        1 for item in message_items
+        if messages_seen_at is None or item['created_at'] > messages_seen_at
+    )
 
     unread_certificates_qs = certificates_qs
     if certificates_seen_at is not None:
         unread_certificates_qs = unread_certificates_qs.filter(issued_at__gt=certificates_seen_at)
 
     return {
-        'has_unread_announcements': unread_announcements_qs.exists(),
+        'has_unread_announcements': unread_messages_count > 0,
         'has_unread_certificates': unread_certificates_qs.exists(),
-        'unread_announcements_count': unread_announcements_qs.count(),
+        'unread_announcements_count': unread_messages_count,
         'unread_certificates_count': unread_certificates_qs.count(),
     }
 
@@ -585,12 +666,12 @@ def home(request):
 
 @login_required
 def messages_view(request):
-    announcements = build_user_announcements_queryset(request.user)
+    message_items = build_user_message_items(request.user)
     now = timezone.now()
     request.user.announcements_seen_at = now
     request.user.save(update_fields=['announcements_seen_at'])
     return render(request, 'messages.html', {
-        'announcements': announcements,
+        'message_items': message_items,
         **build_notification_nav_context(request.user),
     })
 
@@ -605,6 +686,76 @@ def certificates_view(request):
         'certificates': certificates,
         **build_notification_nav_context(request.user),
     })
+
+
+def build_team_quick_overview(team):
+    active_registration = team.registrations.select_related('tournament').filter(
+        status=TournamentRegistration.Status.APPROVED,
+    ).order_by('tournament__start_date').first()
+    if active_registration is None:
+        return None
+
+    tournament = active_registration.tournament
+    tasks = list(Task.objects.filter(tournament=tournament, is_draft=False).order_by('title'))
+    submissions = list(
+        Submission.objects.filter(team=team, task__tournament=tournament).select_related('task').order_by('-submitted_at')
+    )
+    submission_by_task_id = {submission.task_id: submission for submission in submissions}
+    next_task = next((task for task in tasks if task.id not in submission_by_task_id), tasks[0] if tasks else None)
+    latest_submission = submissions[0] if submissions else None
+
+    return {
+        'tournament': tournament,
+        'registration': active_registration,
+        'next_task': next_task,
+        'latest_submission': latest_submission,
+        'tasks_total': len(tasks),
+        'submitted_total': len(submissions),
+    }
+
+
+def build_archive_rows_for_user(user):
+    finished_tournaments = Tournament.objects.filter(
+        is_draft=False,
+        end_date__isnull=False,
+        end_date__lt=timezone.now(),
+    ).prefetch_related(
+        'tasks',
+        'registrations__team',
+        'registrations__members',
+    ).order_by('-end_date', 'name')
+
+    rows = []
+    for tournament in finished_tournaments:
+        leaderboard = build_tournament_leaderboard(tournament)
+        my_registration = None
+        if getattr(user, 'is_authenticated', False):
+            approved_registrations = TournamentRegistration.objects.filter(
+                tournament=tournament,
+                status=TournamentRegistration.Status.APPROVED,
+            ).select_related('team').prefetch_related('members')
+            my_registration = next(
+                (registration for registration in approved_registrations if user_has_registration_access(user, registration)),
+                None,
+            )
+
+        rows.append({
+            'tournament': tournament,
+            'leaderboard_preview': leaderboard[:5],
+            'teams_count': len(leaderboard),
+            'tasks_count': tournament.tasks.filter(is_draft=False).count(),
+            'my_team': my_registration.team if my_registration is not None else None,
+        })
+    return rows
+
+
+def archive_view(request):
+    archive_rows = build_archive_rows_for_user(request.user)
+    context = {
+        'archive_rows': archive_rows,
+    }
+    context.update(build_notification_nav_context(request.user))
+    return render(request, 'archive.html', context)
 
 
 def register_view(request):
@@ -1671,10 +1822,12 @@ def team_detail(request, team_id):
 
     submissions = team.submissions.select_related('task', 'task__tournament').all()
     roster_locked = is_team_roster_locked(team) and not request.user.is_superuser
+    quick_overview = build_team_quick_overview(team)
     return render(request, 'team_detail.html', {
         'team': team,
         'participants_count': team.participants.count(),
         'submissions': submissions,
+        'quick_overview': quick_overview,
         'participant_form': ParticipantForm(),
         'can_manage_team': request.user.is_superuser or team.captain_user_id == request.user.id,
         'can_manage_roster': request.user.is_superuser or (

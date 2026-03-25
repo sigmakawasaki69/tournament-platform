@@ -45,6 +45,12 @@
             min-height: 42px; padding: 11px 16px; border-radius: 12px;
             border: 1px solid transparent; text-decoration: none; font-weight: 700; cursor: pointer;
         }
+        .nav-badge { position: relative; }
+        .notify-dot {
+            position: absolute; top: 4px; right: 4px; min-width: 18px; height: 18px; padding: 0 5px;
+            border-radius: 999px; background: #dc2626; color: white; font-size: 11px;
+            display: inline-flex; align-items: center; justify-content: center; font-weight: 800;
+        }
         .button { background: var(--primary); color: white; }
         .button-secondary { background: white; color: var(--primary); border-color: #cbd5e1; }
         .button-danger { background: var(--danger); color: white; }
@@ -105,6 +111,8 @@
             </div>
             <div class="actions">
                 <a class="button-secondary" href="{% url 'home' %}">Головна</a>
+                <a class="button-secondary nav-badge" href="{% url 'messages' %}">Повідомлення{% if has_unread_announcements %}<span class="notify-dot">{{ unread_announcements_count }}</span>{% endif %}</a>
+                <a class="button-secondary nav-badge" href="{% url 'certificates' %}">Сертифікати{% if has_unread_certificates %}<span class="notify-dot">{{ unread_certificates_count }}</span>{% endif %}</a>
                 <a class="button" href="{% url 'create_tournament' %}">Створити турнір</a>
                 <a class="button-danger" href="{% url 'logout' %}">Вийти</a>
             </div>

@@ -355,6 +355,195 @@ class TournamentPlatformViewTests(TestCase):
         self.assertRedirects(response, reverse("admin_announcements"))
         self.assertTrue(Announcement.objects.filter(title="System update").exists())
 
+    def test_home_shows_unread_message_and_certificate_badges(self):
+        tournament = self.create_tournament(
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() - timedelta(hours=1),
+            registration_end=timezone.now() - timedelta(days=3),
+        )
+        team = Team.objects.create(
+            name="Badge Team",
+            captain_user=self.participant_user,
+            captain_name="Member Captain",
+            captain_email=self.participant_user.email,
+        )
+        Announcement.objects.create(
+            title="Unread announcement",
+            message="New message",
+            created_by=self.admin_user,
+        )
+        Certificate.objects.create(
+            tournament=tournament,
+            team=team,
+            certificate_type=Certificate.CertificateType.PARTICIPANT,
+            recipient_user=self.participant_user,
+            recipient_name="Member Captain",
+            recipient_email=self.participant_user.email,
+            issued_by=self.admin_user,
+        )
+        self.client.force_login(self.participant_user)
+
+        response = self.client.get(reverse("home"))
+
+        self.assertContains(response, reverse("messages"))
+        self.assertContains(response, reverse("certificates"))
+        self.assertContains(response, "notify-dot")
+
+    def test_opening_messages_and_certificates_marks_items_as_seen(self):
+        tournament = self.create_tournament(
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() - timedelta(hours=1),
+            registration_end=timezone.now() - timedelta(days=3),
+        )
+        team = Team.objects.create(
+            name="Seen Team",
+            captain_user=self.participant_user,
+            captain_name="Member Captain",
+            captain_email=self.participant_user.email,
+        )
+        Announcement.objects.create(
+            title="Seen announcement",
+            message="Read me",
+            created_by=self.admin_user,
+        )
+        Certificate.objects.create(
+            tournament=tournament,
+            team=team,
+            certificate_type=Certificate.CertificateType.PARTICIPANT,
+            recipient_user=self.participant_user,
+            recipient_name="Member Captain",
+            recipient_email=self.participant_user.email,
+            issued_by=self.admin_user,
+        )
+        self.client.force_login(self.participant_user)
+
+        self.client.get(reverse("messages"))
+        self.client.get(reverse("certificates"))
+
+        self.participant_user.refresh_from_db()
+        self.assertIsNotNone(self.participant_user.announcements_seen_at)
+        self.assertIsNotNone(self.participant_user.certificates_seen_at)
+
+    def test_messages_page_includes_system_tournament_events(self):
+        tournament = self.create_tournament(
+            start_date=timezone.now() - timedelta(hours=1),
+            end_date=timezone.now() + timedelta(hours=20),
+            registration_end=timezone.now() - timedelta(hours=2),
+        )
+        team = Team.objects.create(
+            name="Messages Team",
+            captain_user=self.captain,
+            captain_name="Captain",
+            captain_email="captain@example.com",
+        )
+        TournamentRegistration.objects.create(
+            tournament=tournament,
+            team=team,
+            registered_by=self.captain,
+            status=TournamentRegistration.Status.APPROVED,
+        )
+        self.client.force_login(self.captain)
+
+        response = self.client.get(reverse("messages"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, f"Старт турніру {tournament.name}")
+        self.assertContains(response, "24 години до дедлайну")
+
+    def test_archive_page_shows_finished_tournament_and_my_results_link(self):
+        tournament = self.create_tournament(
+            start_date=timezone.now() - timedelta(days=2),
+            end_date=timezone.now() - timedelta(hours=1),
+            registration_end=timezone.now() - timedelta(days=3),
+        )
+        task = Task.objects.create(
+            tournament=tournament,
+            title="Archive task",
+            description="desc",
+            requirements="req",
+            must_have="must",
+            is_draft=False,
+            created_by=self.admin_user,
+        )
+        team = Team.objects.create(
+            name="Archive Team",
+            captain_user=self.captain,
+            captain_name="Captain",
+            captain_email="captain@example.com",
+        )
+        TournamentRegistration.objects.create(
+            tournament=tournament,
+            team=team,
+            registered_by=self.captain,
+            status=TournamentRegistration.Status.APPROVED,
+        )
+        submission = Submission.objects.create(
+            team=team,
+            task=task,
+            github_link="https://github.com/example/archive",
+            video_link="https://example.com/archive",
+        )
+        self.client.force_login(self.jury_user)
+        self.client.post(
+            reverse("submit_evaluation", args=[submission.id]),
+            {
+                f"eval-{submission.id}-score_backend": 80,
+                f"eval-{submission.id}-score_frontend": 80,
+                f"eval-{submission.id}-score_functionality": 80,
+                f"eval-{submission.id}-score_ux": 80,
+                f"eval-{submission.id}-comment": "Archive rating",
+            },
+        )
+        self.client.force_login(self.captain)
+
+        response = self.client.get(reverse("archive"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, tournament.name)
+        self.assertContains(response, reverse("team_results", args=[team.id]))
+
+    def test_team_detail_shows_quick_team_block(self):
+        tournament = self.create_tournament(
+            start_date=timezone.now() - timedelta(hours=1),
+            end_date=timezone.now() + timedelta(hours=10),
+            registration_end=timezone.now() - timedelta(hours=2),
+        )
+        task = Task.objects.create(
+            tournament=tournament,
+            title="Quick task",
+            description="desc",
+            requirements="req",
+            must_have="must",
+            is_draft=False,
+            created_by=self.admin_user,
+        )
+        team = Team.objects.create(
+            name="Quick Team",
+            captain_user=self.captain,
+            captain_name="Captain",
+            captain_email="captain@example.com",
+        )
+        TournamentRegistration.objects.create(
+            tournament=tournament,
+            team=team,
+            registered_by=self.captain,
+            status=TournamentRegistration.Status.APPROVED,
+        )
+        Submission.objects.create(
+            team=team,
+            task=task,
+            github_link="https://github.com/example/quick",
+            video_link="https://example.com/quick",
+        )
+        self.client.force_login(self.captain)
+
+        response = self.client.get(reverse("team_detail", args=[team.id]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Швидкий блок команди")
+        self.assertContains(response, tournament.name)
+        self.assertContains(response, task.title)
+
     def test_admin_can_issue_participant_certificates(self):
         tournament = self.create_tournament(
             start_date=timezone.now() - timedelta(days=2),

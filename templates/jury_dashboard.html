@@ -6,14 +6,24 @@
     <style>
         body { margin: 0; font-family: Arial, sans-serif; background: #f4f6fb; }
         .wrap { max-width: 1100px; margin: 0 auto; padding: 30px 20px; }
-        .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 12px; }
+        .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 12px; flex-wrap: wrap; }
+        .nav { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
         .card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 10px 24px rgba(0,0,0,.06); }
         .item { border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
         .name { font-weight: 700; margin-bottom: 8px; font-size: 18px; }
         .meta { color: #555; line-height: 1.6; }
-        .btn, .logout { display: inline-block; text-decoration: none; color: white; padding: 10px 14px; border-radius: 10px; }
+        .btn, .logout {
+            display: inline-flex; text-decoration: none; color: white; padding: 10px 14px; border-radius: 10px;
+            align-items: center; justify-content: center; position: relative;
+        }
         .btn { background: #2563eb; margin-top: 12px; }
         .logout { background: #dc2626; }
+        .soft { background: white; color: #2563eb; border: 1px solid #cbd5e1; }
+        .notify-dot {
+            position: absolute; top: 4px; right: 4px; min-width: 18px; height: 18px; padding: 0 5px;
+            border-radius: 999px; background: #dc2626; color: white; font-size: 11px;
+            display: inline-flex; align-items: center; justify-content: center; font-weight: 800;
+        }
     </style>
 </head>
 <body>
@@ -23,7 +33,12 @@
                 <h1>Панель журі</h1>
                 <div>Вітаю, {{ request.user.username }}</div>
             </div>
-            <a class="logout" href="/logout/">Вийти</a>
+            <div class="nav">
+                <a class="logout soft" href="{% url 'home' %}">Головна</a>
+                <a class="logout soft" href="{% url 'messages' %}">Повідомлення{% if has_unread_announcements %}<span class="notify-dot">{{ unread_announcements_count }}</span>{% endif %}</a>
+                <a class="logout soft" href="{% url 'certificates' %}">Сертифікати{% if has_unread_certificates %}<span class="notify-dot">{{ unread_certificates_count }}</span>{% endif %}</a>
+                <a class="logout" href="{% url 'logout' %}">Вийти</a>
+            </div>
         </div>
 
         <div class="card">
