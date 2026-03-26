@@ -136,7 +136,7 @@ class TournamentPlatformViewTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "РљРѕСЂРёСЃС‚СѓРІР°С‡ Р· С‚Р°РєРёРј email СѓР¶Рµ С–СЃРЅСѓС”.")
+        self.assertContains(response, "Користувач з таким email уже існує.")
 
     def test_home_page_is_public_and_shows_tournaments(self):
         self.client.logout()
@@ -211,15 +211,15 @@ class TournamentPlatformViewTests(TestCase):
         tournament = self.create_tournament(
             name="Guest Cup",
             registration_fields_config=[
-                {"key": "school", "label": "РЁРєРѕР»Р°", "type": "text", "required": True},
+                {"key": "school", "label": "Школа", "type": "text", "required": True},
             ],
         )
 
         response = self.client.get(reverse("public_tournament_detail", args=[tournament.id]))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Р—Р°СЂРµС”СЃС‚СЂСѓРІР°С‚РёСЃСЏ")
-        self.assertContains(response, "РЁРєРѕР»Р°")
+        self.assertContains(response, "Зареєструватися")
+        self.assertContains(response, "Школа")
 
     def test_participant_can_create_team(self):
         self.client.force_login(self.participant_user)
@@ -248,7 +248,7 @@ class TournamentPlatformViewTests(TestCase):
                 "team_name": "Open Team",
                 "captain_name": "Member Captain",
                 "captain_email": self.participant_user.email,
-                "school": "Р›С–С†РµР№",
+                "school": "Ліцей",
                 "telegram": "@open_team",
                 "discord": "open-team-discord",
                 "viber": "+380000000000",
@@ -259,7 +259,7 @@ class TournamentPlatformViewTests(TestCase):
         team = Team.objects.get(captain_user=self.participant_user, name="Open Team")
         registration = TournamentRegistration.objects.get(tournament=tournament, team=team)
         self.assertEqual(registration.status, TournamentRegistration.Status.PENDING)
-        self.assertEqual(team.school, "Р›С–С†РµР№")
+        self.assertEqual(team.school, "Ліцей")
         self.assertEqual(team.telegram, "@open_team")
         self.assertEqual(team.discord, "open-team-discord")
         self.assertEqual(team.viber, "+380000000000")
@@ -473,8 +473,8 @@ class TournamentPlatformViewTests(TestCase):
         response = self.client.get(reverse("messages"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, f"РЎС‚Р°СЂС‚ С‚СѓСЂРЅС–СЂСѓ {tournament.name}")
-        self.assertContains(response, "24 РіРѕРґРёРЅРё РґРѕ РґРµРґР»Р°Р№РЅСѓ")
+        self.assertContains(response, f"Старт турніру {tournament.name}")
+        self.assertContains(response, "24 години до дедлайну")
 
     def test_public_tournament_detail_hides_leaderboard_until_finish(self):
         tournament = self.create_tournament(
@@ -487,8 +487,8 @@ class TournamentPlatformViewTests(TestCase):
         response = self.client.get(reverse("public_tournament_detail", args=[tournament.id]))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Р›С–РґРµСЂР±РѕСЂРґ Р·'СЏРІРёС‚СЊСЃСЏ С‚С–Р»СЊРєРё РїС–СЃР»СЏ Р·Р°РІРµСЂС€РµРЅРЅСЏ С‚СѓСЂРЅС–СЂСѓ")
-        self.assertNotContains(response, "Р’С–РґРєСЂРёС‚Рё РїРѕРІРЅРёР№ Р»С–РґРµСЂР±РѕСЂРґ")
+        self.assertContains(response, "Лідерборд з'явиться тільки після завершення турніру")
+        self.assertNotContains(response, "Відкрити повний лідерборд")
 
     def test_messages_page_shows_registration_open_event(self):
         tournament = self.create_tournament(
@@ -502,7 +502,7 @@ class TournamentPlatformViewTests(TestCase):
         response = self.client.get(reverse("messages"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, f"РЎС‚Р°СЂС‚ СЂРµС”СЃС‚СЂР°С†С–С—: {tournament.name}")
+        self.assertContains(response, f"Старт реєстрації: {tournament.name}")
 
     def test_archive_page_shows_finished_tournament_and_my_results_link(self):
         tournament = self.create_tournament(
@@ -910,7 +910,7 @@ class TournamentPlatformViewTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "РџРѕС‚СЂС–Р±РЅРѕ С‰РѕРЅР°Р№РјРµРЅС€Рµ: 3")
+        self.assertContains(response, "Потрібно щонайменше: 3")
         self.assertFalse(
             TournamentRegistration.objects.filter(
                 tournament=tournament,
@@ -927,8 +927,8 @@ class TournamentPlatformViewTests(TestCase):
             {
                 "name": tournament.name,
                 "description": tournament.description,
-                "registration_form_description": "Р—Р°РїРѕРІРЅС–С‚СЊ Р°РЅРєРµС‚Сѓ РєРѕРјР°РЅРґРё",
-                "registration_fields_definition": "school|РЁРєРѕР»Р°|text|required\ncoach_email|Email РєРµСЂС–РІРЅРёРєР°|email|optional",
+                "registration_form_description": "Заповніть анкету команди",
+                "registration_fields_definition": "school|Школа|text|required\ncoach_email|Email керівника|email|optional",
                 "start_date": tournament.start_date.astimezone().strftime("%Y-%m-%dT%H:%M"),
                 "end_date": tournament.end_date.astimezone().strftime("%Y-%m-%dT%H:%M"),
                 "registration_start": tournament.registration_start.astimezone().strftime("%Y-%m-%dT%H:%M"),
@@ -944,16 +944,16 @@ class TournamentPlatformViewTests(TestCase):
         self.assertEqual(
             tournament.registration_fields_config,
             [
-                {"key": "school", "label": "РЁРєРѕР»Р°", "type": "text", "required": True},
-                {"key": "coach_email", "label": "Email РєРµСЂС–РІРЅРёРєР°", "type": "email", "required": False},
+                {"key": "school", "label": "Школа", "type": "text", "required": True},
+                {"key": "coach_email", "label": "Email керівника", "type": "email", "required": False},
             ],
         )
 
     def test_registration_page_renders_dynamic_fields_and_saves_answers(self):
         tournament = self.create_tournament(
             registration_fields_config=[
-                {"key": "school", "label": "РЁРєРѕР»Р°", "type": "text", "required": True},
-                {"key": "coach_email", "label": "Email РєРµСЂС–РІРЅРёРєР°", "type": "email", "required": False},
+                {"key": "school", "label": "Школа", "type": "text", "required": True},
+                {"key": "coach_email", "label": "Email керівника", "type": "email", "required": False},
             ],
         )
         my_team = Team.objects.create(
@@ -966,14 +966,14 @@ class TournamentPlatformViewTests(TestCase):
         response = self.client.get(reverse("register_team_for_tournament", args=[tournament.id]))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "РЁРєРѕР»Р°")
-        self.assertContains(response, "Email РєРµСЂС–РІРЅРёРєР°")
+        self.assertContains(response, "Школа")
+        self.assertContains(response, "Email керівника")
 
         response = self.client.post(
             reverse("register_team_for_tournament", args=[tournament.id]),
             {
                 "team": my_team.id,
-                "field_school": "Р›С–С†РµР№ в„–1",
+                "field_school": "Ліцей №1",
                 "field_coach_email": "coach@example.com",
             },
         )
@@ -983,7 +983,7 @@ class TournamentPlatformViewTests(TestCase):
         self.assertEqual(registration.status, TournamentRegistration.Status.PENDING)
         self.assertEqual(
             registration.form_answers,
-            {"school": "Р›С–С†РµР№ в„–1", "coach_email": "coach@example.com"},
+            {"school": "Ліцей №1", "coach_email": "coach@example.com"},
         )
 
     def test_registration_participants_field_updates_team_members(self):
@@ -991,7 +991,7 @@ class TournamentPlatformViewTests(TestCase):
             min_team_members=3,
             max_team_members=4,
             registration_fields_config=[
-                {"key": "participants", "label": "РЈС‡Р°СЃРЅРёРєРё", "type": "participants", "required": True},
+                {"key": "participants", "label": "Учасники", "type": "participants", "required": True},
             ],
         )
         my_team = Team.objects.create(
@@ -1005,7 +1005,7 @@ class TournamentPlatformViewTests(TestCase):
             reverse("register_team_for_tournament", args=[tournament.id]),
             {
                 "team": my_team.id,
-                "field_participants": '[{"full_name":"Р†РІР°РЅ","email":"ivan@example.com"},{"full_name":"РњР°СЂС–СЏ","email":"maria@example.com"}]',
+                "field_participants": '[{"full_name":"Іван","email":"ivan@example.com"},{"full_name":"Марія","email":"maria@example.com"}]',
             },
         )
 
@@ -1013,15 +1013,15 @@ class TournamentPlatformViewTests(TestCase):
         registration = TournamentRegistration.objects.get(tournament=tournament, team=my_team)
         self.assertEqual(len(registration.form_answers["participants"]), 2)
         self.assertEqual(my_team.participants.count(), 2)
-        self.assertTrue(my_team.participants.filter(full_name="Р†РІР°РЅ", email="ivan@example.com").exists())
-        self.assertTrue(my_team.participants.filter(full_name="РњР°СЂС–СЏ", email="maria@example.com").exists())
+        self.assertTrue(my_team.participants.filter(full_name="Іван", email="ivan@example.com").exists())
+        self.assertTrue(my_team.participants.filter(full_name="Марія", email="maria@example.com").exists())
 
     def test_registration_participants_field_does_not_delete_existing_team_members(self):
         tournament = self.create_tournament(
             min_team_members=2,
             max_team_members=4,
             registration_fields_config=[
-                {"key": "participants", "label": "РЈС‡Р°СЃРЅРёРєРё", "type": "participants", "required": True},
+                {"key": "participants", "label": "Учасники", "type": "participants", "required": True},
             ],
         )
         my_team = Team.objects.create(
@@ -1053,7 +1053,7 @@ class TournamentPlatformViewTests(TestCase):
             min_team_members=3,
             max_team_members=3,
             registration_fields_config=[
-                {"key": "participants", "label": "РЈС‡Р°СЃРЅРёРєРё", "type": "participants", "required": True},
+                {"key": "participants", "label": "Учасники", "type": "participants", "required": True},
             ],
         )
         my_team = Team.objects.create(
@@ -1067,12 +1067,12 @@ class TournamentPlatformViewTests(TestCase):
             reverse("register_team_for_tournament", args=[tournament.id]),
             {
                 "team": my_team.id,
-                "field_participants": '[{"full_name":"Р†РІР°РЅ","email":"ivan@example.com"}]',
+                "field_participants": '[{"full_name":"Іван","email":"ivan@example.com"}]',
             },
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "РџРѕС‚СЂС–Р±РЅРѕ С‰РѕРЅР°Р№РјРµРЅС€Рµ: 3")
+        self.assertContains(response, "Потрібно щонайменше: 3")
         self.assertFalse(TournamentRegistration.objects.filter(tournament=tournament, team=my_team).exists())
 
     def test_registration_rejects_email_that_is_already_in_another_team_of_same_tournament(self):
@@ -1080,7 +1080,7 @@ class TournamentPlatformViewTests(TestCase):
             min_team_members=2,
             max_team_members=3,
             registration_fields_config=[
-                {"key": "participants", "label": "РЈС‡Р°СЃРЅРёРєРё", "type": "participants", "required": True},
+                {"key": "participants", "label": "Учасники", "type": "participants", "required": True},
             ],
         )
         other_captain = User.objects.create_user(
@@ -1114,12 +1114,12 @@ class TournamentPlatformViewTests(TestCase):
                 "team_name": "My Team",
                 "captain_name": "Captain",
                 "captain_email": "captain@example.com",
-                "field_participants": '[{"full_name":"Р†РІР°РЅ","email":"shared@example.com"}]',
+                "field_participants": '[{"full_name":"Іван","email":"shared@example.com"}]',
             },
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "РћРґРёРЅ email РЅРµ РјРѕР¶Рµ Р±СѓС‚Рё Сѓ РґРІРѕС… РєРѕРјР°РЅРґР°С… С†СЊРѕРіРѕ С‚СѓСЂРЅС–СЂСѓ.")
+        self.assertContains(response, "Один email не може бути у двох командах цього турніру.")
         self.assertFalse(
             TournamentRegistration.objects.filter(
                 tournament=tournament,
@@ -1230,8 +1230,8 @@ class TournamentPlatformViewTests(TestCase):
 
         response = self.client.get(reverse("participant_dashboard"))
 
-        self.assertContains(response, "Р—Р°РІРґР°РЅРЅСЏ РІС–РґРєСЂРёСЋС‚СЊСЃСЏ РїС–СЃР»СЏ СЃС…РІР°Р»РµРЅРЅСЏ Р·Р°СЏРІРєРё")
-        self.assertContains(response, "РћС‡С–РєСѓС”")
+        self.assertContains(response, "Завдання відкриються після схвалення заявки")
+        self.assertContains(response, "Очікує")
 
     def test_outsider_cannot_open_tournament_leaderboard(self):
         outsider = User.objects.create_user(
@@ -1292,7 +1292,7 @@ class TournamentPlatformViewTests(TestCase):
         response = self.client.get(reverse("participant_dashboard"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "РџРѕРґР°С‚Рё Р·РЅРѕРІСѓ")
+        self.assertContains(response, "Подати знову")
         self.assertContains(response, reverse("register_team_for_tournament", args=[tournament.id]))
 
     def test_submit_solution_requires_approved_registration(self):
@@ -1530,7 +1530,7 @@ class TournamentPlatformViewTests(TestCase):
                 "name": "",
                 "description": "",
                 "registration_form_description": "",
-                "registration_fields_definition": "participants|РЈС‡Р°СЃРЅРёРєРё|participants|required\nschool|РЁРєРѕР»Р°|text|optional",
+                "registration_fields_definition": "participants|Учасники|participants|required\nschool|Школа|text|optional",
                 "start_date": "",
                 "end_date": "",
                 "registration_start": "",
@@ -1548,8 +1548,8 @@ class TournamentPlatformViewTests(TestCase):
         self.assertEqual(
             tournament.registration_fields_config,
             [
-                {"key": "participants", "label": "РЈС‡Р°СЃРЅРёРєРё", "type": "participants", "required": True},
-                {"key": "school", "label": "РЁРєРѕР»Р°", "type": "text", "required": False},
+                {"key": "participants", "label": "Учасники", "type": "participants", "required": True},
+                {"key": "school", "label": "Школа", "type": "text", "required": False},
             ],
         )
 
@@ -2226,8 +2226,8 @@ class TournamentPlatformViewTests(TestCase):
         response = self.client.get(reverse("messages"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, f"РЎС‚Р°СЂС‚ СЂРµС”СЃС‚СЂР°С†С–С—: {tournament.name}")
-        self.assertContains(response, f"РЎС‚Р°СЂС‚ Р·Р°РІРґР°РЅСЊ: {tournament.name}")
-        self.assertContains(response, "24 РіРѕРґРёРЅРё РґРѕ РґРµРґР»Р°Р№РЅСѓ")
+        self.assertContains(response, f"Старт реєстрації: {tournament.name}")
+        self.assertContains(response, f"Старт завдань: {tournament.name}")
+        self.assertContains(response, "24 години до дедлайну")
 
 

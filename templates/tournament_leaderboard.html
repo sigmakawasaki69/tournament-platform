@@ -34,7 +34,7 @@ body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(180deg,#ee
             <div class="toolbar">
                 <a class="back" href="{% url 'tournament_tasks' tournament.id %}">Назад до турніру</a>
                 {% if can_export_results %}
-                    <a class="btn-secondary" href="{% url 'export_tournament_results_csv' tournament.id %}">Експорт ������� ����������</a>
+                    <a class="btn-secondary" href="{% url 'export_tournament_results_csv' tournament.id %}">Експорт CSV результатів</a>
                 {% endif %}
             </div>
             <h1 style="margin:14px 0 10px;">Лідерборд {{ tournament.name }}</h1>

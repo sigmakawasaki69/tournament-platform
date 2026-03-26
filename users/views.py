@@ -176,7 +176,7 @@ def build_certificate_pdf_response(certificate):
         certificate_type=certificate.certificate_type,
     )
     if template is None or not template.background_image:
-        raise ValidationError('Р”Р»СЏ С†СЊРѕРіРѕ С‚РёРїСѓ СЃРµСЂС‚РёС„С–РєР°С‚Р° С‰Рµ РЅРµ Р·Р°РІР°РЅС‚Р°Р¶РµРЅРѕ С€Р°Р±Р»РѕРЅ.')
+        raise ValidationError('Для цього типу сертифіката ще не завантажено шаблон.')
 
     with Image.open(template.background_image.path) as source_image:
         image = source_image.convert('RGB')
@@ -190,15 +190,15 @@ def build_certificate_pdf_response(certificate):
     center_x = width / 2
 
     title = (
-        'РЎРµСЂС‚РёС„С–РєР°С‚ РїРµСЂРµРјРѕР¶С†СЏ'
+        'Сертифікат переможця'
         if certificate.certificate_type == Certificate.CertificateType.WINNER
-        else 'РЎРµСЂС‚РёС„С–РєР°С‚ СѓС‡Р°СЃРЅРёРєР°'
+        else 'Сертифікат учасника'
     )
     subtitle = certificate.tournament.name
     footer_parts = []
     if certificate.team_id:
-        footer_parts.append(f'РљРѕРјР°РЅРґР°: {certificate.team.name}')
-    footer_parts.append(f'Р”Р°С‚Р°: {timezone.localtime(certificate.issued_at).strftime("%d.%m.%Y")}')
+        footer_parts.append(f'Команда: {certificate.team.name}')
+    footer_parts.append(f'Дата: {timezone.localtime(certificate.issued_at).strftime("%d.%m.%Y")}')
     footer = ' | '.join(footer_parts)
 
     for text, font, y in [
@@ -383,14 +383,14 @@ def build_admin_dashboard_context(current_user, admin_create_user_form=None):
 
 def build_admin_nav_items():
     return [
-        {'url': reverse('admin_users'), 'label': 'РљРѕСЂРёСЃС‚СѓРІР°С‡С–'},
-        {'url': reverse('admin_users') + '?action=create-user', 'label': 'РЎС‚РІРѕСЂРёС‚Рё РєРѕСЂРёСЃС‚СѓРІР°С‡Р°'},
-        {'url': reverse('admin_active_tournaments'), 'label': 'РђРєС‚РёРІРЅС– С‚СѓСЂРЅС–СЂРё'},
-        {'url': reverse('admin_inactive_tournaments'), 'label': 'РќРµР°РєС‚РёРІРЅС– С‚СѓСЂРЅС–СЂРё'},
-        {'url': reverse('admin_active_tournaments') + '?action=create-tournament', 'label': 'РЎС‚РІРѕСЂРёС‚Рё С‚СѓСЂРЅС–СЂ'},
-        {'url': reverse('admin_teams'), 'label': 'РљРѕРјР°РЅРґРё'},
-        {'url': reverse('admin_registrations'), 'label': 'Р—Р°СЏРІРєРё'},
-        {'url': reverse('admin_submissions'), 'label': 'Р РѕР±РѕС‚Рё'},
+        {'url': reverse('admin_users'), 'label': 'Користувачі'},
+        {'url': reverse('admin_users') + '?action=create-user', 'label': 'Створити користувача'},
+        {'url': reverse('admin_active_tournaments'), 'label': 'Активні турніри'},
+        {'url': reverse('admin_inactive_tournaments'), 'label': 'Неактивні турніри'},
+        {'url': reverse('admin_active_tournaments') + '?action=create-tournament', 'label': 'Створити турнір'},
+        {'url': reverse('admin_teams'), 'label': 'Команди'},
+        {'url': reverse('admin_registrations'), 'label': 'Заявки'},
+        {'url': reverse('admin_submissions'), 'label': 'Роботи'},
     ]
 
 
@@ -470,12 +470,12 @@ def build_user_message_items(user):
     seen_keys = set()
     now = timezone.now()
     kind_labels = {
-        'announcement': 'РћРіРѕР»РѕС€РµРЅРЅСЏ',
-        'status': 'РЎС‚Р°С‚СѓСЃ',
-        'event': 'РџРѕРґС–СЏ',
-        'deadline': 'Р”РµРґР»Р°Р№РЅ',
-        'finished': 'Р—Р°РІРµСЂС€РµРЅРѕ',
-        'system': 'РЎРёСЃС‚РµРјР°',
+        'announcement': 'Оголошення',
+        'status': 'Статус',
+        'event': 'Подія',
+        'deadline': 'Дедлайн',
+        'finished': 'Завершено',
+        'system': 'Система',
     }
 
     def add_item(*, key, title, body, created_at, kind='system', tournament=None):
@@ -488,7 +488,7 @@ def build_user_message_items(user):
             'body': body,
             'created_at': created_at,
             'kind': kind,
-            'kind_label': kind_labels.get(kind, 'РЎРёСЃС‚РµРјР°'),
+            'kind_label': kind_labels.get(kind, 'Система'),
             'tournament': tournament,
         })
 
@@ -508,8 +508,8 @@ def build_user_message_items(user):
             if tournament.registration_start is not None:
                 add_item(
                     key=f"registration-open:{tournament.id}",
-                    title=f"РЎС‚Р°СЂС‚ СЂРµС”СЃС‚СЂР°С†С–С—: {tournament.name}",
-                    body="Р РµС”СЃС‚СЂР°С†С–СЋ РЅР° С‚СѓСЂРЅС–СЂ РІС–РґРєСЂРёС‚Рѕ. РњРѕР¶РЅР° РїРѕРґР°РІР°С‚Рё Р·Р°СЏРІРєРё РєРѕРјР°РЅРґРё.",
+                    title=f"Старт реєстрації: {tournament.name}",
+                    body="Реєстрацію на турнір відкрито. Можна подавати заявки команди.",
                     created_at=tournament.registration_start,
                     kind='event',
                     tournament=tournament,
@@ -526,8 +526,8 @@ def build_user_message_items(user):
             tournament = registration.tournament
             add_item(
                 key=f"registration:{registration.id}:{registration.status}",
-                title=f"РЎС‚Р°С‚СѓСЃ Р·Р°СЏРІРєРё: {tournament.name}",
-                body=f"Р—Р°СЏРІРєР° РєРѕРјР°РЅРґРё {registration.team.name} РјР°С” СЃС‚Р°С‚СѓСЃ В«{registration.get_status_display()}В».",
+                title=f"Статус заявки: {tournament.name}",
+                body=f"Заявка команди {registration.team.name} має статус «{registration.get_status_display()}».",
                 created_at=registration.created_at,
                 kind='status',
                 tournament=tournament,
@@ -536,8 +536,8 @@ def build_user_message_items(user):
                 if tournament.start_date is not None:
                     add_item(
                         key=f"start:{tournament.id}",
-                        title=f"РЎС‚Р°СЂС‚ Р·Р°РІРґР°РЅСЊ: {tournament.name}",
-                        body="Р—Р°РІРґР°РЅРЅСЏ С‚СѓСЂРЅС–СЂСѓ РІР¶Рµ РґРѕСЃС‚СѓРїРЅС–. РџРµСЂРµРІС–СЂС‚Рµ СѓРјРѕРІРё, РґРµРґР»Р°Р№РЅРё С‚Р° РїРѕРґР°Р№С‚Рµ СЃР°Р±РјС–С‚Рё РІС‡Р°СЃРЅРѕ.",
+                        title=f"Старт завдань: {tournament.name}",
+                        body="Завдання турніру вже доступні. Перевірте умови, дедлайни та подайте сабміти вчасно.",
                         created_at=tournament.start_date,
                         kind='event',
                         tournament=tournament,
@@ -547,8 +547,8 @@ def build_user_message_items(user):
                     if deadline_24h <= now:
                         add_item(
                             key=f"deadline:{tournament.id}",
-                            title=f"24 РіРѕРґРёРЅРё РґРѕ РґРµРґР»Р°Р№РЅСѓ: {tournament.name}",
-                            body="Р”Рѕ Р·Р°РІРµСЂС€РµРЅРЅСЏ С‚СѓСЂРЅС–СЂСѓ Р·Р°Р»РёС€РёР»Р°СЃСЏ РґРѕР±Р°. РџРµСЂРµРІС–СЂС‚Рµ, С‡Рё РІСЃС– СЃР°Р±РјС–С‚Рё РїРѕРґР°РЅС–.",
+                            title=f"24 години до дедлайну: {tournament.name}",
+                            body="До завершення турніру залишилася доба. Перевірте, чи всі сабміти подані.",
                             created_at=deadline_24h,
                             kind='deadline',
                             tournament=tournament,
@@ -556,8 +556,8 @@ def build_user_message_items(user):
                     if tournament.is_finished:
                         add_item(
                             key=f"finished:{tournament.id}",
-                            title=f"РЎР°Р±РјС–С‚Рё Р·Р°РєСЂРёС‚Рѕ: {tournament.name}",
-                            body="РўСѓСЂРЅС–СЂ Р·Р°РІРµСЂС€РµРЅРѕ. РўРµРїРµСЂ РјРѕР¶РЅР° РїРµСЂРµРіР»СЏРґР°С‚Рё РїС–РґСЃСѓРјРєРѕРІС– СЂРµР·СѓР»СЊС‚Р°С‚Рё С‚Р° РѕС„С–С†С–Р№РЅС– РІС–РґРїРѕРІС–РґС–.",
+                            title=f"Сабміти закрито: {tournament.name}",
+                            body="Турнір завершено. Тепер можна переглядати підсумкові результати та офіційні відповіді.",
                             created_at=tournament.end_date,
                             kind='finished',
                             tournament=tournament,
@@ -686,13 +686,13 @@ def home(request):
     for row in tournament_rows[:4]:
         tournament = row['tournament']
         if tournament.is_registration_open:
-            text = 'Р’С–РґРєСЂРёС‚Р° СЂРµС”СЃС‚СЂР°С†С–СЏ. РњРѕР¶РЅР° РїРѕРґР°РІР°С‚Рё Р·Р°СЏРІРєРё.'
+            text = 'Відкрита реєстрація. Можна подавати заявки.'
         elif tournament.is_running:
-            text = 'РўСѓСЂРЅС–СЂ СѓР¶Рµ С‚СЂРёРІР°С”.'
+            text = 'Турнір уже триває.'
         elif tournament.is_finished:
-            text = 'РўСѓСЂРЅС–СЂ Р·Р°РІРµСЂС€РµРЅРѕ. Р”РѕСЃС‚СѓРїРЅРёР№ РїС–РґСЃСѓРјРєРѕРІРёР№ Р»С–РґРµСЂР±РѕСЂРґ.'
+            text = 'Турнір завершено. Доступний підсумковий лідерборд.'
         else:
-            text = 'РўСѓСЂРЅС–СЂ Р·Р°РїР»Р°РЅРѕРІР°РЅРѕ. РЎР»С–РґРєСѓР№С‚Рµ Р·Р° РґР°С‚Р°РјРё СЃС‚Р°СЂС‚Сѓ.'
+            text = 'Турнір заплановано. Слідкуйте за датами старту.'
         news_rows.append({'tournament': tournament, 'text': text})
 
     return render(request, 'home.html', {
@@ -700,11 +700,11 @@ def home(request):
         'filtered_tournament_rows': filtered_tournament_rows,
         'filter_status': filter_status,
         'filter_choices': [
-            {'value': 'all', 'label': 'РЈСЃС–'},
-            {'value': 'registration', 'label': 'Р РµС”СЃС‚СЂР°С†С–СЏ'},
-            {'value': 'running', 'label': 'РўСЂРёРІР°СЋС‚СЊ'},
-            {'value': 'finished', 'label': 'Р—Р°РІРµСЂС€РµРЅС–'},
-            {'value': 'scheduled', 'label': 'РњР°Р№Р±СѓС‚РЅС–'},
+            {'value': 'all', 'label': 'Усі'},
+            {'value': 'registration', 'label': 'Реєстрація'},
+            {'value': 'running', 'label': 'Тривають'},
+            {'value': 'finished', 'label': 'Завершені'},
+            {'value': 'scheduled', 'label': 'Майбутні'},
         ],
         'featured_tournaments': featured_tournaments[:3],
         'active_tournaments': active_tournaments[:3],
@@ -843,12 +843,12 @@ def login_view(request):
         if form.is_valid():
             user = form.get_user()
             if not user.is_approved and not user.is_superuser:
-                message = 'Р’Р°С€ Р°РєР°СѓРЅС‚ С‰Рµ РЅРµ СЃС…РІР°Р»РµРЅРёР№ Р°РґРјС–РЅС–СЃС‚СЂР°С‚РѕСЂРѕРј.'
+                message = 'Ваш акаунт ще не схвалений адміністратором.'
             else:
                 login(request, user)
                 return redirect(get_safe_redirect(request, next_url, reverse('redirect_by_role')))
         else:
-            message = 'РќРµРїСЂР°РІРёР»СЊРЅРёР№ Р»РѕРіС–РЅ Р°Р±Рѕ РїР°СЂРѕР»СЊ.'
+            message = 'Неправильний логін або пароль.'
     else:
         form = LoginForm()
 
@@ -1409,13 +1409,13 @@ def export_tournament_results_csv(request, tournament_id):
 
     writer = csv.writer(response)
     writer.writerow([
-        'РњС–СЃС†Рµ',
-        'РљРѕРјР°РЅРґР°',
-        'РљР°РїС–С‚Р°РЅ',
-        'РЎРµСЂРµРґРЅС–Р№ Р±Р°Р»',
-        'РљСЂР°С‰РёР№ Р±Р°Р»',
-        'РћС†С–РЅРµРЅРёС… Р·Р°РґР°С‡',
-        'РџРѕРґР°РЅРёС… СЂРѕР±С–С‚',
+        'Місце',
+        'Команда',
+        'Контактна особа',
+        'Середній бал',
+        'Кращий бал',
+        'Оцінених задач',
+        'Поданих робіт',
     ])
     for row in leaderboard:
         writer.writerow([

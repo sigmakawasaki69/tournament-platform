@@ -5,56 +5,56 @@ from django.utils import timezone
 
 
 class Tournament(models.Model):
-    name = models.CharField(max_length=255, verbose_name="РќР°Р·РІР°")
-    description = models.TextField(verbose_name="РћРїРёСЃ")
+    name = models.CharField(max_length=255, verbose_name="Назва")
+    description = models.TextField(verbose_name="Опис")
     registration_form_description = models.TextField(
         blank=True,
         default="",
-        verbose_name="РћРїРёСЃ С„РѕСЂРјРё СЂРµС”СЃС‚СЂР°С†С–С— РєРѕРјР°РЅРґРё",
+        verbose_name="Опис форми реєстрації команди",
     )
     registration_fields_config = models.JSONField(
         blank=True,
         default=list,
-        verbose_name="РџРѕР»СЏ С„РѕСЂРјРё СЂРµС”СЃС‚СЂР°С†С–С—",
+        verbose_name="Поля форми реєстрації",
     )
-    start_date = models.DateTimeField(null=True, blank=True, db_index=True, verbose_name="Р”Р°С‚Р° РїРѕС‡Р°С‚РєСѓ")
-    end_date = models.DateTimeField(null=True, blank=True, db_index=True, verbose_name="Р”Р°С‚Р° Р·Р°РІРµСЂС€РµРЅРЅСЏ")
-    registration_start = models.DateTimeField(null=True, blank=True, db_index=True, verbose_name="РџРѕС‡Р°С‚РѕРє СЂРµС”СЃС‚СЂР°С†С–С—")
-    registration_end = models.DateTimeField(null=True, blank=True, db_index=True, verbose_name="Р—Р°РІРµСЂС€РµРЅРЅСЏ СЂРµС”СЃС‚СЂР°С†С–С—")
+    start_date = models.DateTimeField(null=True, blank=True, db_index=True, verbose_name="Дата початку")
+    end_date = models.DateTimeField(null=True, blank=True, db_index=True, verbose_name="Дата завершення")
+    registration_start = models.DateTimeField(null=True, blank=True, db_index=True, verbose_name="Початок реєстрації")
+    registration_end = models.DateTimeField(null=True, blank=True, db_index=True, verbose_name="Завершення реєстрації")
     max_teams = models.PositiveIntegerField(
         null=True,
         blank=True,
-        verbose_name="РњР°РєСЃРёРјР°Р»СЊРЅР° РєС–Р»СЊРєС–СЃС‚СЊ РєРѕРјР°РЅРґ",
+        verbose_name="Максимальна кількість команд",
     )
     min_team_members = models.PositiveIntegerField(
         null=True,
         blank=True,
-        verbose_name="РњС–РЅС–РјР°Р»СЊРЅР° РєС–Р»СЊРєС–СЃС‚СЊ Р»СЋРґРµР№ Сѓ РєРѕРјР°РЅРґС–",
+        verbose_name="Мінімальна кількість людей у команді",
     )
     max_team_members = models.PositiveIntegerField(
         null=True,
         blank=True,
-        verbose_name="РњР°РєСЃРёРјР°Р»СЊРЅР° РєС–Р»СЊРєС–СЃС‚СЊ Р»СЋРґРµР№ Сѓ РєРѕРјР°РЅРґС–",
+        verbose_name="Максимальна кількість людей у команді",
     )
-    is_draft = models.BooleanField(default=True, db_index=True, verbose_name="Р§РµСЂРЅРµС‚РєР°")
+    is_draft = models.BooleanField(default=True, db_index=True, verbose_name="Чернетка")
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         related_name="tournaments_created",
-        verbose_name="РЎС‚РІРѕСЂРµРЅРѕ РєРѕСЂРёСЃС‚СѓРІР°С‡РµРј",
+        verbose_name="Створено користувачем",
     )
     jury_users = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
         blank=True,
         related_name="jury_tournaments",
-        verbose_name="РџСЂРёР·РЅР°С‡РµРЅРµ Р¶СѓСЂС–",
+        verbose_name="Призначене журі",
     )
 
 
     class Meta:
         ordering = ["-start_date", "name"]
-        verbose_name = "РўСѓСЂРЅС–СЂ"
-        verbose_name_plural = "РўСѓСЂРЅС–СЂРё"
+        verbose_name = "Турнір"
+        verbose_name_plural = "Турніри"
 
     def __str__(self):
         return self.name
@@ -81,11 +81,11 @@ class Tournament(models.Model):
     @property
     def lifecycle_status_label(self):
         labels = {
-            "draft": "Р§РµСЂРЅРµС‚РєР°",
-            "registration": "Р РµС”СЃС‚СЂР°С†С–СЏ",
-            "running": "Р™РґРµ",
-            "finished": "Р—Р°РІРµСЂС€РµРЅРѕ",
-            "scheduled": "РћС‡С–РєСѓС” СЃС‚Р°СЂС‚Сѓ",
+            "draft": "Чернетка",
+            "registration": "Реєстрація",
+            "running": "Йде",
+            "finished": "Завершено",
+            "scheduled": "Очікує старту",
         }
         return labels[self.lifecycle_status]
 
@@ -119,16 +119,16 @@ class Team(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="captain_teams",
-        verbose_name="РљРѕСЂРёСЃС‚СѓРІР°С‡-РєР°РїС–С‚Р°РЅ",
+        verbose_name="Прив'язаний користувач",
     )
-    name = models.CharField(max_length=255, verbose_name="РќР°Р·РІР° РєРѕРјР°РЅРґРё")
-    captain_name = models.CharField(max_length=255, verbose_name="Р†Рј'СЏ РєР°РїС–С‚Р°РЅР°")
-    captain_email = models.EmailField(verbose_name="Email РєР°РїС–С‚Р°РЅР°")
+    name = models.CharField(max_length=255, verbose_name="Назва команди")
+    captain_name = models.CharField(max_length=255, verbose_name="Ім'я контактної особи")
+    captain_email = models.EmailField(verbose_name="Email контактної особи")
     school = models.CharField(
         max_length=255,
         null=True,
         blank=True,
-        verbose_name="РЁРєРѕР»Р°",
+        verbose_name="Школа",
     )
     telegram = models.CharField(
         max_length=255,
@@ -148,12 +148,12 @@ class Team(models.Model):
         blank=True,
         verbose_name="Вайбер",
     )
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Р”Р°С‚Р° СЃС‚РІРѕСЂРµРЅРЅСЏ")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата створення")
 
     class Meta:
         ordering = ["name"]
-        verbose_name = "РљРѕРјР°РЅРґР°"
-        verbose_name_plural = "РљРѕРјР°РЅРґРё"
+        verbose_name = "Команда"
+        verbose_name_plural = "Команди"
 
     def __str__(self):
         return self.name
@@ -165,46 +165,46 @@ class Team(models.Model):
 
 class TournamentRegistration(models.Model):
     class Status(models.TextChoices):
-        PENDING = "pending", "РћС‡С–РєСѓС”"
-        APPROVED = "approved", "РЎС…РІР°Р»РµРЅРѕ"
-        REJECTED = "rejected", "Р’С–РґС…РёР»РµРЅРѕ"
+        PENDING = "pending", "Очікує"
+        APPROVED = "approved", "Схвалено"
+        REJECTED = "rejected", "Відхилено"
 
     tournament = models.ForeignKey(
         Tournament,
         on_delete=models.CASCADE,
         related_name="registrations",
-        verbose_name="РўСѓСЂРЅС–СЂ",
+        verbose_name="Турнір",
     )
     team = models.ForeignKey(
         Team,
         on_delete=models.CASCADE,
         related_name="registrations",
-        verbose_name="РљРѕРјР°РЅРґР°",
+        verbose_name="Команда",
     )
     registered_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="tournament_registrations",
-        verbose_name="Р—Р°СЂРµС”СЃС‚СЂРѕРІР°РЅРѕ РєРѕСЂРёСЃС‚СѓРІР°С‡РµРј",
+        verbose_name="Зареєстровано користувачем",
     )
     status = models.CharField(
         max_length=20,
         choices=Status.choices,
         default=Status.PENDING,
         db_index=True,
-        verbose_name="РЎС‚Р°С‚СѓСЃ Р·Р°СЏРІРєРё",
+        verbose_name="Статус заявки",
     )
     form_answers = models.JSONField(
         blank=True,
         default=dict,
-        verbose_name="Р’С–РґРїРѕРІС–РґС– РЅР° РїРѕР»СЏ С„РѕСЂРјРё",
+        verbose_name="Відповіді на поля форми",
     )
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Р”Р°С‚Р° СЂРµС”СЃС‚СЂР°С†С–С—")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата реєстрації")
 
     class Meta:
         ordering = ["-created_at"]
-        verbose_name = "Р РµС”СЃС‚СЂР°С†С–СЏ РєРѕРјР°РЅРґРё РЅР° С‚СѓСЂРЅС–СЂ"
-        verbose_name_plural = "Р РµС”СЃС‚СЂР°С†С–С— РєРѕРјР°РЅРґ РЅР° С‚СѓСЂРЅС–СЂРё"
+        verbose_name = "Реєстрація команди на турнір"
+        verbose_name_plural = "Реєстрації команд на турніри"
         constraints = [
             models.UniqueConstraint(
                 fields=["tournament", "team"],
@@ -221,15 +221,15 @@ class Participant(models.Model):
         Team,
         on_delete=models.CASCADE,
         related_name="participants",
-        verbose_name="РљРѕРјР°РЅРґР°",
+        verbose_name="Команда",
     )
-    full_name = models.CharField(max_length=255, verbose_name="РџР†Р‘")
+    full_name = models.CharField(max_length=255, verbose_name="ПІБ")
     email = models.EmailField(verbose_name="Email")
 
     class Meta:
         ordering = ["full_name"]
-        verbose_name = "РЈС‡Р°СЃРЅРёРє"
-        verbose_name_plural = "РЈС‡Р°СЃРЅРёРєРё"
+        verbose_name = "Учасник"
+        verbose_name_plural = "Учасники"
         constraints = [
             models.UniqueConstraint(
                 fields=["team", "email"],
@@ -246,29 +246,29 @@ class Task(models.Model):
         Tournament,
         on_delete=models.CASCADE,
         related_name="tasks",
-        verbose_name="РўСѓСЂРЅС–СЂ",
+        verbose_name="Турнір",
     )
-    title = models.CharField(max_length=255, verbose_name="РќР°Р·РІР° Р·Р°РІРґР°РЅРЅСЏ")
-    description = models.TextField(verbose_name="РћРїРёСЃ")
-    requirements = models.TextField(verbose_name="Р’РёРјРѕРіРё")
-    must_have = models.TextField(verbose_name="РћР±РѕРІ'СЏР·РєРѕРІРѕ РјР°С” Р±СѓС‚Рё")
+    title = models.CharField(max_length=255, verbose_name="Назва завдання")
+    description = models.TextField(verbose_name="Опис")
+    requirements = models.TextField(verbose_name="Вимоги")
+    must_have = models.TextField(verbose_name="Обов'язково має бути")
     official_solution = models.TextField(
         null=True,
         blank=True,
-        verbose_name="РћС„С–С†С–Р№РЅР° РІС–РґРїРѕРІС–РґСЊ / СЂРѕР·Р±С–СЂ",
+        verbose_name="Офіційна відповідь / розбір",
     )
-    is_draft = models.BooleanField(default=True, verbose_name="Р§РµСЂРЅРµС‚РєР°")
+    is_draft = models.BooleanField(default=True, verbose_name="Чернетка")
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         related_name="tasks_created",
-        verbose_name="РЎС‚РІРѕСЂРµРЅРѕ РєРѕСЂРёСЃС‚СѓРІР°С‡РµРј",
+        verbose_name="Створено користувачем",
     )
 
     class Meta:
         ordering = ["title"]
-        verbose_name = "Р—Р°РІРґР°РЅРЅСЏ"
-        verbose_name_plural = "Р—Р°РІРґР°РЅРЅСЏ"
+        verbose_name = "Завдання"
+        verbose_name_plural = "Завдання"
 
     def __str__(self):
         return f"{self.title} ({self.tournament.name})"
@@ -279,16 +279,16 @@ class Submission(models.Model):
         Team,
         on_delete=models.CASCADE,
         related_name="submissions",
-        verbose_name="РљРѕРјР°РЅРґР°",
+        verbose_name="Команда",
     )
     task = models.ForeignKey(
         Task,
         on_delete=models.CASCADE,
         related_name="submissions",
-        verbose_name="Р—Р°РІРґР°РЅРЅСЏ",
+        verbose_name="Завдання",
     )
-    github_link = models.URLField(verbose_name="GitHub РїРѕСЃРёР»Р°РЅРЅСЏ")
-    video_link = models.URLField(verbose_name="Р’С–РґРµРѕ РїРѕСЃРёР»Р°РЅРЅСЏ")
+    github_link = models.URLField(verbose_name="GitHub посилання")
+    video_link = models.URLField(verbose_name="Відео посилання")
     live_demo = models.URLField(
         null=True,
         blank=True,
@@ -297,15 +297,15 @@ class Submission(models.Model):
     description = models.TextField(
         null=True,
         blank=True,
-        verbose_name="РћРїРёСЃ СЂС–С€РµРЅРЅСЏ",
+        verbose_name="Опис рішення",
     )
-    submitted_at = models.DateTimeField(auto_now_add=True, verbose_name="Р§Р°СЃ РїРѕРґР°РЅРЅСЏ")
-    is_final = models.BooleanField(default=False, verbose_name="Р¤С–РЅР°Р»СЊРЅР° РІРµСЂСЃС–СЏ")
+    submitted_at = models.DateTimeField(auto_now_add=True, verbose_name="Час подання")
+    is_final = models.BooleanField(default=False, verbose_name="Фінальна версія")
 
     class Meta:
         ordering = ["-submitted_at"]
-        verbose_name = "РќР°РґС–СЃР»Р°РЅР° СЂРѕР±РѕС‚Р°"
-        verbose_name_plural = "РќР°РґС–СЃР»Р°РЅС– СЂРѕР±РѕС‚Рё"
+        verbose_name = "Надіслана робота"
+        verbose_name_plural = "Надіслані роботи"
         constraints = [
             models.UniqueConstraint(
                 fields=["team", "task"],
@@ -322,19 +322,19 @@ class JuryAssignment(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="jury_assignments",
-        verbose_name="Р§Р»РµРЅ Р¶СѓСЂС–",
+        verbose_name="Член журі",
     )
     submission = models.ForeignKey(
         Submission,
         on_delete=models.CASCADE,
         related_name="jury_assignments",
-        verbose_name="Р РѕР±РѕС‚Р°",
+        verbose_name="Робота",
     )
 
     class Meta:
         ordering = ["jury_user", "submission"]
-        verbose_name = "РџСЂРёР·РЅР°С‡РµРЅРЅСЏ Р¶СѓСЂС–"
-        verbose_name_plural = "РџСЂРёР·РЅР°С‡РµРЅРЅСЏ Р¶СѓСЂС–"
+        verbose_name = "Призначення журі"
+        verbose_name_plural = "Призначення журі"
         constraints = [
             models.UniqueConstraint(
                 fields=["jury_user", "submission"],
@@ -351,38 +351,38 @@ class Evaluation(models.Model):
         JuryAssignment,
         on_delete=models.CASCADE,
         related_name="evaluation",
-        verbose_name="РџСЂРёР·РЅР°С‡РµРЅРЅСЏ Р¶СѓСЂС–",
+        verbose_name="Призначення журі",
     )
     score_backend = models.PositiveIntegerField(
         validators=[MinValueValidator(0), MaxValueValidator(100)],
-        verbose_name="РћС†С–РЅРєР° backend",
+        verbose_name="Оцінка backend",
     )
     score_frontend = models.PositiveIntegerField(
         validators=[MinValueValidator(0), MaxValueValidator(100)],
-        verbose_name="РћС†С–РЅРєР° frontend",
+        verbose_name="Оцінка frontend",
     )
     score_functionality = models.PositiveIntegerField(
         validators=[MinValueValidator(0), MaxValueValidator(100)],
-        verbose_name="РћС†С–РЅРєР° С„СѓРЅРєС†С–РѕРЅР°Р»СЊРЅРѕСЃС‚С–",
+        verbose_name="Оцінка функціональності",
     )
     score_ux = models.PositiveIntegerField(
         validators=[MinValueValidator(0), MaxValueValidator(100)],
-        verbose_name="РћС†С–РЅРєР° UX",
+        verbose_name="Оцінка UX",
     )
     comment = models.TextField(
         null=True,
         blank=True,
-        verbose_name="РљРѕРјРµРЅС‚Р°СЂ",
+        verbose_name="Коментар",
     )
-    evaluated_at = models.DateTimeField(auto_now_add=True, verbose_name="Р§Р°СЃ РѕС†С–РЅСЋРІР°РЅРЅСЏ")
+    evaluated_at = models.DateTimeField(auto_now_add=True, verbose_name="Час оцінювання")
 
     class Meta:
         ordering = ["-evaluated_at"]
-        verbose_name = "РћС†С–РЅСЋРІР°РЅРЅСЏ"
-        verbose_name_plural = "РћС†С–РЅСЋРІР°РЅРЅСЏ"
+        verbose_name = "Оцінювання"
+        verbose_name_plural = "Оцінювання"
 
     def __str__(self):
-        return f"РћС†С–РЅРєР° {self.assignment}"
+        return f"Оцінка {self.assignment}"
 
     @property
     def total_score(self):
@@ -399,7 +399,7 @@ class RegistrationMember(models.Model):
         TournamentRegistration,
         on_delete=models.CASCADE,
         related_name="members",
-        verbose_name="Р—Р°СЏРІРєР°",
+        verbose_name="Заявка",
     )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -407,15 +407,15 @@ class RegistrationMember(models.Model):
         blank=True,
         on_delete=models.SET_NULL,
         related_name="registration_memberships",
-        verbose_name="РџРѕРІ'СЏР·Р°РЅРёР№ РєРѕСЂРёСЃС‚СѓРІР°С‡",
+        verbose_name="Пов'язаний користувач",
     )
-    full_name = models.CharField(max_length=255, verbose_name="РџР†Р‘")
+    full_name = models.CharField(max_length=255, verbose_name="ПІБ")
     email = models.EmailField(verbose_name="Email")
 
     class Meta:
         ordering = ["full_name"]
-        verbose_name = "РЈС‡Р°СЃРЅРёРє Р·Р°СЏРІРєРё"
-        verbose_name_plural = "РЈС‡Р°СЃРЅРёРєРё Р·Р°СЏРІРѕРє"
+        verbose_name = "Учасник заявки"
+        verbose_name_plural = "Учасники заявок"
         constraints = [
             models.UniqueConstraint(
                 fields=["registration", "email"],
@@ -428,13 +428,13 @@ class RegistrationMember(models.Model):
 
 
 class Announcement(models.Model):
-    title = models.CharField(max_length=255, verbose_name="Р—Р°РіРѕР»РѕРІРѕРє")
-    message = models.TextField(verbose_name="РўРµРєСЃС‚ РѕРіРѕР»РѕС€РµРЅРЅСЏ")
+    title = models.CharField(max_length=255, verbose_name="Заголовок")
+    message = models.TextField(verbose_name="Текст оголошення")
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         related_name="announcements_created",
-        verbose_name="РЎС‚РІРѕСЂРµРЅРѕ РєРѕСЂРёСЃС‚СѓРІР°С‡РµРј",
+        verbose_name="Створено користувачем",
     )
     tournament = models.ForeignKey(
         Tournament,
@@ -442,14 +442,14 @@ class Announcement(models.Model):
         blank=True,
         on_delete=models.CASCADE,
         related_name="announcements",
-        verbose_name="РўСѓСЂРЅС–СЂ",
+        verbose_name="Турнір",
     )
-    created_at = models.DateTimeField(auto_now_add=True, db_index=True, verbose_name="Р”Р°С‚Р° СЃС‚РІРѕСЂРµРЅРЅСЏ")
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True, verbose_name="Дата створення")
 
     class Meta:
         ordering = ["-created_at"]
-        verbose_name = "РћРіРѕР»РѕС€РµРЅРЅСЏ"
-        verbose_name_plural = "РћРіРѕР»РѕС€РµРЅРЅСЏ"
+        verbose_name = "Оголошення"
+        verbose_name_plural = "Оголошення"
 
     def __str__(self):
         return self.title
@@ -457,14 +457,14 @@ class Announcement(models.Model):
 
 class Certificate(models.Model):
     class CertificateType(models.TextChoices):
-        PARTICIPANT = "participant", "РЈС‡Р°СЃРЅРёРє"
-        WINNER = "winner", "РџРµСЂРµРјРѕР¶РµС†СЊ"
+        PARTICIPANT = "participant", "Учасник"
+        WINNER = "winner", "Переможець"
 
     tournament = models.ForeignKey(
         Tournament,
         on_delete=models.CASCADE,
         related_name="certificates",
-        verbose_name="РўСѓСЂРЅС–СЂ",
+        verbose_name="Турнір",
     )
     team = models.ForeignKey(
         Team,
@@ -472,13 +472,13 @@ class Certificate(models.Model):
         blank=True,
         on_delete=models.SET_NULL,
         related_name="certificates",
-        verbose_name="РљРѕРјР°РЅРґР°",
+        verbose_name="Команда",
     )
     certificate_type = models.CharField(
         max_length=20,
         choices=CertificateType.choices,
         db_index=True,
-        verbose_name="РўРёРї СЃРµСЂС‚РёС„С–РєР°С‚Р°",
+        verbose_name="Тип сертифіката",
     )
     recipient_user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -486,22 +486,22 @@ class Certificate(models.Model):
         blank=True,
         on_delete=models.SET_NULL,
         related_name="certificates_received",
-        verbose_name="РљРѕСЂРёСЃС‚СѓРІР°С‡-РѕС‚СЂРёРјСѓРІР°С‡",
+        verbose_name="Користувач-отримувач",
     )
-    recipient_name = models.CharField(max_length=255, verbose_name="Р†Рј'СЏ РѕС‚СЂРёРјСѓРІР°С‡Р°")
-    recipient_email = models.EmailField(verbose_name="Email РѕС‚СЂРёРјСѓРІР°С‡Р°")
+    recipient_name = models.CharField(max_length=255, verbose_name="Ім'я отримувача")
+    recipient_email = models.EmailField(verbose_name="Email отримувача")
     issued_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         related_name="certificates_issued",
-        verbose_name="Р’РёРґР°РІ РєРѕСЂРёСЃС‚СѓРІР°С‡",
+        verbose_name="Видав користувач",
     )
-    issued_at = models.DateTimeField(auto_now_add=True, db_index=True, verbose_name="Р”Р°С‚Р° РІРёРґР°С‡С–")
+    issued_at = models.DateTimeField(auto_now_add=True, db_index=True, verbose_name="Дата видачі")
 
     class Meta:
         ordering = ["-issued_at"]
-        verbose_name = "РЎРµСЂС‚РёС„С–РєР°С‚"
-        verbose_name_plural = "РЎРµСЂС‚РёС„С–РєР°С‚Рё"
+        verbose_name = "Сертифікат"
+        verbose_name_plural = "Сертифікати"
         constraints = [
             models.UniqueConstraint(
                 fields=["tournament", "certificate_type", "recipient_email"],
@@ -520,33 +520,33 @@ class CertificateTemplate(models.Model):
         blank=True,
         on_delete=models.CASCADE,
         related_name="certificate_templates",
-        verbose_name="РўСѓСЂРЅС–СЂ",
+        verbose_name="Турнір",
     )
     certificate_type = models.CharField(
         max_length=20,
         choices=Certificate.CertificateType.choices,
         db_index=True,
-        verbose_name="РўРёРї СЃРµСЂС‚РёС„С–РєР°С‚Р°",
+        verbose_name="Тип сертифіката",
     )
     background_image = models.ImageField(
         upload_to="certificate_templates/",
-        verbose_name="РЁР°Р±Р»РѕРЅ СЃРµСЂС‚РёС„С–РєР°С‚Р°",
+        verbose_name="Шаблон сертифіката",
     )
     uploaded_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         related_name="uploaded_certificate_templates",
-        verbose_name="Р—Р°РІР°РЅС‚Р°Р¶РёРІ РєРѕСЂРёСЃС‚СѓРІР°С‡",
+        verbose_name="Завантажив користувач",
     )
-    created_at = models.DateTimeField(auto_now_add=True, db_index=True, verbose_name="Р”Р°С‚Р° Р·Р°РІР°РЅС‚Р°Р¶РµРЅРЅСЏ")
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True, verbose_name="Дата завантаження")
 
     class Meta:
         ordering = ["-created_at"]
-        verbose_name = "РЁР°Р±Р»РѕРЅ СЃРµСЂС‚РёС„С–РєР°С‚Р°"
-        verbose_name_plural = "РЁР°Р±Р»РѕРЅРё СЃРµСЂС‚РёС„С–РєР°С‚С–РІ"
+        verbose_name = "Шаблон сертифіката"
+        verbose_name_plural = "Шаблони сертифікатів"
 
     def __str__(self):
-        scope = self.tournament.name if self.tournament_id else "Р“Р»РѕР±Р°Р»СЊРЅРёР№"
+        scope = self.tournament.name if self.tournament_id else "Глобальний"
         return f"{scope}: {self.get_certificate_type_display()}"
 
 

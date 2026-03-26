@@ -56,7 +56,7 @@ def parse_registration_fields_definition(raw_value):
 
         parts = [part.strip() for part in line.split('|')]
         if len(parts) < 2:
-            errors.append(f'Р СЏРґРѕРє {index}: РїРѕС‚СЂС–Р±РЅРѕ С‰РѕРЅР°Р№РјРµРЅС€Рµ РєРѕРґ РїРѕР»СЏ С– РЅР°Р·РІР°.')
+            errors.append(f'Рядок {index}: потрібно щонайменше код поля і назва.')
             continue
 
         field_key = normalize_registration_field_key(parts[0], parts[1] if len(parts) > 1 else '')
@@ -65,21 +65,21 @@ def parse_registration_fields_definition(raw_value):
         is_required = (parts[3] if len(parts) > 3 and parts[3] else 'required').lower()
 
         if not field_key:
-            errors.append(f'Р СЏРґРѕРє {index}: РєРѕРґ РїРѕР»СЏ РјРѕР¶Рµ РјС–СЃС‚РёС‚Рё Р»РёС€Рµ Р»С–С‚РµСЂРё, С†РёС„СЂРё С‚Р° _.')
+            errors.append(f'Рядок {index}: код поля може містити лише літери, цифри та _.')
             continue
 
         if field_type not in REGISTRATION_FIELD_TYPE_CHOICES:
             errors.append(
-                f'Р СЏРґРѕРє {index}: РЅРµРІС–РґРѕРјРёР№ С‚РёРї "{field_type}". Р”РѕСЃС‚СѓРїРЅРѕ: text, textarea, email, number, url, participants.'
+                f'Рядок {index}: невідомий тип "{field_type}". Доступно: text, textarea, email, number, url, participants.'
             )
             continue
 
         if is_required not in {'required', 'optional'}:
-            errors.append(f'Р СЏРґРѕРє {index}: РѕР±РѕРІ\'СЏР·РєРѕРІС–СЃС‚СЊ РјР°С” Р±СѓС‚Рё required Р°Р±Рѕ optional.')
+            errors.append(f'Рядок {index}: обов\'язковість має бути required або optional.')
             continue
 
         if any(item['key'] == field_key for item in config):
-            errors.append(f'Р СЏРґРѕРє {index}: РєРѕРґ РїРѕР»СЏ "{field_key}" РІР¶Рµ РІРёРєРѕСЂРёСЃС‚РѕРІСѓС”С‚СЊСЃСЏ.')
+            errors.append(f'Рядок {index}: код поля "{field_key}" вже використовується.')
             continue
 
         config.append({
@@ -108,8 +108,8 @@ def serialize_registration_fields_definition(config):
 class TournamentForm(forms.ModelForm):
     registration_fields_definition = forms.CharField(
         required=False,
-        label='Р”РѕРґР°С‚РєРѕРІС– РїРѕР»СЏ Р°РЅРєРµС‚Рё',
-        help_text='РљРѕР¶РµРЅ СЂСЏРґРѕРє: РєРѕРґ_РїРѕР»СЏ|РќР°Р·РІР° РїРѕР»СЏ|С‚РёРї|required Р°Р±Рѕ optional. РўРёРїРё: text, textarea, email, number, url.',
+        label='Додаткові поля анкети',
+        help_text='Кожен рядок: код_поля|Назва поля|тип|required або optional. Типи: text, textarea, email, number, url.',
         widget=forms.Textarea(attrs={'class': 'form-input', 'rows': 6}),
     )
     start_date = forms.DateTimeField(
@@ -118,7 +118,7 @@ class TournamentForm(forms.ModelForm):
             format='%Y-%m-%dT%H:%M',
             attrs={'type': 'datetime-local', 'class': 'form-input'},
         ),
-        label='Р”Р°С‚Р° РїРѕС‡Р°С‚РєСѓ',
+        label='Дата початку',
     )
     end_date = forms.DateTimeField(
         input_formats=['%Y-%m-%dT%H:%M'],
@@ -126,7 +126,7 @@ class TournamentForm(forms.ModelForm):
             format='%Y-%m-%dT%H:%M',
             attrs={'type': 'datetime-local', 'class': 'form-input'},
         ),
-        label='Р”Р°С‚Р° Р·Р°РІРµСЂС€РµРЅРЅСЏ',
+        label='Дата завершення',
     )
     registration_start = forms.DateTimeField(
         input_formats=['%Y-%m-%dT%H:%M'],
@@ -134,7 +134,7 @@ class TournamentForm(forms.ModelForm):
             format='%Y-%m-%dT%H:%M',
             attrs={'type': 'datetime-local', 'class': 'form-input'},
         ),
-        label='РџРѕС‡Р°С‚РѕРє СЂРµС”СЃС‚СЂР°С†С–С—',
+        label='Початок реєстрації',
     )
     registration_end = forms.DateTimeField(
         input_formats=['%Y-%m-%dT%H:%M'],
@@ -142,7 +142,7 @@ class TournamentForm(forms.ModelForm):
             format='%Y-%m-%dT%H:%M',
             attrs={'type': 'datetime-local', 'class': 'form-input'},
         ),
-        label='Р—Р°РІРµСЂС€РµРЅРЅСЏ СЂРµС”СЃС‚СЂР°С†С–С—',
+        label='Завершення реєстрації',
     )
 
     class Meta:
@@ -233,23 +233,23 @@ class TournamentForm(forms.ModelForm):
         }
         for field_name, value in required_fields.items():
             if value in [None, '']:
-                self.add_error(field_name, 'Р¦Рµ РїРѕР»Рµ С” РѕР±РѕРІвЂ™СЏР·РєРѕРІРёРј РґР»СЏ РѕРїСѓР±Р»С–РєРѕРІР°РЅРѕРіРѕ С‚СѓСЂРЅС–СЂСѓ.')
+                self.add_error(field_name, 'Це поле є обов’язковим для опублікованого турніру.')
 
         if registration_start and registration_end and registration_start >= registration_end:
-            self.add_error('registration_end', 'Р—Р°РІРµСЂС€РµРЅРЅСЏ СЂРµС”СЃС‚СЂР°С†С–С— РјР°С” Р±СѓС‚Рё РїС–Р·РЅС–С€Рµ Р·Р° РїРѕС‡Р°С‚РѕРє СЂРµС”СЃС‚СЂР°С†С–С—.')
+            self.add_error('registration_end', 'Завершення реєстрації має бути пізніше за початок реєстрації.')
 
         if registration_end and start_date and registration_end > start_date:
-            self.add_error('registration_end', 'Р РµС”СЃС‚СЂР°С†С–СЏ РјР°С” Р·Р°РІРµСЂС€СѓРІР°С‚РёСЃСЏ РґРѕ РїРѕС‡Р°С‚РєСѓ С‚СѓСЂРЅС–СЂСѓ.')
+            self.add_error('registration_end', 'Реєстрація має завершуватися до початку турніру.')
 
         if start_date and end_date and end_date <= start_date:
-            self.add_error('end_date', 'РўСѓСЂРЅС–СЂ РјР°С” Р·Р°РІРµСЂС€СѓРІР°С‚РёСЃСЏ РїС–СЃР»СЏ РїРѕС‡Р°С‚РєСѓ.')
+            self.add_error('end_date', 'Турнір має завершуватися після початку.')
 
         if (
             min_team_members is not None
             and max_team_members is not None
             and min_team_members > max_team_members
         ):
-            self.add_error('max_team_members', 'РњР°РєСЃРёРјР°Р»СЊРЅР° РєС–Р»СЊРєС–СЃС‚СЊ Р»СЋРґРµР№ Сѓ РєРѕРјР°РЅРґС– РјР°С” Р±СѓС‚Рё РЅРµ РјРµРЅС€РѕСЋ Р·Р° РјС–РЅС–РјР°Р»СЊРЅСѓ.')
+            self.add_error('max_team_members', 'Максимальна кількість людей у команді має бути не меншою за мінімальну.')
 
         return cleaned_data
 
@@ -557,7 +557,7 @@ class TaskForm(forms.ModelForm):
         }
         for field_name, value in required_fields.items():
             if not value:
-                self.add_error(field_name, 'Р¦Рµ РїРѕР»Рµ С” РѕР±РѕРІвЂ™СЏР·РєРѕРІРёРј РґР»СЏ РѕРїСѓР±Р»С–РєРѕРІР°РЅРѕРіРѕ Р·Р°РІРґР°РЅРЅСЏ.')
+                self.add_error(field_name, 'Це поле є обов’язковим для опублікованого завдання.')
 
         return cleaned_data
 
@@ -617,7 +617,7 @@ class AnnouncementForm(forms.ModelForm):
         self.fields['tournament'].required = not allow_global
         self.fields['tournament'].queryset = tournament_queryset
         if allow_global:
-            self.fields['tournament'].empty_label = 'РЈСЃС– С‚СѓСЂРЅС–СЂРё / Р·Р°РіР°Р»СЊРЅРµ РѕРіРѕР»РѕС€РµРЅРЅСЏ'
+            self.fields['tournament'].empty_label = 'Усі турніри / загальне оголошення'
 class CertificateTemplateForm(forms.ModelForm):
     class Meta:
         model = CertificateTemplate
@@ -635,7 +635,7 @@ class CertificateTemplateForm(forms.ModelForm):
         self.fields['tournament'].required = not allow_global
         self.fields['tournament'].queryset = tournament_queryset
         if allow_global:
-            self.fields['tournament'].empty_label = 'Р“Р»РѕР±Р°Р»СЊРЅРёР№ С€Р°Р±Р»РѕРЅ РґР»СЏ РІСЃС–С… С‚СѓСЂРЅС–СЂС–РІ'
+            self.fields['tournament'].empty_label = 'Глобальний шаблон для всіх турнірів'
 
 
 
