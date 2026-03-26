@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Підтвердження пошти</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6fb;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            width: 100%;
+            max-width: 560px;
+            background: white;
+            padding: 32px;
+            border-radius: 18px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+        }
+        h1 { margin: 0 0 10px; font-size: 30px; }
+        p { color: #475569; line-height: 1.7; margin: 0 0 14px; }
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 42px;
+            padding: 10px 16px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 700;
+            background: #eef4ff;
+            color: #2563eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        {% if verification_failed %}
+            <h1>Посилання недійсне</h1>
+            <p>Не вдалося підтвердити електронну пошту. Можливо, посилання вже використане або пошкоджене.</p>
+            <a class="btn-secondary" href="{% url 'register' %}">Зареєструватися знову</a>
+        {% else %}
+            <h1>Пошту підтверджено</h1>
+            <p>Тепер ви можете увійти в акаунт.</p>
+            <a class="btn-secondary" href="{% url 'login' %}">До входу</a>
+        {% endif %}
+    </div>
+</body>
+</html>

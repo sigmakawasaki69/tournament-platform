@@ -12,6 +12,8 @@ class CustomUser(AbstractUser):
 
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='participant')
     is_approved = models.BooleanField(default=False)
+    email_verified = models.BooleanField(default=True)
+    email_verified_at = models.DateTimeField(null=True, blank=True)
     announcements_seen_at = models.DateTimeField(null=True, blank=True)
     certificates_seen_at = models.DateTimeField(null=True, blank=True)
 

@@ -6,15 +6,23 @@ from statistics import mean
 
 from PIL import Image, ImageDraw, ImageFont
 from django.conf import settings
+from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
+from django.core.mail import send_mail
 from django.core.exceptions import ValidationError
 from django.db.models import Q
+from django.template.loader import render_to_string
 from django.http import HttpResponse, HttpResponseNotAllowed, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils.encoding import force_bytes, force_str
 from django.utils import timezone
-from django.utils.http import url_has_allowed_host_and_scheme
+from django.utils.http import (
+    url_has_allowed_host_and_scheme,
+    urlsafe_base64_decode,
+    urlsafe_base64_encode,
+)
 
 from tournament.forms import (
     AnnouncementForm,
@@ -77,6 +85,33 @@ def can_manage_tournaments(user):
 
 def can_review_registrations(user):
     return is_admin_user(user) or is_organizer_user(user)
+
+
+def send_verification_email(request, user):
+    verification_link = request.build_absolute_uri(
+        reverse(
+            'verify_email',
+            args=[
+                urlsafe_base64_encode(force_bytes(user.pk)),
+                default_token_generator.make_token(user),
+            ],
+        )
+    )
+    subject = 'Підтвердження електронної пошти'
+    message = render_to_string(
+        'emails/verify_email.txt',
+        {
+            'user': user,
+            'verification_link': verification_link,
+        },
+    )
+    send_mail(
+        subject=subject,
+        message=message,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[user.email],
+        fail_silently=False,
+    )
 
 
 def can_manage_tournament_instance(user, tournament):
@@ -812,23 +847,51 @@ def archive_view(request):
 
 def register_view(request):
     next_url = request.GET.get('next') or request.POST.get('next')
+    if request.user.is_authenticated:
+        return redirect(get_safe_redirect(request, next_url, reverse('redirect_by_role')))
+
     if request.method == 'POST':
         form = RegisterForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
             user.role = 'participant'
             user.is_approved = True
+            user.email_verified = False
+            user.email_verified_at = None
             user.save()
             RegistrationMember.objects.filter(
                 user__isnull=True,
                 email__iexact=user.email,
             ).update(user=user)
-            login(request, user)
-            return redirect(get_safe_redirect(request, next_url, reverse('home')))
+            send_verification_email(request, user)
+            success_url = reverse('register_success')
+            if next_url:
+                success_url = f"{success_url}?next={next_url}"
+            return redirect(success_url)
     else:
         form = RegisterForm()
 
     return render(request, 'register.html', {'form': form, 'next_url': next_url})
+
+
+def register_success_view(request):
+    return render(request, 'register_success.html', {'next_url': request.GET.get('next')})
+
+
+def verify_email_view(request, uidb64, token):
+    try:
+        user_id = force_str(urlsafe_base64_decode(uidb64))
+        user = CustomUser.objects.get(pk=user_id)
+    except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        user.email_verified = True
+        user.email_verified_at = timezone.now()
+        user.save(update_fields=['email_verified', 'email_verified_at'])
+        return redirect(f"{reverse('login')}?verified=1")
+
+    return render(request, 'verify_email_result.html', {'verification_failed': True})
 
 
 def login_view(request):
@@ -842,7 +905,9 @@ def login_view(request):
         form = LoginForm(request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
-            if not user.is_approved and not user.is_superuser:
+            if not user.email_verified:
+                message = 'Спочатку підтвердіть електронну пошту через лист, який ми надіслали після реєстрації.'
+            elif not user.is_approved and not user.is_superuser:
                 message = 'Ваш акаунт ще не схвалений адміністратором.'
             else:
                 login(request, user)
@@ -851,6 +916,8 @@ def login_view(request):
             message = 'Неправильний логін або пароль.'
     else:
         form = LoginForm()
+        if request.GET.get('verified') == '1':
+            message = 'Пошту підтверджено. Тепер можна увійти в акаунт.'
 
     return render(request, 'login.html', {'form': form, 'message': message, 'next_url': next_url})
 

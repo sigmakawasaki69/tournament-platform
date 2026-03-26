@@ -5,9 +5,13 @@ from pathlib import Path
 from uuid import uuid4
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import default_token_generator
+from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 from django.utils import timezone
 from PIL import Image
 
@@ -29,6 +33,10 @@ from tournament.models import (
 User = get_user_model()
 
 
+@override_settings(
+    EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
+    DEFAULT_FROM_EMAIL="noreply@example.com",
+)
 class TournamentPlatformViewTests(TestCase):
     def setUp(self):
         media_base_dir = Path(__file__).resolve().parents[1] / "test_media_root"
@@ -104,7 +112,7 @@ class TournamentPlatformViewTests(TestCase):
         defaults.update(overrides)
         return Tournament.objects.create(**defaults)
 
-    def test_register_form_creates_participant_and_logs_in(self):
+    def test_register_form_creates_participant_and_sends_verification_email(self):
         self.client.logout()
 
         response = self.client.post(
@@ -117,10 +125,69 @@ class TournamentPlatformViewTests(TestCase):
             },
         )
 
-        self.assertRedirects(response, reverse("home"))
+        self.assertRedirects(response, reverse("register_success"))
         created_user = User.objects.get(username="newparticipant")
         self.assertEqual(created_user.role, "participant")
         self.assertTrue(created_user.is_approved)
+        self.assertFalse(created_user.email_verified)
+        self.assertNotIn("_auth_user_id", self.client.session)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("Підтвердження електронної пошти", mail.outbox[0].subject)
+        self.assertIn("newparticipant@example.com", mail.outbox[0].to)
+        self.assertIn(
+            reverse(
+                "verify_email",
+                args=[
+                    urlsafe_base64_encode(force_bytes(created_user.pk)),
+                    default_token_generator.make_token(created_user),
+                ],
+            ),
+            mail.outbox[0].body,
+        )
+
+    def test_login_is_blocked_until_email_is_verified(self):
+        user = User.objects.create_user(
+            username="pendingmail",
+            password="StrongPass123!",
+            role="participant",
+            is_approved=True,
+            email="pendingmail@example.com",
+            email_verified=False,
+        )
+
+        response = self.client.post(
+            reverse("login"),
+            {"username": user.username, "password": "StrongPass123!"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Спочатку підтвердіть електронну пошту")
+        self.assertNotIn("_auth_user_id", self.client.session)
+
+    def test_email_verification_marks_user_as_verified(self):
+        user = User.objects.create_user(
+            username="verifyme",
+            password="StrongPass123!",
+            role="participant",
+            is_approved=True,
+            email="verifyme@example.com",
+            email_verified=False,
+        )
+
+        response = self.client.get(
+            reverse(
+                "verify_email",
+                args=[
+                    urlsafe_base64_encode(force_bytes(user.pk)),
+                    default_token_generator.make_token(user),
+                ],
+            )
+        )
+
+        self.assertRedirects(response, reverse("login") + "?verified=1", fetch_redirect_response=False)
+        user.refresh_from_db()
+        self.assertTrue(user.email_verified)
+        self.assertIsNotNone(user.email_verified_at)
 
     def test_register_form_rejects_duplicate_email(self):
         self.client.logout()

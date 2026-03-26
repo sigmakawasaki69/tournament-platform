@@ -104,10 +104,11 @@
 <body>
     <div class="card">
         <h1>Реєстрація</h1>
-        <div class="sub">Створіть звичайний акаунт учасника, щоб подавати заявки на турніри.</div>
+        <div class="sub">Створіть акаунт учасника, щоб подавати заявки на турніри.</div>
 
         <div class="hint">
-            Після реєстрації акаунт учасника активується одразу. Далі можна створити команду й подати заявку на турнір.
+            Після реєстрації ми надішлемо лист із посиланням для підтвердження електронної пошти.
+            Увійти на сайт можна буде після переходу за цим посиланням.
         </div>
 
         {% if form.non_field_errors %}
@@ -124,7 +125,7 @@
             {{ form.username }}
             {% if form.username.errors %}<div class="field-errors">{{ form.username.errors }}</div>{% endif %}
 
-            <label for="{{ form.email.id_for_label }}">***?? *??</label>
+            <label for="{{ form.email.id_for_label }}">Електронна пошта</label>
             {{ form.email }}
             {% if form.email.errors %}<div class="field-errors">{{ form.email.errors }}</div>{% endif %}
 
@@ -141,13 +142,8 @@
         </form>
 
         <div class="bottom">
-            Вже є акаунт? <a href="{% url 'login' %}{% if next_url %}?next={{ next_url|urlencode }}{% endif %}">Увійти</a>
+            Уже є акаунт? <a href="{% url 'login' %}{% if next_url %}?next={{ next_url|urlencode }}{% endif %}">Увійти</a>
         </div>
     </div>
 </body>
 </html>
-
-
-
-
-
