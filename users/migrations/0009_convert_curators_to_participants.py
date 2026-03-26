@@ -7,7 +7,12 @@ def convert_curators_to_participants(apps, schema_editor):
 
     CustomUser.objects.filter(role="curator").update(role="participant", is_approved=True)
 
-    through_model = Tournament.curator_users.through
+    try:
+        curator_field = Tournament._meta.get_field("curator_users")
+    except Exception:
+        return
+
+    through_model = curator_field.remote_field.through
     through_model.objects.all().delete()
 
 
