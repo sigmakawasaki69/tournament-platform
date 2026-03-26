@@ -76,7 +76,7 @@ def can_manage_users(user):
 
 
 def can_create_admins(user):
-    return user.is_superuser
+    return is_admin_user(user)
 
 
 def can_manage_tournaments(user):
@@ -1174,7 +1174,7 @@ def approve_user(request, user_id):
         return HttpResponseNotAllowed(['POST'])
 
     user = get_object_or_404(CustomUser, id=user_id)
-    if user.id == request.user.id and not request.user.is_superuser:
+    if user.id == request.user.id:
         return redirect(reverse('admin_users'))
 
     user.is_approved = True
@@ -1191,10 +1191,10 @@ def update_user_role(request, user_id):
 
     user = get_object_or_404(CustomUser, id=user_id)
     new_role = request.POST.get('role')
+    if user.id == request.user.id:
+        return redirect(reverse('admin_users'))
     allowed_roles = get_available_admin_roles(request.user)
     if new_role not in allowed_roles:
-        return redirect(reverse('admin_users'))
-    if user.is_superuser:
         return redirect(reverse('admin_users'))
 
     user.role = new_role
@@ -1212,7 +1212,7 @@ def delete_user(request, user_id):
         return redirect(reverse('admin_users'))
 
     user = get_object_or_404(CustomUser, id=user_id)
-    if user.id == request.user.id or user.is_superuser:
+    if user.id == request.user.id:
         return redirect(reverse('admin_users'))
 
     user.delete()

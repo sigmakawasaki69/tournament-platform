@@ -252,6 +252,31 @@ class TournamentPlatformViewTests(TestCase):
         self.assertContains(home_response, reverse("admin_active_tournaments") + "?action=create-tournament")
         self.assertContains(home_response, reverse("admin_users") + "?action=create-user")
 
+    def test_regular_admin_can_create_another_admin(self):
+        admin_role_user = User.objects.create_user(
+            username="roleadmin",
+            password="secret123",
+            role="admin",
+            is_approved=True,
+            email="roleadmin@example.com",
+        )
+        self.client.force_login(admin_role_user)
+
+        response = self.client.post(
+            reverse("create_user_by_admin"),
+            {
+                "username": "newadmin",
+                "email": "newadmin@example.com",
+                "role": "admin",
+                "password1": "StrongPass123!",
+                "password2": "StrongPass123!",
+            },
+        )
+
+        self.assertRedirects(response, reverse("admin_users"))
+        created_user = User.objects.get(username="newadmin")
+        self.assertEqual(created_user.role, "admin")
+
     def test_admin_actions_return_to_requested_dashboard_section(self):
         self.client.force_login(self.admin_user)
         target_user = User.objects.create_user(
