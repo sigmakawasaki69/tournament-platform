@@ -2139,7 +2139,6 @@ def tournament_tasks(request, tournament_id):
         'leaderboard_preview': preview_rows,
         'leaderboard_total': len(leaderboard),
         'my_team': my_team,
-        'can_submit_solutions': tournament.is_running,
         'show_official_solutions': tournament.is_finished,
         'show_leaderboard': tournament.is_finished,
     })
@@ -2182,8 +2181,10 @@ def tournament_leaderboard(request, tournament_id):
 def submit_solution(request, task_id):
     task = get_object_or_404(Task.objects.select_related('tournament'), id=task_id, is_draft=False)
     tournament = task.tournament
-    if not tournament.is_running:
+    if not (tournament.is_running or tournament.is_finished):
         return redirect('participant_dashboard')
+    if not task.is_submission_open:
+        return redirect('tournament_tasks', tournament_id=tournament.id)
 
     approved_registrations = TournamentRegistration.objects.filter(
         tournament=tournament,

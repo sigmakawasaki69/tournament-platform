@@ -1,8 +1,11 @@
 ﻿import json
 
+from datetime import datetime
+
 from django import forms
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
+from django.utils import timezone
 
 from .models import (
     Announcement,
@@ -103,6 +106,20 @@ def serialize_registration_fields_definition(config):
             f"{item.get('key', '')}|{item.get('label', '')}|{item.get('type', 'text')}|{requirement}"
         )
     return '\n'.join(lines)
+
+
+def trim_datetime_to_minute(value):
+    if not isinstance(value, datetime):
+        return value
+    return value.replace(second=0, microsecond=0)
+
+
+def to_local_form_datetime(value):
+    if not isinstance(value, datetime):
+        return value
+    if timezone.is_aware(value):
+        value = timezone.localtime(value)
+    return trim_datetime_to_minute(value)
 
 
 class TournamentForm(forms.ModelForm):
@@ -506,6 +523,25 @@ class TournamentRegistrationForm(forms.Form):
 
 
 class TaskForm(forms.ModelForm):
+    start_at = forms.DateTimeField(
+        required=False,
+        input_formats=['%Y-%m-%dT%H:%M'],
+        widget=forms.DateTimeInput(
+            format='%Y-%m-%dT%H:%M',
+            attrs={'type': 'datetime-local', 'class': 'form-input'},
+        ),
+        label='Початок завдання',
+    )
+    deadline = forms.DateTimeField(
+        required=False,
+        input_formats=['%Y-%m-%dT%H:%M'],
+        widget=forms.DateTimeInput(
+            format='%Y-%m-%dT%H:%M',
+            attrs={'type': 'datetime-local', 'class': 'form-input'},
+        ),
+        label='Дедлайн здачі',
+    )
+
     class Meta:
         model = Task
         fields = [
@@ -514,6 +550,8 @@ class TaskForm(forms.ModelForm):
             'description',
             'requirements',
             'must_have',
+            'start_at',
+            'deadline',
             'official_solution',
             'is_draft',
         ]
@@ -535,6 +573,8 @@ class TaskForm(forms.ModelForm):
             'description',
             'requirements',
             'must_have',
+            'start_at',
+            'deadline',
             'official_solution',
         ]:
             self.fields[field_name].required = False
@@ -543,6 +583,9 @@ class TaskForm(forms.ModelForm):
             self.fields['tournament'].initial = tournament
             self.fields['tournament'].widget = forms.HiddenInput()
             self.fields['tournament'].queryset = Tournament.objects.filter(id=tournament.id)
+            if not getattr(self.instance, 'pk', None):
+                self.fields['start_at'].initial = to_local_form_datetime(tournament.start_date)
+                self.fields['deadline'].initial = to_local_form_datetime(tournament.end_date)
 
     def clean(self):
         cleaned_data = super().clean()
@@ -554,10 +597,29 @@ class TaskForm(forms.ModelForm):
             'description': (cleaned_data.get('description') or '').strip(),
             'requirements': (cleaned_data.get('requirements') or '').strip(),
             'must_have': (cleaned_data.get('must_have') or '').strip(),
+            'start_at': cleaned_data.get('start_at'),
+            'deadline': cleaned_data.get('deadline'),
         }
         for field_name, value in required_fields.items():
             if not value:
                 self.add_error(field_name, 'Це поле є обов’язковим для опублікованого завдання.')
+
+        start_at = cleaned_data.get('start_at')
+        deadline = cleaned_data.get('deadline')
+        tournament = cleaned_data.get('tournament') or getattr(self.instance, 'tournament', None)
+        normalized_start_at = trim_datetime_to_minute(start_at)
+        normalized_deadline = trim_datetime_to_minute(deadline)
+        tournament_start = trim_datetime_to_minute(getattr(tournament, 'start_date', None))
+        tournament_end = trim_datetime_to_minute(getattr(tournament, 'end_date', None))
+
+        if normalized_start_at and normalized_deadline and normalized_deadline <= normalized_start_at:
+            self.add_error('deadline', 'Дедлайн має бути пізніше за старт завдання.')
+
+        if tournament is not None:
+            if tournament_start and normalized_start_at and normalized_start_at < tournament_start:
+                self.add_error('start_at', 'Старт завдання не може бути раніше старту турніру.')
+            if tournament_end and normalized_deadline and normalized_deadline > tournament_end:
+                self.add_error('deadline', 'Дедлайн завдання не може бути пізніше завершення турніру.')
 
         return cleaned_data
 

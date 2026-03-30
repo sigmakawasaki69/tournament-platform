@@ -5,31 +5,133 @@
     <title>{% if mode == 'edit' %}Редагувати завдання{% else %}Створити завдання{% endif %}</title>
     <style>
         * { box-sizing: border-box; }
-        body { margin: 0; font-family: Arial, sans-serif; background: #f4f6fb; min-height: 100vh; padding: 30px 20px; }
-        .wrap { max-width: 760px; margin: 0 auto; }
-        .card { background: white; padding: 28px; border-radius: 16px; box-shadow: 0 12px 30px rgba(0,0,0,0.08); }
-        h1 { margin-top: 0; margin-bottom: 12px; }
-        .subtitle { color: #475569; margin-bottom: 20px; }
-        label { display: block; margin-bottom: 6px; font-weight: 600; }
-        .form-input, input, textarea, select { width: 100%; padding: 12px 14px; margin-bottom: 12px; border: 1px solid #d0d7e2; border-radius: 10px; font-size: 15px; background: white; }
-        .checkbox-row { display: flex; gap: 10px; align-items: center; margin: 8px 0 16px; }
-        .checkbox-row input { width: auto; margin: 0; }
-        button { border: none; background: #16a34a; color: white; padding: 12px 16px; border-radius: 10px; font-size: 15px; cursor: pointer; }
-        .back { display: inline-block; margin-left: 10px; text-decoration: none; color: #2563eb; }
-        .field-errors { color: #b00020; font-size: 14px; margin: -6px 0 10px; }
-        .error-box { background: #fee2e2; color: #991b1b; padding: 12px; border-radius: 10px; margin-bottom: 16px; }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6fb;
+            min-height: 100vh;
+            padding: 30px 20px;
+            color: #172033;
+        }
+        .wrap { max-width: 900px; margin: 0 auto; }
+        .card {
+            background: white;
+            padding: 28px;
+            border-radius: 18px;
+            box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
+        }
+        h1 {
+            margin: 0 0 10px;
+            font-size: 32px;
+        }
+        .subtitle,
+        .hint {
+            color: #516074;
+            line-height: 1.7;
+        }
+        .subtitle { margin-bottom: 12px; }
+        .hint {
+            margin-bottom: 22px;
+            padding: 14px 16px;
+            border-radius: 14px;
+            background: #eef4ff;
+            border: 1px solid #d8e5ff;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .span2 { grid-column: 1 / -1; }
+        label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: 700;
+        }
+        input,
+        textarea,
+        select,
+        .form-input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #d0d7e2;
+            border-radius: 12px;
+            font-size: 15px;
+            background: #fff;
+        }
+        textarea { min-height: 120px; resize: vertical; }
+        .field { margin-bottom: 4px; }
+        .field-errors {
+            color: #b00020;
+            font-size: 14px;
+            margin-top: 6px;
+        }
+        .error-box {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px 14px;
+            border-radius: 12px;
+            margin-bottom: 18px;
+        }
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 18px 0 22px;
+        }
+        .checkbox-row input {
+            width: auto;
+            margin: 0;
+        }
+        .actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 6px;
+        }
+        .btn,
+        .back {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 44px;
+            padding: 0 18px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 15px;
+        }
+        .btn {
+            border: none;
+            background: #2563eb;
+            color: #fff;
+            cursor: pointer;
+        }
+        .back {
+            background: #eef4ff;
+            color: #2563eb;
+        }
+        @media (max-width: 760px) {
+            .grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
     <div class="wrap">
         <div class="card">
             <h1>{% if mode == 'edit' %}Редагувати завдання{% else %}Створити завдання{% endif %}</h1>
+
             <div class="subtitle">
                 {% if tournament %}
                     Турнір: <strong>{{ tournament.name }}</strong>
                 {% else %}
-                    Завдання будуть доступні учасникам протягом усього турніру.
+                    Завдання можна прив'язати до будь-якого турніру.
                 {% endif %}
+            </div>
+
+            <div class="hint">
+                Для опублікованого завдання потрібно вказати окремі дати старту та завершення прийому рішень.
+                Це дає можливість відкривати і закривати кожне завдання незалежно в межах одного турніру.
             </div>
 
             {% if form.non_field_errors %}
@@ -42,45 +144,71 @@
                 {% if form.tournament.is_hidden %}
                     {{ form.tournament }}
                 {% else %}
-                    <label>Турнір</label>
-                    {{ form.tournament }}
-                    {% if form.tournament.errors %}<div class="field-errors">{{ form.tournament.errors }}</div>{% endif %}
+                    <div class="field span2">
+                        <label for="{{ form.tournament.id_for_label }}">Турнір</label>
+                        {{ form.tournament }}
+                        {% if form.tournament.errors %}<div class="field-errors">{{ form.tournament.errors }}</div>{% endif %}
+                    </div>
                 {% endif %}
 
-                <label>Назва</label>
-                {{ form.title }}
-                {% if form.title.errors %}<div class="field-errors">{{ form.title.errors }}</div>{% endif %}
+                <div class="grid">
+                    <div class="field span2">
+                        <label for="{{ form.title.id_for_label }}">Назва завдання</label>
+                        {{ form.title }}
+                        {% if form.title.errors %}<div class="field-errors">{{ form.title.errors }}</div>{% endif %}
+                    </div>
 
-                <label>Опис</label>
-                {{ form.description }}
-                {% if form.description.errors %}<div class="field-errors">{{ form.description.errors }}</div>{% endif %}
+                    <div class="field">
+                        <label for="{{ form.start_at.id_for_label }}">Початок завдання</label>
+                        {{ form.start_at }}
+                        {% if form.start_at.errors %}<div class="field-errors">{{ form.start_at.errors }}</div>{% endif %}
+                    </div>
 
-                <label>Вимоги</label>
-                {{ form.requirements }}
-                {% if form.requirements.errors %}<div class="field-errors">{{ form.requirements.errors }}</div>{% endif %}
+                    <div class="field">
+                        <label for="{{ form.deadline.id_for_label }}">Дедлайн здачі</label>
+                        {{ form.deadline }}
+                        {% if form.deadline.errors %}<div class="field-errors">{{ form.deadline.errors }}</div>{% endif %}
+                    </div>
 
-                <label>Обов'язково має бути</label>
-                {{ form.must_have }}
-                {% if form.must_have.errors %}<div class="field-errors">{{ form.must_have.errors }}</div>{% endif %}
+                    <div class="field span2">
+                        <label for="{{ form.description.id_for_label }}">Опис завдання</label>
+                        {{ form.description }}
+                        {% if form.description.errors %}<div class="field-errors">{{ form.description.errors }}</div>{% endif %}
+                    </div>
 
-                <label>Офіційна відповідь / розбір</label>
-                {{ form.official_solution }}
-                {% if form.official_solution.errors %}<div class="field-errors">{{ form.official_solution.errors }}</div>{% endif %}
+                    <div class="field span2">
+                        <label for="{{ form.requirements.id_for_label }}">Вимоги до виконання</label>
+                        {{ form.requirements }}
+                        {% if form.requirements.errors %}<div class="field-errors">{{ form.requirements.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="field span2">
+                        <label for="{{ form.must_have.id_for_label }}">Обов'язкові пункти</label>
+                        {{ form.must_have }}
+                        {% if form.must_have.errors %}<div class="field-errors">{{ form.must_have.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="field span2">
+                        <label for="{{ form.official_solution.id_for_label }}">Офіційна відповідь / розбір</label>
+                        {{ form.official_solution }}
+                        {% if form.official_solution.errors %}<div class="field-errors">{{ form.official_solution.errors }}</div>{% endif %}
+                    </div>
+                </div>
 
                 <div class="checkbox-row">
                     {{ form.is_draft }}
-                    <label for="{{ form.is_draft.id_for_label }}" style="margin:0;">Чернетка</label>
+                    <label for="{{ form.is_draft.id_for_label }}" style="margin:0;">Зберегти як чернетку</label>
                 </div>
                 {% if form.is_draft.errors %}<div class="field-errors">{{ form.is_draft.errors }}</div>{% endif %}
 
-                <button type="submit">{% if mode == 'edit' %}Зберегти{% else %}Створити{% endif %}</button>
-                <a class="back" href="{{ back_url|default:'/dashboard/tournaments/active/' }}">Назад</a>
+                <div class="actions">
+                    <button class="btn" type="submit">
+                        {% if mode == 'edit' %}Зберегти зміни{% else %}Створити завдання{% endif %}
+                    </button>
+                    <a class="back" href="{{ back_url|default:'/dashboard/tournaments/active/' }}">Назад</a>
+                </div>
             </form>
         </div>
     </div>
 </body>
 </html>
-
-
-
-

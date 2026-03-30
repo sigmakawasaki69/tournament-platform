@@ -60,12 +60,14 @@
             display: inline-block;
             padding: 6px 10px;
             border-radius: 999px;
-            background: #dcfce7;
-            color: #166534;
             font-size: 12px;
             margin-bottom: 10px;
             font-weight: 700;
         }
+        .pill-draft { background: #e5e7eb; color: #374151; }
+        .pill-scheduled { background: #ede9fe; color: #6d28d9; }
+        .pill-active { background: #dcfce7; color: #166534; }
+        .pill-closed { background: #fee2e2; color: #991b1b; }
         .stats {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -115,8 +117,34 @@
             background: #eff6ff;
             border: 1px solid #bfdbfe;
         }
+        .task-meta {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin: 12px 0;
+        }
+        .task-meta div {
+            background: #f8fbff;
+            border: 1px solid #dbe7f3;
+            border-radius: 12px;
+            padding: 12px;
+        }
+        .task-meta strong {
+            display: block;
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+        .task-note {
+            margin: 12px 0 0;
+            padding: 12px;
+            border-radius: 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            color: #475569;
+        }
         @media (max-width: 920px) {
-            .hero, .grid { grid-template-columns: 1fr; }
+            .hero, .grid, .task-meta { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -145,12 +173,12 @@
                 <div class="stat-value">{{ leaderboard_total }}</div>
             </div>
             <div class="stat">
-                <div class="stat-label">Початок</div>
-                <div class="stat-value" style="font-size:16px;">{{ tournament.start_date|date:"d.m.Y H:i" }}</div>
+                <div class="stat-label">Початок турніру</div>
+                <div class="stat-value" style="font-size:16px;">{{ tournament.start_date|date:"d.m.Y H:i"|default:"-" }}</div>
             </div>
             <div class="stat">
-                <div class="stat-label">Завершення</div>
-                <div class="stat-value" style="font-size:16px;">{{ tournament.end_date|date:"d.m.Y H:i" }}</div>
+                <div class="stat-label">Завершення турніру</div>
+                <div class="stat-value" style="font-size:16px;">{{ tournament.end_date|date:"d.m.Y H:i"|default:"-" }}</div>
             </div>
         </div>
     </div>
@@ -160,17 +188,25 @@
             <h2 style="margin-top:0;">Завдання турніру</h2>
             {% for task in tasks %}
                 <div class="item">
-                    <span class="pill">
-                        {% if show_official_solutions %}
-                            Турнір завершено
-                        {% else %}
-                            Доступно протягом усього турніру
-                        {% endif %}
+                    <span class="pill {% if task.lifecycle_status == 'draft' %}pill-draft{% elif task.lifecycle_status == 'scheduled' %}pill-scheduled{% elif task.lifecycle_status == 'active' %}pill-active{% else %}pill-closed{% endif %}">
+                        {{ task.lifecycle_status_label }}
                     </span>
                     <h3 style="margin:0 0 10px;">{{ task.title }}</h3>
                     <p class="muted">{{ task.description }}</p>
-                    <p><strong>Вимоги:</strong><br>{{ task.requirements }}</p>
-                    <p><strong>Обов'язково має бути:</strong><br>{{ task.must_have }}</p>
+
+                    <div class="task-meta">
+                        <div>
+                            <strong>Початок завдання</strong>
+                            {{ task.effective_start|date:"d.m.Y H:i"|default:"Не задано" }}
+                        </div>
+                        <div>
+                            <strong>Дедлайн здачі</strong>
+                            {{ task.effective_deadline|date:"d.m.Y H:i"|default:"Не задано" }}
+                        </div>
+                    </div>
+
+                    <p><strong>Вимоги:</strong><br>{{ task.requirements|linebreaksbr }}</p>
+                    <p><strong>Обов'язково має бути:</strong><br>{{ task.must_have|linebreaksbr }}</p>
 
                     {% if show_official_solutions and task.official_solution %}
                         <div class="solution-box">
@@ -179,11 +215,15 @@
                         </div>
                     {% endif %}
 
-                    {% if can_submit_solutions %}
-                        <a class="btn" href="{% url 'submit_solution' task.id %}">Відправити рішення</a>
-                    {% else %}
-                        <span class="back" style="margin-top:12px;">Подачу рішень закрито</span>
-                    {% endif %}
+                    <div style="margin-top:14px;">
+                        {% if task.is_submission_open %}
+                            <a class="btn" href="{% url 'submit_solution' task.id %}">Відправити рішення</a>
+                        {% elif task.lifecycle_status == 'scheduled' %}
+                            <div class="task-note">Прийом рішень ще не відкрито. Завдання стане доступним у час старту.</div>
+                        {% else %}
+                            <div class="task-note">Подачу рішень для цього завдання вже закрито.</div>
+                        {% endif %}
+                    </div>
                 </div>
             {% empty %}
                 <p class="muted">Поки немає завдань.</p>
@@ -237,7 +277,3 @@
 </div>
 </body>
 </html>
-
-
-
-

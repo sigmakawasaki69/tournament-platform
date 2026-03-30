@@ -16,6 +16,8 @@ label{display:block;margin-bottom:6px;font-weight:700;}
 .back{color:#2563eb;background:#eef4ff;}
 .field-errors{color:#b00020;font-size:14px;margin:-8px 0 10px;}
 .meta{color:#64748b;line-height:1.7;margin-bottom:16px;}
+.notice{background:#eef4ff;border:1px solid #dbeafe;color:#1e3a8a;padding:14px;border-radius:12px;margin-bottom:18px;}
+.error-box{background:#fee2e2;color:#991b1b;padding:12px 14px;border-radius:12px;margin-bottom:16px;}
 </style>
 </head>
 <body>
@@ -24,7 +26,18 @@ label{display:block;margin-bottom:6px;font-weight:700;}
 <h1>{{ task.title }}</h1>
 <p class="meta">Турнір: <strong>{{ task.tournament.name }}</strong></p>
 <p class="meta">Команда: <strong>{{ team.name }}</strong></p>
-<p class="meta">Рішення приймаються до завершення турніру: <strong>{{ task.tournament.end_date }}</strong></p>
+<p class="meta">
+Початок завдання: <strong>{{ task.effective_start|date:"d.m.Y H:i"|default:"-" }}</strong><br>
+Дедлайн здачі: <strong>{{ task.effective_deadline|date:"d.m.Y H:i"|default:"-" }}</strong>
+</p>
+
+<div class="notice">
+Ви можете редагувати це рішення до дедлайну саме цього завдання. Після завершення дедлайну подачу буде закрито.
+</div>
+
+{% if form.non_field_errors %}
+<div class="error-box">{{ form.non_field_errors }}</div>
+{% endif %}
 
 <form method="post">
 {% csrf_token %}
@@ -37,17 +50,17 @@ label{display:block;margin-bottom:6px;font-weight:700;}
 {{ form.video_link }}
 {% if form.video_link.errors %}<div class="field-errors">{{ form.video_link.errors }}</div>{% endif %}
 
-<label for="{{ form.live_demo.id_for_label }}">Посилання на демо</label>
+<label for="{{ form.live_demo.id_for_label }}">Посилання на live demo</label>
 {{ form.live_demo }}
 {% if form.live_demo.errors %}<div class="field-errors">{{ form.live_demo.errors }}</div>{% endif %}
 
-<label for="{{ form.description.id_for_label }}">Опис рішення</label>
+<label for="{{ form.description.id_for_label }}">Короткий опис рішення</label>
 {{ form.description }}
 {% if form.description.errors %}<div class="field-errors">{{ form.description.errors }}</div>{% endif %}
 
 <div class="checkbox-row">
 {{ form.is_final }}
-<label for="{{ form.is_final.id_for_label }}" style="margin:0;">Фінальна версія</label>
+<label for="{{ form.is_final.id_for_label }}" style="margin:0;">Позначити як фінальну версію</label>
 </div>
 
 <button class="button" type="submit">{% if submission %}Оновити рішення{% else %}Надіслати рішення{% endif %}</button>

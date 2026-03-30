@@ -1578,6 +1578,48 @@ class TournamentPlatformViewTests(TestCase):
         self.assertEqual(submission.description, "My final solution")
         self.assertTrue(submission.is_final)
 
+    def test_submit_solution_is_blocked_after_task_deadline(self):
+        now = timezone.now()
+        tournament = self.create_tournament(
+            start_date=now - timedelta(hours=2),
+            end_date=now + timedelta(days=1),
+            registration_end=now - timedelta(hours=3),
+        )
+        team = Team.objects.create(
+            name="Approved Team",
+            captain_user=self.captain,
+            captain_name="Captain",
+            captain_email="captain@example.com",
+        )
+        TournamentRegistration.objects.create(
+            tournament=tournament,
+            team=team,
+            registered_by=self.captain,
+            status=TournamentRegistration.Status.APPROVED,
+        )
+        task = Task.objects.create(
+            tournament=tournament,
+            title="Closed task",
+            description="desc",
+            requirements="req",
+            must_have="must",
+            start_at=now - timedelta(hours=2),
+            deadline=now - timedelta(minutes=1),
+            is_draft=False,
+            created_by=self.admin_user,
+        )
+
+        response = self.client.post(
+            reverse("submit_solution", args=[task.id]),
+            {
+                "github_link": "https://github.com/example/repo",
+                "video_link": "https://example.com/video",
+            },
+        )
+
+        self.assertRedirects(response, reverse("tournament_tasks", args=[tournament.id]))
+        self.assertFalse(Submission.objects.filter(task=task, team=team).exists())
+
     def test_superuser_can_open_team_detail(self):
         team = Team.objects.create(
             name="Team A",
@@ -1673,11 +1715,16 @@ class TournamentPlatformViewTests(TestCase):
                 "description": "desc",
                 "requirements": "req",
                 "must_have": "must",
+                "start_at": timezone.localtime(tournament.start_date).strftime("%Y-%m-%dT%H:%M"),
+                "deadline": timezone.localtime(tournament.end_date).strftime("%Y-%m-%dT%H:%M"),
                 "official_solution": "solution",
             },
         )
 
         self.assertRedirects(response, reverse("edit_tournament", args=[tournament.id]))
+        task = Task.objects.get(title="Context task")
+        self.assertEqual(task.start_at.replace(second=0, microsecond=0), tournament.start_date.replace(second=0, microsecond=0))
+        self.assertEqual(task.deadline.replace(second=0, microsecond=0), tournament.end_date.replace(second=0, microsecond=0))
 
     def test_edit_task_page_back_link_points_to_edit_tournament(self):
         tournament = self.create_tournament()
@@ -1787,6 +1834,26 @@ class TournamentPlatformViewTests(TestCase):
         task = Task.objects.latest("id")
         self.assertTrue(task.is_draft)
         self.assertEqual(task.title, "")
+
+    def test_admin_cannot_publish_task_without_task_dates(self):
+        tournament = self.create_tournament()
+        self.client.force_login(self.admin_user)
+
+        response = self.client.post(
+            reverse("create_tournament_task", args=[tournament.id]),
+            {
+                "tournament": tournament.id,
+                "title": "Task without dates",
+                "description": "desc",
+                "requirements": "req",
+                "must_have": "must",
+                "official_solution": "",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Це поле є обов’язковим для опублікованого завдання.")
+        self.assertFalse(Task.objects.filter(title="Task without dates").exists())
 
     def test_admin_can_approve_registration(self):
         tournament = self.create_tournament()

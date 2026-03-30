@@ -252,6 +252,18 @@ class Task(models.Model):
     description = models.TextField(verbose_name="Опис")
     requirements = models.TextField(verbose_name="Вимоги")
     must_have = models.TextField(verbose_name="Обов'язково має бути")
+    start_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        db_index=True,
+        verbose_name="Початок завдання",
+    )
+    deadline = models.DateTimeField(
+        null=True,
+        blank=True,
+        db_index=True,
+        verbose_name="Дедлайн здачі",
+    )
     official_solution = models.TextField(
         null=True,
         blank=True,
@@ -272,6 +284,39 @@ class Task(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.tournament.name})"
+
+    @property
+    def effective_start(self):
+        return self.start_at or self.tournament.start_date
+
+    @property
+    def effective_deadline(self):
+        return self.deadline or self.tournament.end_date
+
+    @property
+    def lifecycle_status(self):
+        now = timezone.now()
+        if self.is_draft:
+            return "draft"
+        if self.effective_start and now < self.effective_start:
+            return "scheduled"
+        if self.effective_deadline and now > self.effective_deadline:
+            return "submission_closed"
+        return "active"
+
+    @property
+    def lifecycle_status_label(self):
+        labels = {
+            "draft": "Чернетка",
+            "scheduled": "Очікує старту",
+            "active": "Активне",
+            "submission_closed": "Прийом рішень закрито",
+        }
+        return labels[self.lifecycle_status]
+
+    @property
+    def is_submission_open(self):
+        return self.lifecycle_status == "active"
 
 
 class Submission(models.Model):
