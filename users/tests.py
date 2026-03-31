@@ -2535,6 +2535,20 @@ class TournamentPlatformViewTests(TestCase):
         self.assertRedirects(response, reverse("participant_dashboard"))
         self.assertFalse(Team.objects.filter(id=team.id).exists())
 
+    def test_superuser_delete_team_redirects_to_admin_teams(self):
+        team = Team.objects.create(
+            name="Admin Delete Team",
+            captain_user=self.captain,
+            captain_name="Captain",
+            captain_email="captain@example.com",
+        )
+        self.client.force_login(self.admin_user)
+
+        response = self.client.post(reverse("delete_team", args=[team.id]))
+
+        self.assertRedirects(response, reverse("admin_teams"))
+        self.assertFalse(Team.objects.filter(id=team.id).exists())
+
     def test_participant_can_leave_team(self):
         team = Team.objects.create(
             name="Leave Team",

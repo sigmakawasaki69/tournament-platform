@@ -2145,7 +2145,8 @@ def delete_team(request, team_id):
 
     if request.method == 'POST':
         team.delete()
-        return redirect('participant_dashboard')
+        fallback = reverse('admin_teams') if is_admin_user(request.user) else reverse('participant_dashboard')
+        return redirect(get_post_redirect(request, fallback))
 
     return render(request, 'delete_team_confirm.html', {'team': team})
 
