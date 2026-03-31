@@ -66,7 +66,7 @@
             {% for team in my_teams %}
                 <div class="item">
                     <strong>{{ team.name }}</strong>
-                    <div class="meta">Контактна особа: {{ team.captain_name }}</div>
+                    <div class="meta">Контактна особа (капітан): {{ team.captain_name }}</div>
                     <div class="action-row">
                         <a class="btn" href="{% url 'team_detail' team.id %}">Відкрити</a>
                         <a class="btn-green" href="{% url 'team_results' team.id %}">Результати</a>

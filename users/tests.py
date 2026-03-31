@@ -430,7 +430,8 @@ class TournamentPlatformViewTests(TestCase):
                 "captain_name": "Member Captain",
                 "captain_email": "member@example.com",
                 "school": "School 1",
-                "telegram": "@team",
+                "preferred_contact_method": "telegram",
+                "preferred_contact_value": "@team",
             },
         )
 
@@ -448,9 +449,8 @@ class TournamentPlatformViewTests(TestCase):
                 "captain_name": "Member Captain",
                 "captain_email": self.participant_user.email,
                 "school": "Ліцей",
-                "telegram": "@open_team",
-                "discord": "open-team-discord",
-                "viber": "+380000000000",
+                "preferred_contact_method": "discord",
+                "preferred_contact_value": "open-team-discord",
             },
         )
 
@@ -459,9 +459,11 @@ class TournamentPlatformViewTests(TestCase):
         registration = TournamentRegistration.objects.get(tournament=tournament, team=team)
         self.assertEqual(registration.status, TournamentRegistration.Status.PENDING)
         self.assertEqual(team.school, "Ліцей")
-        self.assertEqual(team.telegram, "@open_team")
+        self.assertEqual(team.preferred_contact_method, "discord")
+        self.assertEqual(team.preferred_contact_value, "open-team-discord")
         self.assertEqual(team.discord, "open-team-discord")
-        self.assertEqual(team.viber, "+380000000000")
+        self.assertFalse(team.telegram)
+        self.assertFalse(team.viber)
         self.participant_user.refresh_from_db()
         self.assertEqual(self.participant_user.role, "participant")
 
@@ -1462,7 +1464,8 @@ class TournamentPlatformViewTests(TestCase):
                 "captain_name": "Captain",
                 "captain_email": "captain@example.com",
                 "school": "",
-                "telegram": "",
+                "preferred_contact_method": "",
+                "preferred_contact_value": "",
             },
         )
 

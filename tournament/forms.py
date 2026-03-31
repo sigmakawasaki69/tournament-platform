@@ -280,17 +280,73 @@ class TournamentForm(forms.ModelForm):
 
 
 class TeamForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['preferred_contact_method'].required = False
+        self.fields['preferred_contact_value'].required = False
+        if self.instance and self.instance.pk:
+            if not self.initial.get('preferred_contact_method'):
+                self.initial['preferred_contact_method'] = self.instance.effective_contact_method
+            if not self.initial.get('preferred_contact_value'):
+                self.initial['preferred_contact_value'] = self.instance.effective_contact_value
+
+    def clean(self):
+        cleaned_data = super().clean()
+        cleaned_data['captain_name'] = (cleaned_data.get('captain_name') or '').strip()
+        cleaned_data['captain_email'] = (cleaned_data.get('captain_email') or '').strip().lower()
+        cleaned_data['school'] = (cleaned_data.get('school') or '').strip()
+        cleaned_data['preferred_contact_value'] = (cleaned_data.get('preferred_contact_value') or '').strip()
+
+        preferred_contact_method = cleaned_data.get('preferred_contact_method') or ''
+        preferred_contact_value = cleaned_data.get('preferred_contact_value') or ''
+        if preferred_contact_method and not preferred_contact_value:
+            self.add_error('preferred_contact_value', "Вкажіть контакт для обраного способу зв'язку.")
+        if preferred_contact_value and not preferred_contact_method:
+            self.add_error('preferred_contact_method', "Оберіть спосіб зв'язку.")
+        return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        preferred_contact_method = self.cleaned_data.get('preferred_contact_method') or ''
+        preferred_contact_value = (self.cleaned_data.get('preferred_contact_value') or '').strip()
+        instance.preferred_contact_method = preferred_contact_method or None
+        instance.preferred_contact_value = preferred_contact_value or None
+        instance.telegram = preferred_contact_value if preferred_contact_method == Team.ContactMethod.TELEGRAM else None
+        instance.discord = preferred_contact_value if preferred_contact_method == Team.ContactMethod.DISCORD else None
+        instance.viber = preferred_contact_value if preferred_contact_method == Team.ContactMethod.VIBER else None
+        if commit:
+            instance.save()
+            self.save_m2m()
+        return instance
+
     class Meta:
         model = Team
-        fields = ['name', 'captain_name', 'captain_email', 'school', 'telegram', 'discord', 'viber']
+        fields = [
+            'name',
+            'captain_name',
+            'captain_email',
+            'school',
+            'preferred_contact_method',
+            'preferred_contact_value',
+        ]
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-input'}),
             'captain_name': forms.TextInput(attrs={'class': 'form-input'}),
             'captain_email': forms.EmailInput(attrs={'class': 'form-input'}),
             'school': forms.TextInput(attrs={'class': 'form-input'}),
-            'telegram': forms.TextInput(attrs={'class': 'form-input'}),
-            'discord': forms.TextInput(attrs={'class': 'form-input'}),
-            'viber': forms.TextInput(attrs={'class': 'form-input'}),
+            'preferred_contact_method': forms.Select(attrs={'class': 'form-input'}),
+            'preferred_contact_value': forms.TextInput(
+                attrs={
+                    'class': 'form-input',
+                    'placeholder': "@team, username#0001, +380...",
+                }
+            ),
+        }
+        labels = {
+            'captain_name': "Ім'я контактної особи (капітан)",
+            'captain_email': 'Електронна пошта контактної особи (капітан)',
+            'preferred_contact_method': "Зручний спосіб зв'язку",
+            'preferred_contact_value': "Контакт для зв'язку",
         }
 
 
@@ -319,11 +375,11 @@ class TournamentRegistrationForm(forms.Form):
             widget=forms.TextInput(attrs={'class': 'form-input'}),
         )
         self.fields['captain_name'] = forms.CharField(
-            label="Ім'я контактної особи",
+            label="Ім'я контактної особи (капітан)",
             widget=forms.TextInput(attrs={'class': 'form-input'}),
         )
         self.fields['captain_email'] = forms.EmailField(
-            label='Електронна пошта контактної особи',
+            label='Електронна пошта контактної особи (капітан)',
             widget=forms.EmailInput(attrs={'class': 'form-input'}),
         )
         self.fields['school'] = forms.CharField(
@@ -331,20 +387,21 @@ class TournamentRegistrationForm(forms.Form):
             label='Школа',
             widget=forms.TextInput(attrs={'class': 'form-input'}),
         )
-        self.fields['telegram'] = forms.CharField(
+        self.fields['preferred_contact_method'] = forms.ChoiceField(
             required=False,
-            label='Телеграм',
-            widget=forms.TextInput(attrs={'class': 'form-input'}),
+            label="Зручний спосіб зв'язку",
+            choices=[('', 'Не вказано'), *Team.ContactMethod.choices],
+            widget=forms.Select(attrs={'class': 'form-input'}),
         )
-        self.fields['discord'] = forms.CharField(
+        self.fields['preferred_contact_value'] = forms.CharField(
             required=False,
-            label='Діскорд',
-            widget=forms.TextInput(attrs={'class': 'form-input'}),
-        )
-        self.fields['viber'] = forms.CharField(
-            required=False,
-            label='Вайбер',
-            widget=forms.TextInput(attrs={'class': 'form-input'}),
+            label="Контакт для зв'язку",
+            widget=forms.TextInput(
+                attrs={
+                    'class': 'form-input',
+                    'placeholder': "@team, username#0001, +380...",
+                }
+            ),
         )
 
         if existing_team is not None:
@@ -352,9 +409,8 @@ class TournamentRegistrationForm(forms.Form):
             self.fields['captain_name'].initial = existing_team.captain_name
             self.fields['captain_email'].initial = existing_team.captain_email
             self.fields['school'].initial = existing_team.school
-            self.fields['telegram'].initial = existing_team.telegram
-            self.fields['discord'].initial = existing_team.discord
-            self.fields['viber'].initial = existing_team.viber
+            self.fields['preferred_contact_method'].initial = existing_team.effective_contact_method
+            self.fields['preferred_contact_value'].initial = existing_team.effective_contact_value
         elif user is not None:
             self.fields['captain_name'].initial = user.username
             self.fields['captain_email'].initial = user.email
@@ -411,16 +467,19 @@ class TournamentRegistrationForm(forms.Form):
         cleaned_data['captain_name'] = (cleaned_data.get('captain_name') or '').strip()
         cleaned_data['captain_email'] = (cleaned_data.get('captain_email') or '').strip().lower()
         cleaned_data['school'] = (cleaned_data.get('school') or '').strip()
-        cleaned_data['telegram'] = (cleaned_data.get('telegram') or '').strip()
-        cleaned_data['discord'] = (cleaned_data.get('discord') or '').strip()
-        cleaned_data['viber'] = (cleaned_data.get('viber') or '').strip()
+        cleaned_data['preferred_contact_method'] = (cleaned_data.get('preferred_contact_method') or '').strip()
+        cleaned_data['preferred_contact_value'] = (cleaned_data.get('preferred_contact_value') or '').strip()
 
         if not cleaned_data['team_name']:
             self.add_error('team_name', 'Вкажіть назву команди.')
         if not cleaned_data['captain_name']:
-            self.add_error('captain_name', "Вкажіть ім'я контактної особи.")
+            self.add_error('captain_name', "Вкажіть ім'я контактної особи (капітана).")
         if not cleaned_data['captain_email']:
-            self.add_error('captain_email', 'Вкажіть електронну пошту контактної особи.')
+            self.add_error('captain_email', 'Вкажіть електронну пошту контактної особи (капітана).')
+        if cleaned_data['preferred_contact_method'] and not cleaned_data['preferred_contact_value']:
+            self.add_error('preferred_contact_value', "Вкажіть контакт для обраного способу зв'язку.")
+        if cleaned_data['preferred_contact_value'] and not cleaned_data['preferred_contact_method']:
+            self.add_error('preferred_contact_method', "Оберіть спосіб зв'язку.")
 
         for field_config in (self.tournament.registration_fields_config if self.tournament else []):
             if field_config['type'] != 'participants':
@@ -499,9 +558,8 @@ class TournamentRegistrationForm(forms.Form):
             'captain_name': self.cleaned_data['captain_name'],
             'captain_email': self.cleaned_data['captain_email'],
             'school': self.cleaned_data.get('school', ''),
-            'telegram': self.cleaned_data.get('telegram', ''),
-            'discord': self.cleaned_data.get('discord', ''),
-            'viber': self.cleaned_data.get('viber', ''),
+            'preferred_contact_method': self.cleaned_data.get('preferred_contact_method', ''),
+            'preferred_contact_value': self.cleaned_data.get('preferred_contact_value', ''),
         }
 
     def cleaned_form_answers(self):

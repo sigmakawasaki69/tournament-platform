@@ -94,7 +94,7 @@
                         <div class="hint">{{ tournament.registration_form_description|linebreaksbr }}</div>
                     {% endif %}
                     <div class="hint">
-                        Той, хто подає заявку від команди, автоматично стає контактною особою команди.
+                        Той, хто подає заявку від команди, автоматично стає контактною особою (капітаном).
                         Доступ до завдань відкривається лише після схвалення заявки організатором.
                     </div>
                 </div>
@@ -130,11 +130,11 @@
                             {{ registration_form.team_name }}
                             {% if registration_form.team_name.errors %}<div class="field-errors">{{ registration_form.team_name.errors }}</div>{% endif %}
 
-                            <label for="{{ registration_form.captain_name.id_for_label }}">Ім'я контактної особи</label>
+                            <label for="{{ registration_form.captain_name.id_for_label }}">Ім'я контактної особи (капітан)</label>
                             {{ registration_form.captain_name }}
                             {% if registration_form.captain_name.errors %}<div class="field-errors">{{ registration_form.captain_name.errors }}</div>{% endif %}
 
-                            <label for="{{ registration_form.captain_email.id_for_label }}">Електронна пошта контактної особи</label>
+                            <label for="{{ registration_form.captain_email.id_for_label }}">Електронна пошта контактної особи (капітан)</label>
                             {{ registration_form.captain_email }}
                             {% if registration_form.captain_email.errors %}<div class="field-errors">{{ registration_form.captain_email.errors }}</div>{% endif %}
 
@@ -142,26 +142,22 @@
                             {{ registration_form.school }}
                             {% if registration_form.school.errors %}<div class="field-errors">{{ registration_form.school.errors }}</div>{% endif %}
 
-                            <label for="{{ registration_form.telegram.id_for_label }}">Телеграм</label>
-                            {{ registration_form.telegram }}
-                            {% if registration_form.telegram.errors %}<div class="field-errors">{{ registration_form.telegram.errors }}</div>{% endif %}
+                            <label for="{{ registration_form.preferred_contact_method.id_for_label }}">Зручний спосіб зв'язку</label>
+                            {{ registration_form.preferred_contact_method }}
+                            {% if registration_form.preferred_contact_method.errors %}<div class="field-errors">{{ registration_form.preferred_contact_method.errors }}</div>{% endif %}
 
-                            <label for="{{ registration_form.discord.id_for_label }}">Діскорд</label>
-                            {{ registration_form.discord }}
-                            {% if registration_form.discord.errors %}<div class="field-errors">{{ registration_form.discord.errors }}</div>{% endif %}
-
-                            <label for="{{ registration_form.viber.id_for_label }}">Вайбер</label>
-                            {{ registration_form.viber }}
-                            {% if registration_form.viber.errors %}<div class="field-errors">{{ registration_form.viber.errors }}</div>{% endif %}
+                            <label for="{{ registration_form.preferred_contact_value.id_for_label }}">Контакт для зв'язку</label>
+                            {{ registration_form.preferred_contact_value }}
+                            {% if registration_form.preferred_contact_value.errors %}<div class="field-errors">{{ registration_form.preferred_contact_value.errors }}</div>{% endif %}
 
                             {% for field in registration_form %}
-                                {% if field.name != "team_name" and field.name != "captain_name" and field.name != "captain_email" and field.name != "school" and field.name != "telegram" and field.name != "discord" and field.name != "viber" %}
+                                {% if field.name != "team_name" and field.name != "captain_name" and field.name != "captain_email" and field.name != "school" and field.name != "preferred_contact_method" and field.name != "preferred_contact_value" %}
                                     <div class="field-card">
                                         <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span class="required">*</span>{% endif %}</label>
                                         {% if field.field.widget.attrs.data_field_type == "participants" %}
                                             {{ field }}
                                             <div class="participants-wrap" data-target-id="{{ field.auto_id }}">
-                                                <div class="participant-summary">Контактна особа вже входить до складу команди. Тут можна додати інших учасників.</div>
+                                                <div class="participant-summary">Контактна особа (капітан) уже входить до складу команди. Тут можна додати інших учасників.</div>
                                                 <div class="participants-list"></div>
                                                 <button type="button" class="ghost-btn add-participant-btn">Додати учасника</button>
                                             </div>
@@ -216,7 +212,7 @@
                             <div class="meta">Показано перші 5 команд із {{ leaderboard_total }}.</div>
                         {% endif %}
                     {% else %}
-                        <div class="meta">Лідерборд стане доступним після завершення турніру.</div>
+                        <div class="meta">Лідерборд стане доступним після завершення оцінювання.</div>
                     {% endif %}
                 </div>
             </div>

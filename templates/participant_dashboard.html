@@ -109,7 +109,7 @@ body {
             {% for team in my_teams %}
                 <div class="item">
                     <strong>{{ team.name }}</strong>
-                    <div class="meta">Контактна особа: {{ team.captain_name }}</div>
+                    <div class="meta">Контактна особа (капітан): {{ team.captain_name }}</div>
                     <div class="action-row">
                         <a class="btn" href="/team/{{ team.id }}/">Відкрити</a>
                         <a class="btn btn-green" href="/team/{{ team.id }}/results/">Результати</a>

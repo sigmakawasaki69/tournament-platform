@@ -90,9 +90,11 @@ class RegistrationService:
         captain_name = (team_data.get("captain_name") or "").strip()
         captain_email = (team_data.get("captain_email") or "").strip().lower()
         school = (team_data.get("school") or "").strip()
-        telegram = (team_data.get("telegram") or "").strip()
-        discord = (team_data.get("discord") or "").strip()
-        viber = (team_data.get("viber") or "").strip()
+        preferred_contact_method = (team_data.get("preferred_contact_method") or "").strip()
+        preferred_contact_value = (team_data.get("preferred_contact_value") or "").strip()
+        telegram = preferred_contact_value if preferred_contact_method == Team.ContactMethod.TELEGRAM else ""
+        discord = preferred_contact_value if preferred_contact_method == Team.ContactMethod.DISCORD else ""
+        viber = preferred_contact_value if preferred_contact_method == Team.ContactMethod.VIBER else ""
 
         if not team_name:
             raise ValidationError("Вкажіть назву команди.")
@@ -116,6 +118,8 @@ class RegistrationService:
                 captain_name=captain_name,
                 captain_email=captain_email,
                 school=school or None,
+                preferred_contact_method=preferred_contact_method or None,
+                preferred_contact_value=preferred_contact_value or None,
                 telegram=telegram or None,
                 discord=discord or None,
                 viber=viber or None,
@@ -125,6 +129,8 @@ class RegistrationService:
             team.captain_name = captain_name
             team.captain_email = captain_email
             team.school = school or None
+            team.preferred_contact_method = preferred_contact_method or None
+            team.preferred_contact_value = preferred_contact_value or None
             team.telegram = telegram or None
             team.discord = discord or None
             team.viber = viber or None
@@ -133,6 +139,8 @@ class RegistrationService:
                 "captain_name",
                 "captain_email",
                 "school",
+                "preferred_contact_method",
+                "preferred_contact_value",
                 "telegram",
                 "discord",
                 "viber",

@@ -164,6 +164,11 @@ class Tournament(models.Model):
 
 
 class Team(models.Model):
+    class ContactMethod(models.TextChoices):
+        TELEGRAM = "telegram", "Телеграм"
+        DISCORD = "discord", "Діскорд"
+        VIBER = "viber", "Вайбер"
+
     captain_user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -178,6 +183,19 @@ class Team(models.Model):
         null=True,
         blank=True,
         verbose_name="Школа",
+    )
+    preferred_contact_method = models.CharField(
+        max_length=20,
+        choices=ContactMethod.choices,
+        null=True,
+        blank=True,
+        verbose_name="Спосіб зв'язку",
+    )
+    preferred_contact_value = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        verbose_name="Контакт для зв'язку",
     )
     telegram = models.CharField(
         max_length=255,
@@ -210,6 +228,33 @@ class Team(models.Model):
     @property
     def members_count(self):
         return 1 + self.participants.count()
+
+    @property
+    def effective_contact_method(self):
+        if self.preferred_contact_method and self.preferred_contact_value:
+            return self.preferred_contact_method
+        for method_name in (
+            self.ContactMethod.TELEGRAM,
+            self.ContactMethod.DISCORD,
+            self.ContactMethod.VIBER,
+        ):
+            if getattr(self, method_name, None):
+                return method_name
+        return ""
+
+    @property
+    def effective_contact_value(self):
+        if self.preferred_contact_method and self.preferred_contact_value:
+            return self.preferred_contact_value
+        method_name = self.effective_contact_method
+        return getattr(self, method_name, "") if method_name else ""
+
+    @property
+    def effective_contact_label(self):
+        method_name = self.effective_contact_method
+        if not method_name:
+            return ""
+        return self.ContactMethod(method_name).label
 
 
 class TournamentRegistration(models.Model):

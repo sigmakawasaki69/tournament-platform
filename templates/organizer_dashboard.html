@@ -177,10 +177,8 @@
                                 <span class="status-badge status-{{ reg.status }}">{{ reg.get_status_display }}</span>
                             </div>
                             <div class="meta">
-                                Контактна особа: {{ reg.team.captain_name }} * ({{ reg.team.captain_email }})<br>
-                                Телеграм: {{ reg.team.telegram|default:"-" }}<br>
-                                Діскорд: {{ reg.team.discord|default:"-" }}<br>
-                                Вайбер: {{ reg.team.viber|default:"-" }}<br>
+                                Контактна особа (капітан): {{ reg.team.captain_name }} * ({{ reg.team.captain_email }})<br>
+                                Зв'язок: {% if reg.team.effective_contact_value %}{{ reg.team.effective_contact_label }} — {{ reg.team.effective_contact_value }}{% else %}-{% endif %}<br>
                                 Подав: {{ reg.registered_by.username }}
                             </div>
                             {% if reg.status == "pending" %}
