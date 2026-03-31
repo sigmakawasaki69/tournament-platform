@@ -102,6 +102,10 @@ class RegistrationService:
             raise ValidationError("Вкажіть ім'я контактної особи.")
         if not captain_email:
             raise ValidationError("Вкажіть email контактної особи.")
+        if not preferred_contact_method:
+            raise ValidationError("Вкажіть зручний спосіб зв'язку.")
+        if not preferred_contact_value:
+            raise ValidationError("Вкажіть контакт для зв'язку.")
         try:
             validate_email(captain_email)
         except ValidationError as exc:

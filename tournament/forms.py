@@ -299,10 +299,10 @@ class TeamForm(forms.ModelForm):
 
         preferred_contact_method = cleaned_data.get('preferred_contact_method') or ''
         preferred_contact_value = cleaned_data.get('preferred_contact_value') or ''
-        if preferred_contact_method and not preferred_contact_value:
-            self.add_error('preferred_contact_value', "Вкажіть контакт для обраного способу зв'язку.")
-        if preferred_contact_value and not preferred_contact_method:
-            self.add_error('preferred_contact_method', "Оберіть спосіб зв'язку.")
+        if not preferred_contact_method:
+            self.add_error('preferred_contact_method', "Оберіть зручний спосіб зв'язку.")
+        if not preferred_contact_value:
+            self.add_error('preferred_contact_value', "Вкажіть контакт для зв'язку.")
         return cleaned_data
 
     def save(self, commit=True):
@@ -476,10 +476,10 @@ class TournamentRegistrationForm(forms.Form):
             self.add_error('captain_name', "Вкажіть ім'я контактної особи (капітана).")
         if not cleaned_data['captain_email']:
             self.add_error('captain_email', 'Вкажіть електронну пошту контактної особи (капітана).')
-        if cleaned_data['preferred_contact_method'] and not cleaned_data['preferred_contact_value']:
-            self.add_error('preferred_contact_value', "Вкажіть контакт для обраного способу зв'язку.")
-        if cleaned_data['preferred_contact_value'] and not cleaned_data['preferred_contact_method']:
-            self.add_error('preferred_contact_method', "Оберіть спосіб зв'язку.")
+        if not cleaned_data['preferred_contact_method']:
+            self.add_error('preferred_contact_method', "Оберіть зручний спосіб зв'язку.")
+        if not cleaned_data['preferred_contact_value']:
+            self.add_error('preferred_contact_value', "Вкажіть контакт для зв'язку.")
 
         for field_config in (self.tournament.registration_fields_config if self.tournament else []):
             if field_config['type'] != 'participants':

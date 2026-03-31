@@ -438,6 +438,26 @@ class TournamentPlatformViewTests(TestCase):
         self.assertRedirects(response, reverse("participant_dashboard"))
         self.assertTrue(Team.objects.filter(name="Participant Team", captain_user=self.participant_user).exists())
 
+    def test_participant_cannot_create_team_without_contact_method(self):
+        self.client.force_login(self.participant_user)
+
+        response = self.client.post(
+            reverse("create_team"),
+            {
+                "name": "Participant Team",
+                "captain_name": "Member Captain",
+                "captain_email": "member@example.com",
+                "school": "School 1",
+                "preferred_contact_method": "",
+                "preferred_contact_value": "",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Оберіть зручний спосіб")
+        self.assertContains(response, "Вкажіть контакт для зв")
+        self.assertFalse(Team.objects.filter(name="Participant Team", captain_user=self.participant_user).exists())
+
     def test_participant_can_submit_registration_from_public_tournament_page(self):
         tournament = self.create_tournament()
         self.client.force_login(self.participant_user)
@@ -466,6 +486,27 @@ class TournamentPlatformViewTests(TestCase):
         self.assertFalse(team.viber)
         self.participant_user.refresh_from_db()
         self.assertEqual(self.participant_user.role, "participant")
+
+    def test_public_tournament_registration_requires_contact_method(self):
+        tournament = self.create_tournament()
+        self.client.force_login(self.participant_user)
+
+        response = self.client.post(
+            reverse("public_tournament_detail", args=[tournament.id]),
+            {
+                "team_name": "Open Team",
+                "captain_name": "Member Captain",
+                "captain_email": self.participant_user.email,
+                "school": "Ліцей",
+                "preferred_contact_method": "",
+                "preferred_contact_value": "",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Оберіть зручний спосіб")
+        self.assertContains(response, "Вкажіть контакт для зв")
+        self.assertFalse(Team.objects.filter(captain_user=self.participant_user, name="Open Team").exists())
 
 
     def test_admin_can_create_user_from_users_tab(self):
