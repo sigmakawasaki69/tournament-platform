@@ -508,6 +508,41 @@ class TournamentPlatformViewTests(TestCase):
         self.assertContains(response, "Вкажіть контакт для зв")
         self.assertFalse(Team.objects.filter(captain_user=self.participant_user, name="Open Team").exists())
 
+    def test_create_tournament_requires_at_least_one_allowed_contact_method(self):
+        self.client.force_login(self.admin_user)
+
+        response = self.client.post(
+            reverse("create_tournament"),
+            {
+                "name": "No Contacts Cup",
+                "description": "Tournament without contacts",
+                "registration_form_description": "",
+                "allowed_contact_methods": [],
+                "start_date": (timezone.now() + timedelta(days=2)).strftime("%Y-%m-%dT%H:%M"),
+                "end_date": (timezone.now() + timedelta(days=3)).strftime("%Y-%m-%dT%H:%M"),
+                "registration_start": timezone.now().strftime("%Y-%m-%dT%H:%M"),
+                "registration_end": (timezone.now() + timedelta(days=1)).strftime("%Y-%m-%dT%H:%M"),
+                "min_team_members": 2,
+                "max_team_members": 4,
+                "max_teams": 20,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Залиште принаймні один спосіб зв")
+        self.assertFalse(Tournament.objects.filter(name="No Contacts Cup").exists())
+
+    def test_public_tournament_registration_shows_only_allowed_contact_methods(self):
+        tournament = self.create_tournament(allowed_contact_methods=["discord"])
+        self.client.force_login(self.participant_user)
+
+        response = self.client.get(reverse("public_tournament_detail", args=[tournament.id]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Діскорд")
+        self.assertNotContains(response, "Телеграм")
+        self.assertNotContains(response, "Вайбер")
+
 
     def test_admin_can_create_user_from_users_tab(self):
         self.client.force_login(self.admin_user)

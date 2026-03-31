@@ -200,6 +200,13 @@
                                 {{ form.jury_users }}
                                 {% if form.jury_users.errors %}<div class="field-errors">{{ form.jury_users.errors }}</div>{% endif %}
                             </div>
+                            <div class="field-group field-span-2">
+                                <label>Доступні месенджери для команди</label>
+                                <div class="checkbox-row" style="align-items:flex-start; min-height:auto; flex-direction:column;">
+                                    {{ form.allowed_contact_methods }}
+                                </div>
+                                {% if form.allowed_contact_methods.errors %}<div class="field-errors">{{ form.allowed_contact_methods.errors }}</div>{% endif %}
+                            </div>
                         </div>
                     </section>
 

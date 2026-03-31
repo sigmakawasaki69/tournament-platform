@@ -123,6 +123,12 @@ def to_local_form_datetime(value):
 
 
 class TournamentForm(forms.ModelForm):
+    allowed_contact_methods = forms.MultipleChoiceField(
+        required=False,
+        label="Доступні месенджери для зв'язку з командою",
+        choices=Team.ContactMethod.choices,
+        widget=forms.CheckboxSelectMultiple(),
+    )
     registration_fields_definition = forms.CharField(
         required=False,
         label='Додаткові поля анкети',
@@ -169,6 +175,7 @@ class TournamentForm(forms.ModelForm):
             'description',
             'registration_form_description',
             'registration_fields_definition',
+            'allowed_contact_methods',
             'start_date',
             'end_date',
             'registration_start',
@@ -194,11 +201,16 @@ class TournamentForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         config = self.instance.registration_fields_config if getattr(self.instance, 'pk', None) else []
         self.fields['registration_fields_definition'].initial = serialize_registration_fields_definition(config)
+        self.fields['allowed_contact_methods'].initial = (
+            getattr(self.instance, 'effective_allowed_contact_methods', None)
+            or Tournament.DEFAULT_CONTACT_METHODS
+        )
         for field_name in [
             'name',
             'description',
             'registration_form_description',
             'registration_fields_definition',
+            'allowed_contact_methods',
             'start_date',
             'end_date',
             'registration_start',
@@ -228,6 +240,8 @@ class TournamentForm(forms.ModelForm):
         cleaned_data['name'] = name
         cleaned_data['description'] = description
         registration_fields_definition = cleaned_data.get('registration_fields_definition', '')
+        allowed_contact_methods = cleaned_data.get('allowed_contact_methods') or []
+        cleaned_data['allowed_contact_methods'] = allowed_contact_methods
 
         try:
             cleaned_data['registration_fields_config'] = parse_registration_fields_definition(
@@ -236,6 +250,9 @@ class TournamentForm(forms.ModelForm):
         except ValidationError as exc:
             for error in exc.messages:
                 self.add_error('registration_fields_definition', error)
+
+        if not allowed_contact_methods:
+            self.add_error('allowed_contact_methods', "Залиште принаймні один спосіб зв'язку для команди.")
 
         if is_draft:
             return cleaned_data
@@ -273,6 +290,10 @@ class TournamentForm(forms.ModelForm):
     def save(self, commit=True):
         instance = super().save(commit=False)
         instance.registration_fields_config = self.cleaned_data.get('registration_fields_config', [])
+        instance.allowed_contact_methods = self.cleaned_data.get(
+            'allowed_contact_methods',
+            Tournament.DEFAULT_CONTACT_METHODS,
+        )
         if commit:
             instance.save()
             self.save_m2m()
@@ -388,9 +409,9 @@ class TournamentRegistrationForm(forms.Form):
             widget=forms.TextInput(attrs={'class': 'form-input'}),
         )
         self.fields['preferred_contact_method'] = forms.ChoiceField(
-            required=False,
+            required=True,
             label="Зручний спосіб зв'язку",
-            choices=[('', 'Не вказано'), *Team.ContactMethod.choices],
+            choices=[],
             widget=forms.Select(attrs={'class': 'form-input'}),
         )
         self.fields['preferred_contact_value'] = forms.CharField(
@@ -404,12 +425,25 @@ class TournamentRegistrationForm(forms.Form):
             ),
         )
 
+        allowed_contact_methods = (
+            self.tournament.effective_allowed_contact_methods if self.tournament else Tournament.DEFAULT_CONTACT_METHODS
+        )
+        self.fields['preferred_contact_method'].choices = [
+            ('', 'Оберіть спосіб'),
+            *[
+                (value, label)
+                for value, label in Team.ContactMethod.choices
+                if value in allowed_contact_methods
+            ],
+        ]
+
         if existing_team is not None:
             self.fields['team_name'].initial = existing_team.name
             self.fields['captain_name'].initial = existing_team.captain_name
             self.fields['captain_email'].initial = existing_team.captain_email
             self.fields['school'].initial = existing_team.school
-            self.fields['preferred_contact_method'].initial = existing_team.effective_contact_method
+            if existing_team.effective_contact_method in allowed_contact_methods:
+                self.fields['preferred_contact_method'].initial = existing_team.effective_contact_method
             self.fields['preferred_contact_value'].initial = existing_team.effective_contact_value
         elif user is not None:
             self.fields['captain_name'].initial = user.username

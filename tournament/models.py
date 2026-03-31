@@ -5,6 +5,8 @@ from django.utils import timezone
 
 
 class Tournament(models.Model):
+    DEFAULT_CONTACT_METHODS = ["telegram", "discord", "viber"]
+
     name = models.CharField(max_length=255, verbose_name="Назва")
     description = models.TextField(verbose_name="Опис")
     registration_form_description = models.TextField(
@@ -16,6 +18,11 @@ class Tournament(models.Model):
         blank=True,
         default=list,
         verbose_name="Поля форми реєстрації",
+    )
+    allowed_contact_methods = models.JSONField(
+        blank=True,
+        default=list,
+        verbose_name="Доступні способи зв'язку для команди",
     )
     start_date = models.DateTimeField(null=True, blank=True, db_index=True, verbose_name="Дата початку")
     end_date = models.DateTimeField(null=True, blank=True, db_index=True, verbose_name="Дата завершення")
@@ -72,6 +79,13 @@ class Tournament(models.Model):
 
     def __str__(self):
         return self.name
+
+    @property
+    def effective_allowed_contact_methods(self):
+        methods = self.allowed_contact_methods or self.DEFAULT_CONTACT_METHODS
+        valid_values = {choice[0] for choice in Team.ContactMethod.choices}
+        filtered_methods = [method for method in methods if method in valid_values]
+        return filtered_methods or self.DEFAULT_CONTACT_METHODS
 
     @property
     def lifecycle_status(self):
@@ -224,6 +238,13 @@ class Team(models.Model):
 
     def __str__(self):
         return self.name
+
+    @property
+    def effective_allowed_contact_methods(self):
+        methods = self.allowed_contact_methods or self.DEFAULT_CONTACT_METHODS
+        valid_values = {choice[0] for choice in Team.ContactMethod.choices}
+        filtered_methods = [method for method in methods if method in valid_values]
+        return filtered_methods or self.DEFAULT_CONTACT_METHODS
 
     @property
     def members_count(self):
