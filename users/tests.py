@@ -1669,6 +1669,45 @@ class TournamentPlatformViewTests(TestCase):
         self.assertContains(response, "Цей учасник уже є в команді.")
         self.assertEqual(team.participants.filter(email="member@example.com").count(), 1)
 
+    def test_captain_cannot_add_participant_from_another_team(self):
+        team = Team.objects.create(
+            name="Main Team",
+            captain_user=self.captain,
+            captain_name="Captain",
+            captain_email="captain@example.com",
+        )
+        other_captain = User.objects.create_user(
+            username="othercaptain",
+            password="secret123",
+            role="participant",
+            is_approved=True,
+            email="othercaptain@example.com",
+        )
+        other_team = Team.objects.create(
+            name="Other Team",
+            captain_user=other_captain,
+            captain_name="Other Captain",
+            captain_email="othercaptain@example.com",
+        )
+        Participant.objects.create(
+            team=other_team,
+            full_name="Existing Elsewhere",
+            email="sharedmember@example.com",
+        )
+
+        response = self.client.post(
+            reverse("add_participant", args=[team.id]),
+            {
+                "full_name": "Existing Elsewhere",
+                "email": "sharedmember@example.com",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Цей учасник уже зареєстрований в іншій команді.")
+        self.assertFalse(team.participants.filter(email="sharedmember@example.com").exists())
+        self.assertEqual(other_team.participants.filter(email="sharedmember@example.com").count(), 1)
+
     @patch("users.views.email_delivery_ready", return_value=True)
     @patch("users.views.send_team_invitation_email")
     def test_captain_sees_message_and_invitation_is_sent_for_unregistered_participant(self, mock_send_invite, _mock_delivery_ready):

@@ -2138,6 +2138,10 @@ def add_participant(request, team_id):
                 form.add_error('email', 'Цей учасник уже є в команді.')
             elif team.participants.filter(email__iexact=participant_email).exists():
                 form.add_error('email', 'Цей учасник уже є в команді.')
+            elif Team.objects.filter(captain_email__iexact=participant_email).exclude(id=team.id).exists():
+                form.add_error('email', 'Цей учасник уже зареєстрований в іншій команді.')
+            elif Participant.objects.filter(email__iexact=participant_email).exclude(team=team).exists():
+                form.add_error('email', 'Цей учасник уже зареєстрований в іншій команді.')
             else:
                 try:
                     linked_user = CustomUser.objects.filter(email__iexact=participant_email).first()
