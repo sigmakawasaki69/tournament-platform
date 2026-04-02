@@ -1644,6 +1644,31 @@ class TournamentPlatformViewTests(TestCase):
         self.assertRedirects(response, reverse("team_detail", args=[team.id]))
         self.assertFalse(team.participants.filter(email="late@example.com").exists())
 
+    def test_captain_cannot_add_duplicate_participant_to_team(self):
+        team = Team.objects.create(
+            name="Duplicate Team",
+            captain_user=self.captain,
+            captain_name="Captain",
+            captain_email="captain@example.com",
+        )
+        Participant.objects.create(
+            team=team,
+            full_name="Existing Member",
+            email="member@example.com",
+        )
+
+        response = self.client.post(
+            reverse("add_participant", args=[team.id]),
+            {
+                "full_name": "Existing Member Again",
+                "email": "member@example.com",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Цей учасник уже є в команді.")
+        self.assertEqual(team.participants.filter(email="member@example.com").count(), 1)
+
     def test_team_detail_counts_captain_in_members_total(self):
         team = Team.objects.create(
             name="Count Team",

@@ -140,14 +140,23 @@ body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(180deg,#ee
             <form class="inline-form" method="post" action="{% url 'add_participant' team.id %}">
                 {% csrf_token %}
                 <div class="hint">Адміністратор або контактна особа (капітан) може додавати учасників прямо тут, без переходу на окрему сторінку.</div>
+                {% if participant_form.non_field_errors %}
+                    <div class="notice" style="margin-bottom:12px;">{{ participant_form.non_field_errors }}</div>
+                {% endif %}
                 <div class="inline-form-grid">
                     <div>
                         <label for="{{ participant_form.full_name.id_for_label }}">Ім'я</label>
                         {{ participant_form.full_name }}
+                        {% if participant_form.full_name.errors %}
+                            <div class="hint" style="color:#b00020;margin:8px 0 0;">{{ participant_form.full_name.errors|join:", " }}</div>
+                        {% endif %}
                     </div>
                     <div>
                         <label for="{{ participant_form.email.id_for_label }}">Електронна пошта</label>
                         {{ participant_form.email }}
+                        {% if participant_form.email.errors %}
+                            <div class="hint" style="color:#b00020;margin:8px 0 0;">{{ participant_form.email.errors|join:", " }}</div>
+                        {% endif %}
                     </div>
                     <div><button class="btn btn-green" type="submit">Додати</button></div>
                 </div>

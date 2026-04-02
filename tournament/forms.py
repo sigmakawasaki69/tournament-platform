@@ -378,6 +378,12 @@ class TeamForm(forms.ModelForm):
 
 
 class ParticipantForm(forms.ModelForm):
+    def clean_full_name(self):
+        return (self.cleaned_data.get('full_name') or '').strip()
+
+    def clean_email(self):
+        return (self.cleaned_data.get('email') or '').strip().lower()
+
     class Meta:
         model = Participant
         fields = ['full_name', 'email']

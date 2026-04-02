@@ -15,7 +15,7 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
 from django.core.exceptions import ValidationError
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.db.models import Q
 from django.template.loader import render_to_string
 from django.http import HttpResponse, HttpResponseNotAllowed, JsonResponse
@@ -60,6 +60,33 @@ from .forms import AdminCreateUserForm, LoginForm, RegisterForm
 from .models import CustomUser
 
 logger = logging.getLogger(__name__)
+
+
+def build_team_detail_context(request, team, participant_form=None):
+    submissions = team.submissions.select_related('task', 'task__tournament').all()
+    roster_locked = is_team_roster_locked(team) and not request.user.is_superuser
+    quick_overview = build_team_quick_overview(team)
+    return {
+        'team': team,
+        'participants_count': team.members_count,
+        'submissions': submissions,
+        'quick_overview': quick_overview,
+        'participant_form': participant_form or ParticipantForm(),
+        'can_manage_team': request.user.is_superuser or team.captain_user_id == request.user.id,
+        'can_manage_roster': request.user.is_superuser or (
+            team.captain_user_id == request.user.id and not roster_locked
+        ),
+        'can_edit_team': request.user.is_superuser or (
+            team.captain_user_id == request.user.id and not roster_locked
+        ),
+        'can_leave_team': (
+            not request.user.is_superuser
+            and team.captain_user_id != request.user.id
+            and team.participants.filter(email=request.user.email).exists()
+            and not roster_locked
+        ),
+        'roster_locked': roster_locked,
+    }
 
 
 def send_platform_email(to_email, subject, message):
@@ -2020,30 +2047,7 @@ def team_detail(request, team_id):
     else:
         team = get_object_or_404(team_queryset, id=team_id, participants__email=request.user.email)
 
-    submissions = team.submissions.select_related('task', 'task__tournament').all()
-    roster_locked = is_team_roster_locked(team) and not request.user.is_superuser
-    quick_overview = build_team_quick_overview(team)
-    return render(request, 'team_detail.html', {
-        'team': team,
-        'participants_count': team.members_count,
-        'submissions': submissions,
-        'quick_overview': quick_overview,
-        'participant_form': ParticipantForm(),
-        'can_manage_team': request.user.is_superuser or team.captain_user_id == request.user.id,
-        'can_manage_roster': request.user.is_superuser or (
-            team.captain_user_id == request.user.id and not roster_locked
-        ),
-        'can_edit_team': request.user.is_superuser or (
-            team.captain_user_id == request.user.id and not roster_locked
-        ),
-        'can_leave_team': (
-            not request.user.is_superuser
-            and team.captain_user_id != request.user.id
-            and team.participants.filter(email=request.user.email).exists()
-            and not roster_locked
-        ),
-        'roster_locked': roster_locked,
-    })
+    return render(request, 'team_detail.html', build_team_detail_context(request, team))
 
 
 @login_required
@@ -2114,14 +2118,24 @@ def add_participant(request, team_id):
     if request.method == 'POST':
         form = ParticipantForm(request.POST)
         if form.is_valid():
-            participant = form.save(commit=False)
-            participant.team = team
-            participant.save()
-            return redirect('team_detail', team_id=team.id)
+            participant_email = form.cleaned_data['email']
+            if participant_email == team.captain_email.lower():
+                form.add_error('email', 'Цей учасник уже є в команді.')
+            elif team.participants.filter(email__iexact=participant_email).exists():
+                form.add_error('email', 'Цей учасник уже є в команді.')
+            else:
+                participant = form.save(commit=False)
+                participant.team = team
+                try:
+                    participant.save()
+                except IntegrityError:
+                    form.add_error('email', 'Цей учасник уже є в команді.')
+                else:
+                    return redirect('team_detail', team_id=team.id)
     else:
         form = ParticipantForm()
 
-    return render(request, 'add_participant.html', {'form': form, 'team': team})
+    return render(request, 'team_detail.html', build_team_detail_context(request, team, participant_form=form))
 
 
 @login_required
