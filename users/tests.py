@@ -1669,6 +1669,56 @@ class TournamentPlatformViewTests(TestCase):
         self.assertContains(response, "Цей учасник уже є в команді.")
         self.assertEqual(team.participants.filter(email="member@example.com").count(), 1)
 
+    @patch("users.views.email_delivery_ready", return_value=True)
+    @patch("users.views.send_team_invitation_email")
+    def test_captain_sees_message_and_invitation_is_sent_for_unregistered_participant(self, mock_send_invite, _mock_delivery_ready):
+        team = Team.objects.create(
+            name="Invite Team",
+            captain_user=self.captain,
+            captain_name="Captain",
+            captain_email="captain@example.com",
+        )
+
+        response = self.client.post(
+            reverse("add_participant", args=[team.id]),
+            {
+                "full_name": "New Person",
+                "email": "newperson@example.com",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response,
+            "Такого учасника не зареєстровано на платформі. Ми надіслали йому лист із запрошенням зареєструватися.",
+        )
+        self.assertFalse(team.participants.filter(email="newperson@example.com").exists())
+        mock_send_invite.assert_called_once()
+
+    @override_settings(DEBUG=False, EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+    def test_captain_sees_message_when_unregistered_participant_email_invite_is_unavailable(self):
+        team = Team.objects.create(
+            name="Invite Team",
+            captain_user=self.captain,
+            captain_name="Captain",
+            captain_email="captain@example.com",
+        )
+
+        response = self.client.post(
+            reverse("add_participant", args=[team.id]),
+            {
+                "full_name": "New Person",
+                "email": "newperson@example.com",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response,
+            "Такого учасника не зареєстровано на платформі. Запрошення не вдалося надіслати, бо email не налаштовано.",
+        )
+        self.assertFalse(team.participants.filter(email="newperson@example.com").exists())
+
     def test_team_detail_counts_captain_in_members_total(self):
         team = Team.objects.create(
             name="Count Team",

@@ -180,6 +180,20 @@ def send_verification_email(request, user):
     send_platform_email(user.email, subject, message)
 
 
+def send_team_invitation_email(request, *, team, recipient_name, recipient_email):
+    registration_link = request.build_absolute_uri(reverse('register'))
+    subject = f'Запрошення до команди "{team.name}"'
+    greeting_name = recipient_name or recipient_email
+    message = (
+        f"Вітаємо, {greeting_name}!\n\n"
+        f'Вас намагаються додати до команди "{team.name}" на турнірній платформі.\n'
+        "Щоб приєднатися до команди та отримати доступ до турнірів, спочатку зареєструйтеся на сайті.\n\n"
+        f"Посилання для реєстрації: {registration_link}\n\n"
+        "Після реєстрації організатор або контактна особа команди зможе додати вас повторно."
+    )
+    send_platform_email(recipient_email, subject, message)
+
+
 def email_delivery_ready():
     non_delivery_backends = {
         'django.core.mail.backends.console.EmailBackend',
@@ -2118,20 +2132,45 @@ def add_participant(request, team_id):
     if request.method == 'POST':
         form = ParticipantForm(request.POST)
         if form.is_valid():
+            participant_name = form.cleaned_data['full_name']
             participant_email = form.cleaned_data['email']
             if participant_email == team.captain_email.lower():
                 form.add_error('email', 'Цей учасник уже є в команді.')
             elif team.participants.filter(email__iexact=participant_email).exists():
                 form.add_error('email', 'Цей учасник уже є в команді.')
             else:
-                participant = form.save(commit=False)
-                participant.team = team
                 try:
-                    participant.save()
+                    linked_user = CustomUser.objects.filter(email__iexact=participant_email).first()
+                    if linked_user is None:
+                        if not email_delivery_ready():
+                            form.add_error(
+                                'email',
+                                'Такого учасника не зареєстровано на платформі. Запрошення не вдалося надіслати, бо email не налаштовано.',
+                            )
+                        else:
+                            send_team_invitation_email(
+                                request,
+                                team=team,
+                                recipient_name=participant_name,
+                                recipient_email=participant_email,
+                            )
+                            form.add_error(
+                                'email',
+                                'Такого учасника не зареєстровано на платформі. Ми надіслали йому лист із запрошенням зареєструватися.',
+                            )
+                    else:
+                        participant = form.save(commit=False)
+                        participant.team = team
+                        participant.save()
+                        return redirect('team_detail', team_id=team.id)
                 except IntegrityError:
                     form.add_error('email', 'Цей учасник уже є в команді.')
-                else:
-                    return redirect('team_detail', team_id=team.id)
+                except Exception:
+                    logger.exception('Failed to send invitation email for team participant')
+                    form.add_error(
+                        'email',
+                        'Такого учасника не зареєстровано на платформі. Не вдалося надіслати лист-запрошення, спробуйте пізніше.',
+                    )
     else:
         form = ParticipantForm()
 
