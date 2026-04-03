@@ -574,21 +574,21 @@
                         <div class="meta links">
                             GitHub:
                             {% if submission.github_link %}
-                                <a href="{{ submission.github_link }}" target="_blank">{{ submission.github_link }}</a>
+                                <a href="{{ submission.github_link }}">{{ submission.github_link }}</a>
                             {% else %}
                                 -
                             {% endif %}
                             <br>
                             Відео:
                             {% if submission.video_link %}
-                                <a href="{{ submission.video_link }}" target="_blank">{{ submission.video_link }}</a>
+                                <a href="{{ submission.video_link }}">{{ submission.video_link }}</a>
                             {% else %}
                                 -
                             {% endif %}
                             <br>
                             Демо:
                             {% if submission.live_demo %}
-                                <a href="{{ submission.live_demo }}" target="_blank">{{ submission.live_demo }}</a>
+                                <a href="{{ submission.live_demo }}">{{ submission.live_demo }}</a>
                             {% else %}
                                 -
                             {% endif %}

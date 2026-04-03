@@ -68,13 +68,13 @@
             <form method="post">
                 {% csrf_token %}
 
-                <label>***?? *??</label>
+                <label>Повне ім'я</label>
                 {{ form.full_name }}
                 {% if form.full_name.errors %}
                     <div class="field-errors">{{ form.full_name.errors }}</div>
                 {% endif %}
 
-                <label>***?? *??</label>
+                <label>Електронна пошта</label>
                 {{ form.email }}
                 {% if form.email.errors %}
                     <div class="field-errors">{{ form.email.errors }}</div>

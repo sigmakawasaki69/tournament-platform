@@ -57,9 +57,9 @@ body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(180deg,#ee
 </div>
 
 <div class="links muted">
-GitHub: <a href="{{ row.submission.github_link }}" target="_blank">{{ row.submission.github_link }}</a><br>
-Відео: <a href="{{ row.submission.video_link }}" target="_blank">{{ row.submission.video_link }}</a><br>
-{% if row.submission.live_demo %}Демо: <a href="{{ row.submission.live_demo }}" target="_blank">{{ row.submission.live_demo }}</a><br>{% endif %}
+GitHub: <a href="{{ row.submission.github_link }}">{{ row.submission.github_link }}</a><br>
+Відео: <a href="{{ row.submission.video_link }}">{{ row.submission.video_link }}</a><br>
+{% if row.submission.live_demo %}Демо: <a href="{{ row.submission.live_demo }}">{{ row.submission.live_demo }}</a><br>{% endif %}
 Подано: {{ row.submission.submitted_at }}
 </div>
 

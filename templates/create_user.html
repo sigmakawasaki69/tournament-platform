@@ -133,7 +133,7 @@
             <div class="page-header">
                 <div>
                     <h1>Створити користувача</h1>
-                    <div class="page-subtitle">***? **?? ***?? * **?, ***?? *?, **? ***?? ?? *?? *?.</div>
+                    <div class="page-subtitle">Створіть новий акаунт вручну, якщо потрібно швидко додати людину до платформи.</div>
                 </div>
                 <a class="back-link" href="{{ dashboard_url|default:request.path }}">Назад до кабінету</a>
             </div>
@@ -156,7 +156,7 @@
                             {% endif %}
                         </div>
                         <div class="field-group">
-                            <label for="{{ form.email.id_for_label }}">***?? *??</label>
+                            <label for="{{ form.email.id_for_label }}">Електронна пошта</label>
                             {{ form.email }}
                             {% if form.email.errors %}
                                 <div class="field-errors">{{ form.email.errors }}</div>

@@ -71,9 +71,9 @@
                         <div class="submission">
                             <div><strong>{{ row_submission.submission.task.title }}</strong></div>
                             <div class="meta links">
-                                GitHub: <a href="{{ row_submission.submission.github_link }}" target="_blank">{{ row_submission.submission.github_link }}</a><br>
-                                Відео: <a href="{{ row_submission.submission.video_link }}" target="_blank">{{ row_submission.submission.video_link }}</a><br>
-                                {% if row_submission.submission.live_demo %}Демо: <a href="{{ row_submission.submission.live_demo }}" target="_blank">{{ row_submission.submission.live_demo }}</a><br>{% endif %}
+                                GitHub: <a href="{{ row_submission.submission.github_link }}">{{ row_submission.submission.github_link }}</a><br>
+                                Відео: <a href="{{ row_submission.submission.video_link }}">{{ row_submission.submission.video_link }}</a><br>
+                                {% if row_submission.submission.live_demo %}Демо: <a href="{{ row_submission.submission.live_demo }}">{{ row_submission.submission.live_demo }}</a><br>{% endif %}
                                 Опис: {{ row_submission.submission.description|default:"-" }}<br>
                                 Фінальна версія: {{ row_submission.submission.is_final|yesno:"так,ні" }}<br>
                                 Подано: {{ row_submission.submission.submitted_at }}
@@ -129,9 +129,9 @@
                         <div class="submission">
                             <div><strong>{{ row_submission.submission.task.title }}</strong></div>
                             <div class="meta links">
-                                GitHub: <a href="{{ row_submission.submission.github_link }}" target="_blank">{{ row_submission.submission.github_link }}</a><br>
-                                Відео: <a href="{{ row_submission.submission.video_link }}" target="_blank">{{ row_submission.submission.video_link }}</a><br>
-                                {% if row_submission.submission.live_demo %}Демо: <a href="{{ row_submission.submission.live_demo }}" target="_blank">{{ row_submission.submission.live_demo }}</a><br>{% endif %}
+                                GitHub: <a href="{{ row_submission.submission.github_link }}">{{ row_submission.submission.github_link }}</a><br>
+                                Відео: <a href="{{ row_submission.submission.video_link }}">{{ row_submission.submission.video_link }}</a><br>
+                                {% if row_submission.submission.live_demo %}Демо: <a href="{{ row_submission.submission.live_demo }}">{{ row_submission.submission.live_demo }}</a><br>{% endif %}
                                 Опис: {{ row_submission.submission.description|default:"-" }}<br>
                                 Фінальна версія: {{ row_submission.submission.is_final|yesno:"так,ні" }}<br>
                                 Подано: {{ row_submission.submission.submitted_at }}
