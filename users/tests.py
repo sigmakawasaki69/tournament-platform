@@ -1914,8 +1914,8 @@ class TournamentPlatformViewTests(TestCase):
         self.assertFalse(team.participants.filter(email="sharedmember@example.com").exists())
         self.assertEqual(other_team.participants.filter(email="sharedmember@example.com").count(), 1)
 
-    @patch("users.views.email_delivery_ready", return_value=True)
-    @patch("users.views.send_team_invitation_email")
+    @patch("users.team_services.email_delivery_ready", return_value=True)
+    @patch("users.team_services.send_team_invitation_email")
     def test_captain_sees_message_and_invitation_is_sent_for_unregistered_participant(self, mock_send_invite, _mock_delivery_ready):
         team = Team.objects.create(
             name="Invite Team",
@@ -1940,7 +1940,7 @@ class TournamentPlatformViewTests(TestCase):
         self.assertFalse(team.participants.filter(email="newperson@example.com").exists())
         mock_send_invite.assert_called_once()
 
-    @override_settings(DEBUG=False, EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+    @override_settings(DEBUG=False, EMAIL_BACKEND="django.core.mail.backends.console.EmailBackend")
     def test_captain_sees_message_when_unregistered_participant_email_invite_is_unavailable(self):
         team = Team.objects.create(
             name="Invite Team",

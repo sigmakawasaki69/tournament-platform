@@ -12,7 +12,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError, transaction
+from django.db import transaction
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseNotAllowed, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -61,7 +61,6 @@ from .platform_services import (
     get_login_throttle,
     normalize_login_identifier,
     register_failed_login,
-    send_team_invitation_email,
     send_verification_email,
 )
 from .policies import (
@@ -93,6 +92,7 @@ from .selectors import (
     collect_registration_recipients,
     get_primary_team_with_quick_overview,
 )
+from .team_services import TeamManagementService
 
 logger = logging.getLogger(__name__)
 
@@ -1577,13 +1577,7 @@ def create_team(request):
     if request.method == 'POST':
         form = TeamForm(request.POST)
         if form.is_valid():
-            team = form.save(commit=False)
-            team.captain_user = request.user
-            if not team.captain_name:
-                team.captain_name = request.user.username
-            if not team.captain_email:
-                team.captain_email = request.user.email
-            team.save()
+            TeamManagementService.create_team_for_user(user=request.user, form=form)
             return redirect(get_safe_redirect(request, next_url, reverse('participant_dashboard')))
     else:
         form = TeamForm(initial={
@@ -1674,7 +1668,7 @@ def edit_team(request, team_id):
     if request.method == 'POST':
         form = TeamForm(request.POST, instance=team)
         if form.is_valid():
-            form.save()
+            TeamManagementService.update_team(form=form)
             return redirect('team_detail', team_id=team.id)
     else:
         form = TeamForm(instance=team)
@@ -1730,49 +1724,14 @@ def add_participant(request, team_id):
     if request.method == 'POST':
         form = ParticipantForm(request.POST)
         if form.is_valid():
-            participant_name = form.cleaned_data['full_name']
-            participant_email = form.cleaned_data['email']
-            if participant_email == team.captain_email.lower():
-                form.add_error('email', 'Цей учасник уже є в команді.')
-            elif team.participants.filter(email__iexact=participant_email).exists():
-                form.add_error('email', 'Цей учасник уже є в команді.')
-            elif Team.objects.filter(captain_email__iexact=participant_email).exclude(id=team.id).exists():
-                form.add_error('email', 'Цей учасник уже зареєстрований в іншій команді.')
-            elif Participant.objects.filter(email__iexact=participant_email).exclude(team=team).exists():
-                form.add_error('email', 'Цей учасник уже зареєстрований в іншій команді.')
-            else:
-                try:
-                    linked_user = CustomUser.objects.filter(email__iexact=participant_email).first()
-                    if linked_user is None:
-                        if not email_delivery_ready():
-                            form.add_error(
-                                'email',
-                                'Такого учасника не зареєстровано на платформі. Запрошення не вдалося надіслати, бо email не налаштовано.',
-                            )
-                        else:
-                            send_team_invitation_email(
-                                request,
-                                team=team,
-                                recipient_name=participant_name,
-                                recipient_email=participant_email,
-                            )
-                            form.add_error(
-                                'email',
-                                'Такого учасника не зареєстровано на платформі. Ми надіслали йому лист із запрошенням зареєструватися.',
-                            )
-                    else:
-                        participant = form.save(commit=False)
-                        participant.team = team
-                        participant.save()
-                        return redirect('team_detail', team_id=team.id)
-                except IntegrityError:
-                    form.add_error('email', 'Цей учасник уже є в команді.')
-                except Exception:
-                    logger.exception('Failed to send invitation email for team participant')
-                    form.add_error(
-                        'email',
-                        'Такого учасника не зареєстровано на платформі. Не вдалося надіслати лист-запрошення, спробуйте пізніше.',
-                    )
+            result = TeamManagementService.add_participant_to_team(
+                request=request,
+                team=team,
+                form=form,
+            )
+            if result.added:
+                return redirect('team_detail', team_id=team.id)
+            form.add_error(result.field or 'email', result.message)
     else:
         form = ParticipantForm()
 
@@ -1793,7 +1752,7 @@ def delete_participant(request, team_id, participant_id):
     participant = get_object_or_404(Participant, id=participant_id, team=team)
 
     if request.method == 'POST':
-        participant.delete()
+        TeamManagementService.delete_participant(participant=participant)
     return redirect('team_detail', team_id=team.id)
 
 
@@ -1810,7 +1769,7 @@ def delete_team(request, team_id):
         return redirect('team_detail', team_id=team.id)
 
     if request.method == 'POST':
-        team.delete()
+        TeamManagementService.delete_team(team=team)
         fallback = reverse('admin_teams') if is_admin_user(request.user) else reverse('participant_dashboard')
         return redirect(get_post_redirect(request, fallback))
 
@@ -1825,10 +1784,10 @@ def leave_team(request, team_id):
     team = get_object_or_404(Team, id=team_id)
     if is_team_roster_locked(team) and not request.user.is_superuser:
         return redirect('team_detail', team_id=team.id)
-    participant = get_object_or_404(Participant, team=team, email=request.user.email)
+    get_object_or_404(Participant, team=team, email=request.user.email)
 
     if request.method == 'POST':
-        participant.delete()
+        TeamManagementService.leave_team(team=team, user=request.user)
     return redirect('participant_dashboard')
 
 
