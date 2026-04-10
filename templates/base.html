@@ -1,0 +1,99 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Турнірна платформа{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <div class="page-shell">
+        <header class="topbar">
+            <div class="topbar-brand">
+                <div>
+                    <div class="brand-title">Турнірна платформа</div>
+                    <div class="brand-subtitle">Турніри, команди, повідомлення, сертифікати та результати в одному просторі.</div>
+                </div>
+            </div>
+
+            <div class="auth-actions">
+                {% if request.user.is_authenticated %}
+                    <nav class="nav-links" aria-label="Основна навігація">
+                        <a class="button-secondary" href="{% url 'home' %}">Головна</a>
+                        <a class="button-secondary" href="{% url 'messages' %}">
+                            Повідомлення
+                            {% if has_unread_announcements %}
+                                <span class="notify-dot">{{ unread_announcements_count }}</span>
+                            {% endif %}
+                        </a>
+                        <a class="button-secondary" href="{% url 'certificates' %}">
+                            Сертифікати
+                            {% if has_unread_certificates %}
+                                <span class="notify-dot">{{ unread_certificates_count }}</span>
+                            {% endif %}
+                        </a>
+                        <a class="button-secondary" href="{% url 'archive' %}">Архів</a>
+
+                        {% if request.user.is_superuser or request.user.role == 'admin' %}
+                            <details class="nav-dropdown">
+                                <summary class="button-secondary">Керування</summary>
+                                <div class="dropdown-menu">
+                                    <div class="dropdown-title">Адмінські розділи</div>
+                                    <a href="{% url 'admin_users' %}">Користувачі</a>
+                                    <a href="{% url 'admin_users' %}?action=create-user">Створити користувача</a>
+                                    <a href="{% url 'admin_active_tournaments' %}">Активні турніри</a>
+                                    <a href="{% url 'admin_inactive_tournaments' %}">Неактивні турніри</a>
+                                    <a href="{% url 'admin_active_tournaments' %}?action=create-tournament">Створити турнір</a>
+                                    <a href="{% url 'admin_teams' %}">Команди</a>
+                                    <a href="{% url 'admin_registrations' %}">Заявки</a>
+                                    <a href="{% url 'admin_submissions' %}">Роботи</a>
+                                    <a href="{% url 'admin_announcements' %}">Оголошення</a>
+                                    <a href="{% url 'admin_certificates' %}">Сертифікати</a>
+                                </div>
+                            </details>
+                        {% elif request.user.role == 'participant' %}
+                            <a class="button-secondary" href="{% url 'profile' %}">Профіль</a>
+                            <a class="button-secondary" href="{% url 'my_team' %}">Моя команда</a>
+                        {% elif request.user.role == 'jury' %}
+                            <a class="button-secondary" href="{% url 'jury_dashboard' %}">Журі</a>
+                        {% elif request.user.role == 'organizer' %}
+                            <a class="button-secondary" href="{% url 'organizer_dashboard' %}">Мої турніри</a>
+                            <a class="button-secondary" href="{% url 'create_tournament' %}">Створити турнір</a>
+                        {% endif %}
+                    </nav>
+
+                    <a class="button" href="{% url 'logout' %}">Вийти</a>
+                {% else %}
+                    <a class="button-secondary" href="{% url 'login' %}">Увійти</a>
+                    <a class="button" href="{% url 'register' %}">Зареєструватися</a>
+                {% endif %}
+            </div>
+        </header>
+
+        {% if messages %}
+            <div class="spacer-top">
+                {% for message in messages %}
+                    <div class="message-box {% if message.tags == 'error' %}error{% elif message.tags == 'warning' %}warn{% elif message.tags == 'success' %}success{% else %}info{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <script>
+        document.addEventListener('click', function (event) {
+            document.querySelectorAll('.nav-dropdown[open]').forEach(function (dropdown) {
+                if (!dropdown.contains(event.target)) {
+                    dropdown.removeAttribute('open');
+                }
+            });
+        });
+    </script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

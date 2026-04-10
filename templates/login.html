@@ -1,160 +1,67 @@
-<!DOCTYPE html>
-<html lang="uk">
-<head>
-    <meta charset="UTF-8">
-    <title>Вхід</title>
-    <style>
-        * { box-sizing: border-box; }
-        body {
-            margin: 0;
-            min-height: 100vh;
-            font-family: Arial, sans-serif;
-            background:
-                radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), transparent 28%),
-                linear-gradient(180deg, #eef4ff 0%, #f7faff 42%, #ffffff 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
-            color: #172033;
-        }
-        .card {
-            width: 100%;
-            max-width: 460px;
-            background: #ffffff;
-            border: 1px solid #d8e2f0;
-            border-radius: 22px;
-            padding: 34px;
-            box-shadow: 0 18px 44px rgba(15, 23, 42, 0.10);
-        }
-        h1 {
-            margin: 0 0 10px;
-            font-size: 30px;
-            text-align: center;
-        }
-        .sub {
-            margin: 0 0 24px;
-            text-align: center;
-            color: #66758b;
-            line-height: 1.6;
-        }
-        .message {
-            margin-bottom: 16px;
-            padding: 14px 16px;
-            border-radius: 14px;
-            line-height: 1.6;
-            background: #fff4d6;
-            color: #7a5a00;
-        }
-        .message.blocked {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-        .timer {
-            display: inline-block;
-            margin-top: 8px;
-            font-weight: 700;
-        }
-        label {
-            display: block;
-            margin-bottom: 7px;
-            font-weight: 700;
-        }
-        input {
-            width: 100%;
-            padding: 12px 14px;
-            margin-bottom: 10px;
-            border: 1px solid #cbd5e1;
-            border-radius: 12px;
-            font-size: 15px;
-            background: #fff;
-        }
-        button {
-            width: 100%;
-            margin-top: 6px;
-            border: none;
-            border-radius: 12px;
-            padding: 13px 16px;
-            background: #2563eb;
-            color: white;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-        .field-errors {
-            margin: -4px 0 10px;
-            color: #b00020;
-            font-size: 14px;
-        }
-        .bottom {
-            margin-top: 18px;
-            text-align: center;
-            color: #66758b;
-        }
-        .bottom a {
-            color: #2563eb;
-            text-decoration: none;
-            font-weight: 700;
-        }
-    </style>
-</head>
-<body>
-    <div class="card">
-        <h1>Вхід</h1>
-        <p class="sub">Увійдіть у свій акаунт, щоб працювати з турнірами, командами та оцінюванням.</p>
+{% extends "auth_base.html" %}
+
+{% block title %}Вхід{% endblock %}
+
+{% block content %}
+    <div class="auth-card">
+        <h1 class="page-title" style="text-align:center;">Вхід</h1>
+        <p class="section-note" style="text-align:center; margin-top:10px;">Увійдіть у свій акаунт, щоб працювати з турнірами, командами та оцінюванням.</p>
 
         {% if message %}
-            <div class="message{% if blocked_until %} blocked{% endif %}">
+            <div class="message-box {% if blocked_until %}error{% else %}warn{% endif %} spacer-top">
                 {{ message }}
                 {% if blocked_until %}
-                    <div
-                        class="timer"
-                        id="login-block-timer"
-                        data-blocked-until="{{ blocked_until_iso }}"
-                    >
-                        Розблокування через: --
-                    </div>
+                    <div class="spacer-top" id="login-block-timer" data-blocked-until="{{ blocked_until_iso }}"><strong>Розблокування через: --</strong></div>
                 {% endif %}
             </div>
         {% endif %}
 
         {% if form.non_field_errors %}
-            <div class="message">{{ form.non_field_errors }}</div>
+            <div class="message-box warn">{{ form.non_field_errors }}</div>
         {% endif %}
 
-        <form method="post">
+        <form method="post" class="spacer-top">
             {% csrf_token %}
             {% if next_url %}
                 <input type="hidden" name="next" value="{{ next_url }}">
             {% endif %}
 
-            <label for="{{ form.username.id_for_label }}">Логін</label>
-            {{ form.username }}
-            {% if form.username.errors %}
-                <div class="field-errors">{{ form.username.errors }}</div>
-            {% endif %}
+            <div class="field-group">
+                <label for="{{ form.username.id_for_label }}">Логін</label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                    <div class="field-errors">{{ form.username.errors }}</div>
+                {% endif %}
+            </div>
 
-            <label for="{{ form.password.id_for_label }}">Пароль</label>
-            {{ form.password }}
-            {% if form.password.errors %}
-                <div class="field-errors">{{ form.password.errors }}</div>
-            {% endif %}
+            <div class="field-group spacer-top">
+                <label for="{{ form.password.id_for_label }}">Пароль</label>
+                {{ form.password }}
+                {% if form.password.errors %}
+                    <div class="field-errors">{{ form.password.errors }}</div>
+                {% endif %}
+            </div>
 
-            <button type="submit">Увійти</button>
+            <button class="button spacer-top" type="submit" style="width:100%;">Увійти</button>
         </form>
 
-        <div class="bottom">
+        <div class="section-note" style="text-align:center; margin-top:18px;">
             Ще не маєте акаунта?
-            <a href="{% url 'register' %}{% if next_url %}?next={{ next_url|urlencode }}{% endif %}">Зареєструватися</a>
+            <a href="{% url 'register' %}{% if next_url %}?next={{ next_url|urlencode }}{% endif %}" style="color:var(--primary); font-weight:700; text-decoration:none;">Зареєструватися</a>
         </div>
     </div>
+{% endblock %}
 
+{% block extra_scripts %}
     <script>
         (function () {
             const timer = document.getElementById('login-block-timer');
-            if (!timer) { return; }
+            if (!timer) {
+                return;
+            }
 
             const blockedUntil = new Date(timer.dataset.blockedUntil);
+
             function formatRemaining(totalSeconds) {
                 const minutes = Math.floor(totalSeconds / 60);
                 const seconds = totalSeconds % 60;
@@ -167,13 +74,13 @@
                     timer.textContent = 'Блокування завершилося. Можна спробувати ще раз.';
                     return;
                 }
+
                 const diffSeconds = Math.ceil(diffMs / 1000);
                 timer.textContent = 'Розблокування через: ' + formatRemaining(diffSeconds);
                 window.setTimeout(tick, 1000);
             }
 
             tick();
-        })();
+        }());
     </script>
-</body>
-</html>
+{% endblock %}

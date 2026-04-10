@@ -1,150 +1,150 @@
-<!DOCTYPE html>
-<html lang="uk">
-<head>
-    <meta charset="UTF-8">
-    <title>Профіль</title>
-    <style>
-        body { margin: 0; font-family: Arial, sans-serif; background: #f4f6fb; color: #172033; }
-        .header { background: #111827; color: white; padding: 18px 30px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
-        .nav { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-        .nav a { color: white; text-decoration: none; position: relative; }
-        .notify-dot {
-            position: absolute; top: -6px; right: -10px; min-width: 18px; height: 18px; padding: 0 5px;
-            border-radius: 999px; background: #dc2626; color: white; font-size: 11px;
-            display: inline-flex; align-items: center; justify-content: center; font-weight: 800;
-        }
-        .container { max-width: 1100px; margin: auto; padding: 30px; }
-        .card { background: white; border-radius: 16px; padding: 22px; margin-bottom: 20px; box-shadow: 0 8px 18px rgba(0, 0, 0, .08); }
-        .item { border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px; margin-bottom: 12px; }
-        .meta { color: #555; font-size: 14px; line-height: 1.6; margin-top: 6px; }
-        .action-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 10px; }
-        .btn, .btn-green, .btn-secondary {
-            display: inline-flex; align-items: center; justify-content: center; padding: 8px 12px;
-            border-radius: 9px; text-decoration: none; font-size: 13px; min-height: 36px; line-height: 1.2; font-weight: 600;
-        }
-        .btn { color: white; background: #2563eb; }
-        .btn-green { color: white; background: #16a34a; }
-        .btn-secondary { color: #2563eb; background: #eef4ff; }
-        .message { margin-top: 10px; color: #4b5563; }
-        .message.ok { color: #15803d; }
-        .message.warn { color: #92400e; }
-        .message.bad { color: #b91c1c; }
-        .badge { display: inline-flex; padding: 5px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
-        .participant { background: #dbeafe; color: #1d4ed8; }
-        .winner { background: #fef3c7; color: #92400e; }
-    </style>
-</head>
-<body>
-<div class="header">
-    <div class="nav">
-        <strong>Турнірна платформа</strong>
-        <a href="{% url 'home' %}">Головна</a>
-        <a href="{% url 'profile' %}">Профіль</a>
-        <a href="{% url 'my_team' %}">Моя команда</a>
-        <a href="{% url 'messages' %}">Повідомлення{% if has_unread_announcements %}<span class="notify-dot">{{ unread_announcements_count }}</span>{% endif %}</a>
-        <a href="{% url 'certificates' %}">Сертифікати{% if has_unread_certificates %}<span class="notify-dot">{{ unread_certificates_count }}</span>{% endif %}</a>
-    </div>
-    <div class="nav">
-        <span>{{ profile_user.username }}</span>
-        <a href="{% url 'logout' %}">Вийти</a>
-    </div>
-</div>
+{% extends "base.html" %}
 
-<div class="container">
-    <div class="card">
-        <h2>Профіль</h2>
-        <div class="meta">
+{% block title %}Профіль{% endblock %}
+
+{% block content %}
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-kicker">Особистий кабінет</div>
+            <h1>Профіль користувача</h1>
+            <p>Тут зібрано вашу базову інформацію, команди, турніри, сертифікати та останні оголошення платформи.</p>
+        </div>
+        <div class="hero-side">
+            <div class="hero-stat"><strong>{{ my_teams|length }}</strong>Ваших команд</div>
+            <div class="hero-stat"><strong>{{ tournaments_with_state|length }}</strong>Турнірів у профілі</div>
+            <div class="hero-stat"><strong>{{ certificates|length }}</strong>Доступних сертифікатів</div>
+        </div>
+    </section>
+
+    <section class="section">
+        <h2 class="section-title">Основна інформація</h2>
+        <div class="meta-list spacer-top">
             Логін: {{ profile_user.username }}<br>
             Електронна пошта: {{ profile_user.email }}<br>
             Роль: {{ profile_user.get_role_display }}
         </div>
-    </div>
+    </section>
 
-    <div class="card">
-        <h2>Мої команди</h2>
+    <section class="section">
+        <div class="section-head">
+            <div>
+                <h2 class="section-title">Мої команди</h2>
+                <div class="section-note">Команди, у яких ви є контактною особою (капітаном) або учасником.</div>
+            </div>
+        </div>
+
         {% if my_teams %}
-            {% for team in my_teams %}
-                <div class="item">
-                    <strong>{{ team.name }}</strong>
-                    <div class="meta">Контактна особа (капітан): {{ team.captain_name }}</div>
-                    <div class="action-row">
-                        <a class="btn" href="{% url 'team_detail' team.id %}">Відкрити</a>
-                        <a class="btn-green" href="{% url 'team_results' team.id %}">Результати</a>
+            <div class="list spacer-top">
+                {% for team in my_teams %}
+                    <div class="item-card">
+                        <h3>{{ team.name }}</h3>
+                        <div class="meta-list spacer-top">Контактна особа (капітан): {{ team.captain_name }}</div>
+                        <div class="toolbar spacer-top">
+                            <a class="button" href="{% url 'team_detail' team.id %}">Відкрити</a>
+                            <a class="button-secondary" href="{% url 'team_results' team.id %}">Результати</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="empty spacer-top">У вас ще немає команди.</p>
+            <a class="button-success spacer-top" href="{% url 'create_team' %}">Створити команду</a>
+        {% endif %}
+    </section>
+
+    <section class="section">
+        <div class="section-head">
+            <div>
+                <h2 class="section-title">Мої турніри</h2>
+                <div class="section-note">Стан ваших заявок, доступ до завдань і підсумкових результатів.</div>
+            </div>
+        </div>
+
+        <div class="list spacer-top">
+            {% for item in tournaments_with_state %}
+                <div class="item-card">
+                    <div class="section-head">
+                        <h3>{{ item.tournament.name }}</h3>
+                        <span class="status-badge status-{{ item.tournament.lifecycle_status }}">{{ item.tournament.lifecycle_status_label }}</span>
+                    </div>
+                    <div class="meta-list spacer-top">
+                        Початок: {{ item.tournament.start_date }}<br>
+                        Завершення: {{ item.tournament.end_date }}<br>
+                        Реєстрація до: {{ item.tournament.registration_end }}
+                    </div>
+
+                    {% if item.my_registration and item.my_registration.status == "approved" %}
+                        <div class="message-box success spacer-top">Заявку схвалено. Команда допущена до турніру.</div>
+                    {% elif item.my_registration and item.my_registration.status == "pending" %}
+                        <div class="message-box warn spacer-top">Заявку подано. Очікується рішення організатора.</div>
+                    {% elif item.my_registration and item.my_registration.status == "rejected" %}
+                        <div class="message-box error spacer-top">Попередню заявку відхилено.</div>
+                    {% endif %}
+
+                    <div class="toolbar spacer-top">
+                        <a class="button" href="{% url 'public_tournament_detail' item.tournament.id %}">Сторінка турніру</a>
+                        {% if item.can_open_tasks %}
+                            <a class="button-success" href="{% url 'tournament_tasks' item.tournament.id %}">Завдання</a>
+                        {% endif %}
+                        {% if item.can_view_leaderboard %}
+                            <a class="button-secondary" href="{% url 'tournament_leaderboard' item.tournament.id %}">Лідерборд</a>
+                        {% endif %}
                     </div>
                 </div>
+            {% empty %}
+                <p class="empty">Доступних турнірів зараз немає.</p>
             {% endfor %}
-        {% else %}
-            <p>У вас ще немає команди.</p>
-            <a class="btn-green" href="{% url 'create_team' %}">Створити команду</a>
-        {% endif %}
-    </div>
+        </div>
+    </section>
 
-    <div class="card">
-        <h2>Мої турніри</h2>
-        {% for item in tournaments_with_state %}
-            <div class="item">
-                <strong>{{ item.tournament.name }}</strong>
-                <div class="meta">
-                    Початок: {{ item.tournament.start_date }}<br>
-                    Завершення: {{ item.tournament.end_date }}<br>
-                    Реєстрація до: {{ item.tournament.registration_end }}
-                </div>
-                {% if item.my_registration and item.my_registration.status == "approved" %}
-                    <div class="message ok">Заявку схвалено. Команда допущена до турніру.</div>
-                {% elif item.my_registration and item.my_registration.status == "pending" %}
-                    <div class="message warn">Заявку подано. Очікується рішення організатора.</div>
-                {% elif item.my_registration and item.my_registration.status == "rejected" %}
-                    <div class="message bad">Попередню заявку відхилено.</div>
-                {% endif %}
-                <div class="action-row">
-                    <a class="btn" href="{% url 'public_tournament_detail' item.tournament.id %}">Сторінка турніру</a>
-                    {% if item.can_open_tasks %}
-                        <a class="btn-green" href="{% url 'tournament_tasks' item.tournament.id %}">Завдання</a>
-                    {% endif %}
-                    {% if item.can_view_leaderboard %}
-                        <a class="btn-green" href="{% url 'tournament_leaderboard' item.tournament.id %}">Лідерборд</a>
-                    {% endif %}
+    <section class="grid-2">
+        <div class="card">
+            <div class="section-head">
+                <div>
+                    <h2>Мої сертифікати</h2>
+                    <div class="section-note">Усі отримані сертифікати з можливістю завантаження PDF.</div>
                 </div>
             </div>
-        {% empty %}
-            <p>Доступних турнірів зараз немає.</p>
-        {% endfor %}
-    </div>
+            <div class="list spacer-top">
+                {% for certificate in certificates %}
+                    <div class="item-card">
+                        <h3>{{ certificate.tournament.name }}</h3>
+                        <div class="meta-list spacer-top">
+                            Команда: {{ certificate.team.name|default:"-" }}<br>
+                            Дата видачі: {{ certificate.issued_at }}
+                        </div>
+                        <div class="toolbar spacer-top">
+                            <span class="status-badge status-upcoming">{{ certificate.get_certificate_type_display }}</span>
+                            <a class="button-secondary" href="{% url 'download_certificate_pdf' certificate.id %}">Завантажити PDF</a>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="empty">Сертифікатів поки немає.</p>
+                {% endfor %}
+            </div>
+        </div>
 
-    <div class="card">
-        <h2>Мої сертифікати</h2>
-        {% for certificate in certificates %}
-            <div class="item">
-                <strong>{{ certificate.tournament.name }}</strong>
-                <div class="meta">
-                    Команда: {{ certificate.team.name|default:"-" }}<br>
-                    Дата видачі: {{ certificate.issued_at }}
-                </div>
-                <div class="action-row">
-                    <span class="badge {{ certificate.certificate_type }}">{{ certificate.get_certificate_type_display }}</span>
-                    <a class="btn-secondary" href="{% url 'download_certificate_pdf' certificate.id %}">Завантажити PDF</a>
+        <div class="card">
+            <div class="section-head">
+                <div>
+                    <h2>Оголошення</h2>
+                    <div class="section-note">Останні повідомлення від адміністрації та організаторів.</div>
                 </div>
             </div>
-        {% empty %}
-            <p>Сертифікатів поки немає.</p>
-        {% endfor %}
-    </div>
-
-    <div class="card">
-        <h2>Оголошення</h2>
-        {% for announcement in announcements %}
-            <div class="item">
-                <strong>{{ announcement.title }}</strong>
-                <div class="meta">
-                    {% if announcement.tournament %}Турнір: {{ announcement.tournament.name }}<br>{% endif %}
-                    Дата: {{ announcement.created_at }}
-                </div>
-                <p style="margin:10px 0 0; line-height:1.7;">{{ announcement.message }}</p>
+            <div class="list spacer-top">
+                {% for announcement in announcements %}
+                    <div class="item-card">
+                        <h3>{{ announcement.title }}</h3>
+                        <div class="meta-list spacer-top">
+                            {% if announcement.tournament %}Турнір: {{ announcement.tournament.name }}<br>{% endif %}
+                            Дата: {{ announcement.created_at }}
+                        </div>
+                        <p class="card-text spacer-top">{{ announcement.message }}</p>
+                    </div>
+                {% empty %}
+                    <p class="empty">Оголошень поки немає.</p>
+                {% endfor %}
             </div>
-        {% empty %}
-            <p>Оголошень поки немає.</p>
-        {% endfor %}
-    </div>
-</div>
-</body>
-</html>
+        </div>
+    </section>
+{% endblock %}

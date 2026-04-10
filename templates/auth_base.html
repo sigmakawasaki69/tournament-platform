@@ -1,0 +1,17 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Турнірна платформа{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <main class="auth-shell">
+        {% block content %}{% endblock %}
+    </main>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>
