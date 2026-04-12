@@ -197,6 +197,12 @@
                             </div>
                             <div class="field-group field-span-2">
                                 <label>Банер турніру</label>
+                                {% if form.instance.banner_image %}
+                                    <div style="margin-bottom:12px;">
+                                        <img src="{{ form.instance.banner_image.url }}" alt="Поточний банер" style="max-width:300px; border-radius:12px; display:block;">
+                                        <small style="color:#64748b;">Поточний банер</small>
+                                    </div>
+                                {% endif %}
                                 {{ form.banner_image }}
                                 {% if form.banner_image.errors %}<div class="field-errors">{{ form.banner_image.errors }}</div>{% endif %}
                             </div>
