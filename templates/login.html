@@ -44,6 +44,9 @@
                 {% if form.password.errors %}
                     <div class="field-errors">{{ form.password.errors }}</div>
                 {% endif %}
+                <div style="margin-top: 8px; text-align: right;">
+                    <a href="{% url 'password_reset_request' %}" style="font-size: 0.9rem; text-decoration: none; color: var(--primary);" data-i18n="login.forgot_password">Забули пароль?</a>
+                </div>
             </div>
 
             <div class="spacer-top" style="display:flex; gap:12px; flex-wrap:wrap;">

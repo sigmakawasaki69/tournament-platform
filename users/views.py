@@ -5,6 +5,7 @@ import logging
 import mimetypes
 from datetime import timedelta
 from statistics import mean
+import random
 
 from urllib.error import HTTPError, URLError
 from PIL import Image, ImageDraw, ImageFont
@@ -58,7 +59,7 @@ from tournament.models import (
 from tournament.services import RegistrationService, TournamentLifecycleService
 
 from .forms import AdminCreateUserForm, LoginForm, RegisterForm
-from .models import CustomUser
+from .models import CustomUser, PasswordResetCode
 from .platform_services import (
     LOGIN_THROTTLE_IDENTIFIER_SESSION_KEY,
     LOGIN_THROTTLE_IP_SESSION_KEY,
@@ -69,6 +70,8 @@ from .platform_services import (
     normalize_login_identifier,
     register_failed_login,
     send_verification_email,
+    send_team_invitation_email,
+    send_password_reset_code_email,
 )
 from .policies import (
     can_create_admins,
@@ -2095,4 +2098,76 @@ def team_results(request, team_id):
         'result_rows': result_rows,
         'summary': summary,
     })
+
+
+def password_reset_request_view(request):
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip().lower()
+        user = CustomUser.objects.filter(email__iexact=email).first()
+        if user:
+            code = str(random.randint(100000, 999999))
+            PasswordResetCode.objects.create(user=user, code=code)
+            send_password_reset_code_email(request, user=user, code=code)
+            request.session['password_reset_email'] = email
+            return redirect('password_reset_verify')
+        else:
+            messages.error(request, "Користувача з такою поштою не знайдено.")
+    return render(request, 'password_reset_request.html')
+
+
+def password_reset_verify_view(request):
+    email = request.session.get('password_reset_email')
+    if not email:
+        return redirect('password_reset_request')
+    
+    if request.method == 'POST':
+        code = request.POST.get('code', '').strip()
+        reset_code = PasswordResetCode.objects.filter(
+            user__email__iexact=email, 
+            code=code, 
+            is_used=False
+        ).order_by('-created_at').first()
+        
+        if reset_code:
+            if timezone.now() > reset_code.created_at + timedelta(minutes=15):
+                messages.error(request, "Термін дії коду вичерпано. Будь ласка, спробуйте ще раз.")
+                return redirect('password_reset_request')
+            
+            request.session['password_reset_verified'] = True
+            return redirect('password_reset_confirm')
+        else:
+            messages.error(request, "Невірний код безпеки.")
+            
+    return render(request, 'password_reset_verify.html', {'email': email})
+
+
+def password_reset_confirm_view(request):
+    email = request.session.get('password_reset_email')
+    verified = request.session.get('password_reset_verified')
+    
+    if not email or not verified:
+        return redirect('password_reset_request')
+        
+    if request.method == 'POST':
+        password = request.POST.get('password')
+        confirm_password = request.POST.get('confirm_password')
+        
+        if not password or len(password) < 8:
+            messages.error(request, "Пароль має бути не коротшим за 8 символів.")
+        elif password != confirm_password:
+            messages.error(request, "Паролі не співпадають.")
+        else:
+            user = CustomUser.objects.get(email__iexact=email)
+            user.set_password(password)
+            user.save()
+            
+            PasswordResetCode.objects.filter(user=user).update(is_used=True)
+            
+            request.session.pop('password_reset_email', None)
+            request.session.pop('password_reset_verified', None)
+            
+            messages.success(request, "Пароль успішно змінено. Тепер ви можете увійти.")
+            return redirect('login')
+            
+    return render(request, 'password_reset_confirm.html')
 

@@ -1,4 +1,4 @@
-﻿from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
@@ -45,4 +45,19 @@ class LoginThrottle(models.Model):
 
     def __str__(self):
         return f"{self.identifier} @ {self.ip_address}"
+
+
+class PasswordResetCode(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='password_reset_codes')
+    code = models.CharField(max_length=6, verbose_name="Код безпеки")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата створення")
+    is_used = models.BooleanField(default=False, verbose_name="Використано")
+
+    class Meta:
+        verbose_name = "Код скидання пароля"
+        verbose_name_plural = "Коди скидання пароля"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.user.email} - {self.code}"
 

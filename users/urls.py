@@ -61,6 +61,9 @@ from .views import (
     team_results,
     submit_solution,
     confirm_invitation_view,
+    password_reset_request_view,
+    password_reset_verify_view,
+    password_reset_confirm_view,
 )
 
 urlpatterns = [
@@ -131,4 +134,7 @@ urlpatterns = [
     path('team/<int:team_id>/results/', team_results, name='team_results'),
     path('task/<int:task_id>/submit/', submit_solution, name='submit_solution'),
     path('team/invitation/confirm/<str:token>/', confirm_invitation_view, name='confirm_team_invitation'),
+    path('password-reset/', password_reset_request_view, name='password_reset_request'),
+    path('password-reset/verify/', password_reset_verify_view, name='password_reset_verify'),
+    path('password-reset/confirm/', password_reset_confirm_view, name='password_reset_confirm'),
 ]

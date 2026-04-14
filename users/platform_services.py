@@ -153,6 +153,18 @@ def send_team_invitation_email(request, *, invitation):
     send_platform_email(invitation.email, subject, message)
 
 
+def send_password_reset_code_email(request, *, user, code):
+    subject = "Код для скидання пароля"
+    message = render_to_string(
+        "emails/password_reset_code.txt",
+        {
+            "user": user,
+            "code": code,
+        },
+    )
+    send_platform_email(user.email, subject, message)
+
+
 def email_delivery_ready():
     if settings.EMAIL_BACKEND == "django.core.mail.backends.locmem.EmailBackend":
         return True
