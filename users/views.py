@@ -1576,10 +1576,6 @@ def profile_view(request):
         'registrations__tournament',
     ).distinct()
 
-    visible_tournaments = list(
-        Tournament.objects.filter(is_draft=False).order_by('-start_date')
-    )
-
     my_registrations = list(TournamentRegistration.objects.select_related(
         'tournament',
         'team',
@@ -1587,6 +1583,16 @@ def profile_view(request):
     ).prefetch_related('team__participants', 'members').filter(
         Q(team__captain_user=request.user) | Q(members__user=request.user)
     ).distinct())
+
+    involved_tournament_ids = [reg.tournament_id for reg in my_registrations]
+
+    visible_tournaments = list(
+        Tournament.objects.filter(
+            Q(id__in=involved_tournament_ids) |
+            Q(created_by=request.user) |
+            Q(jury_users=request.user)
+        ).filter(is_draft=False).distinct().order_by('-start_date')
+    )
 
     my_registration_by_tournament_id = {}
     for reg in my_registrations:
