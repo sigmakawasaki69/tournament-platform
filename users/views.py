@@ -2102,21 +2102,32 @@ def team_results(request, team_id):
 
 def password_reset_request_view(request):
     if request.method == 'POST':
-        email = request.POST.get('email', '').strip().lower()
-        user = CustomUser.objects.filter(email__iexact=email).first()
+        identifier = request.POST.get('identifier', '').strip()
+        # Support finding by username OR email
+        user = CustomUser.objects.filter(Q(username__iexact=identifier) | Q(email__iexact=identifier)).first()
         if user:
             code = str(random.randint(100000, 999999))
             PasswordResetCode.objects.create(user=user, code=code)
             send_password_reset_code_email(request, user=user, code=code)
-            request.session['password_reset_email'] = email
+            
+            # Masking logic: first character + *********** + 4 last characters
+            email = user.email
+            if len(email) >= 5:
+                masked = email[0] + "***********" + email[-4:]
+            else:
+                masked = email[0] + "***********" + email[-1:] if len(email) > 1 else email + "***********"
+                
+            request.session['password_reset_email'] = user.email
+            request.session['password_reset_masked_email'] = masked
             return redirect('password_reset_verify')
         else:
-            messages.error(request, "Користувача з такою поштою не знайдено.")
+            messages.error(request, "Користувача з таким логіном або поштою не знайдено.")
     return render(request, 'password_reset_request.html')
 
 
 def password_reset_verify_view(request):
     email = request.session.get('password_reset_email')
+    masked_email = request.session.get('password_reset_masked_email')
     if not email:
         return redirect('password_reset_request')
     
@@ -2138,7 +2149,10 @@ def password_reset_verify_view(request):
         else:
             messages.error(request, "Невірний код безпеки.")
             
-    return render(request, 'password_reset_verify.html', {'email': email})
+    return render(request, 'password_reset_verify.html', {
+        'email': email,
+        'masked_email': masked_email
+    })
 
 
 def password_reset_confirm_view(request):
