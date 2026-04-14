@@ -51,6 +51,7 @@ from tournament.models import (
     Submission,
     Task,
     Team,
+    TeamInvitation,
     Tournament,
     TournamentRegistration,
 )
@@ -110,6 +111,7 @@ def build_team_detail_context(request, team, participant_form=None):
     quick_overview = build_team_quick_overview(team)
     return {
         'team': team,
+        'invitations': team.invitations.all() if (request.user.is_superuser or team.captain_user_id == request.user.id) else [],
         'participants_count': team.members_count,
         'submissions': submissions,
         'quick_overview': quick_overview,
@@ -1818,11 +1820,50 @@ def add_participant(request, team_id):
             )
             if result.added:
                 return redirect('team_detail', team_id=team.id)
+            if result.invited:
+                messages.success(request, result.message)
+                return redirect('team_detail', team_id=team.id)
             form.add_error(result.field or 'email', result.message)
     else:
         form = ParticipantForm()
 
     return render(request, 'team_detail.html', build_team_detail_context(request, team, participant_form=form))
+
+
+def confirm_invitation_view(request, token):
+    invitation = get_object_or_404(TeamInvitation.objects.select_related('team'), token=token)
+    team = invitation.team
+
+    # Check if roster is locked
+    if is_team_roster_locked(team) and not request.user.is_superuser:
+        messages.error(request, "Ростер команди вже заблоковано, додавання нових учасників неможливе.")
+        return redirect('home')
+
+    # Check for existing participant to avoid duplicates
+    if Participant.objects.filter(team=team, email__iexact=invitation.email).exists():
+        invitation.delete()
+        messages.info(request, "Ви вже є учасником цієї команди.")
+        return redirect('team_detail', team_id=team.id)
+
+    # Check if this email is already a captain or participant in another team
+    if Team.objects.filter(captain_email__iexact=invitation.email).exclude(id=team.id).exists():
+        messages.error(request, "Ви вже є капітаном іншої команди.")
+        return redirect('home')
+
+    if Participant.objects.filter(email__iexact=invitation.email).exclude(team=team).exists():
+        messages.error(request, "Ви вже є учасником іншої команди.")
+        return redirect('home')
+
+    with transaction.atomic():
+        Participant.objects.get_or_create(
+            team=team,
+            email=invitation.email,
+            defaults={'full_name': invitation.full_name}
+        )
+        invitation.delete()
+
+    messages.success(request, f"Ви успішно приєдналися до команди \"{team.name}\"!")
+    return redirect('team_detail', team_id=team.id)
 
 
 @login_required

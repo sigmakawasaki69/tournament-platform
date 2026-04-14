@@ -165,6 +165,23 @@
                 <div class="empty">У команди поки немає інших учасників, окрім контактної особи (капітанa).</div>
             {% endfor %}
         </div>
+
+        {% if invitations %}
+            <div class="section-head spacer-top">
+                <div>
+                    <h3 class="section-title">Очікують підтвердження</h3>
+                    <div class="section-note">Ці учасники отримали запрошення на пошту, але ще не підтвердили свою участь.</div>
+                </div>
+            </div>
+            <div class="list spacer-top">
+                {% for invitation in invitations %}
+                    <div class="item-card">
+                        <h3>{{ invitation.full_name }}</h3>
+                        <div class="meta-list">{{ invitation.email }} (Запрошено: {{ invitation.created_at|date:"d.m.Y H:i" }})</div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
     </section>
 
     <section class="grid-2">

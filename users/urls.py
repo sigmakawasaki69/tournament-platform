@@ -60,6 +60,7 @@ from .views import (
     tournament_leaderboard,
     team_results,
     submit_solution,
+    confirm_invitation_view,
 )
 
 urlpatterns = [
@@ -85,6 +86,7 @@ urlpatterns = [
     path('dashboard/submissions/', admin_submissions, name='admin_submissions'),
     path('dashboard/announcements/', admin_announcements, name='admin_announcements'),
     path('dashboard/certificates/', admin_certificates, name='admin_certificates'),
+    # Organizer routes
     path('organizer-dashboard/', organizer_dashboard, name='organizer_dashboard'),
     path('admin-create-user/', create_user_by_admin, name='create_user_by_admin'),
     path('approve-user/<int:user_id>/', approve_user, name='approve_user'),
@@ -128,4 +130,5 @@ urlpatterns = [
     path('tournament/<int:tournament_id>/leaderboard/', tournament_leaderboard, name='tournament_leaderboard'),
     path('team/<int:team_id>/results/', team_results, name='team_results'),
     path('task/<int:task_id>/submit/', submit_solution, name='submit_solution'),
+    path('team/invitation/confirm/<str:token>/', confirm_invitation_view, name='confirm_team_invitation'),
 ]

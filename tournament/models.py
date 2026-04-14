@@ -385,6 +385,33 @@ class Participant(models.Model):
         return self.full_name
 
 
+class TeamInvitation(models.Model):
+    team = models.ForeignKey(
+        Team,
+        on_delete=models.CASCADE,
+        related_name="invitations",
+        verbose_name="Команда",
+    )
+    full_name = models.CharField(max_length=255, verbose_name="ПІБ")
+    email = models.EmailField(verbose_name="Email")
+    token = models.CharField(max_length=64, unique=True, verbose_name="Токен")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата створення")
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Запрошення в команду"
+        verbose_name_plural = "Запрошення в команду"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["team", "email"],
+                name="unique_invitation_email_per_team",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.full_name} ({self.email}) -> {self.team.name}"
+
+
 class Task(models.Model):
     tournament = models.ForeignKey(
         Tournament,

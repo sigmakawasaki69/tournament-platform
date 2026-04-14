@@ -138,18 +138,19 @@ def send_verification_email(request, user):
     send_platform_email(user.email, subject, message)
 
 
-def send_team_invitation_email(request, *, team, recipient_name, recipient_email):
-    registration_link = request.build_absolute_uri(reverse("register"))
-    greeting_name = recipient_name or recipient_email
-    subject = f'Запрошення до команди "{team.name}"'
-    message = (
-        f"Вітаємо, {greeting_name}!\n\n"
-        f'Вас намагаються додати до команди "{team.name}" на турнірній платформі.\n'
-        "Щоб приєднатися до команди та отримати доступ до турнірів, спочатку зареєструйтеся на сайті.\n\n"
-        f"Посилання для реєстрації: {registration_link}\n\n"
-        "Після реєстрації організатор або контактна особа команди зможе додати вас повторно."
+def send_team_invitation_email(request, *, invitation):
+    confirm_link = request.build_absolute_uri(
+        reverse("confirm_team_invitation", args=[invitation.token])
     )
-    send_platform_email(recipient_email, subject, message)
+    subject = f'Запрошення до команди "{invitation.team.name}"'
+    message = render_to_string(
+        "emails/team_invitation.txt",
+        {
+            "invitation": invitation,
+            "confirm_link": confirm_link,
+        },
+    )
+    send_platform_email(invitation.email, subject, message)
 
 
 def email_delivery_ready():

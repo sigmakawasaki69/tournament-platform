@@ -1,8 +1,9 @@
 import logging
+import secrets
 
 from django.db import IntegrityError, transaction
 
-from tournament.models import Participant, Team
+from tournament.models import Participant, Team, TeamInvitation
 
 from .models import CustomUser
 from .platform_services import email_delivery_ready, send_team_invitation_email
@@ -12,8 +13,9 @@ logger = logging.getLogger(__name__)
 
 
 class TeamParticipantActionResult:
-    def __init__(self, *, added=False, field=None, message=""):
+    def __init__(self, *, added=False, invited=False, field=None, message=""):
         self.added = added
+        self.invited = invited
         self.field = field
         self.message = message
 
@@ -39,7 +41,7 @@ class TeamManagementService:
     @staticmethod
     def add_participant_to_team(*, request, team, form):
         participant_name = form.cleaned_data["full_name"]
-        participant_email = form.cleaned_data["email"]
+        participant_email = form.cleaned_data["email"].strip().lower()
 
         if participant_email == (team.captain_email or "").lower():
             return TeamParticipantActionResult(
@@ -50,6 +52,11 @@ class TeamManagementService:
             return TeamParticipantActionResult(
                 field="email",
                 message="Цей учасник уже є в команді.",
+            )
+        if team.invitations.filter(email__iexact=participant_email).exists():
+            return TeamParticipantActionResult(
+                field="email",
+                message="Запрошення цьому учаснику вже надіслано.",
             )
         if Team.objects.filter(captain_email__iexact=participant_email).exclude(id=team.id).exists():
             return TeamParticipantActionResult(
@@ -62,49 +69,39 @@ class TeamManagementService:
                 message="Цей учасник уже зареєстрований в іншій команді.",
             )
 
+        if not email_delivery_ready():
+            return TeamParticipantActionResult(
+                field="email",
+                message="Наразі неможливо надіслати запрошення, бо поштова служба не налаштована.",
+            )
+
         try:
-            linked_user = CustomUser.objects.filter(email__iexact=participant_email).first()
-            if linked_user is None:
-                if not email_delivery_ready():
-                    return TeamParticipantActionResult(
-                        field="email",
-                        message=(
-                            "Такого учасника не зареєстровано на платформі. "
-                            "Запрошення не вдалося надіслати, бо email не налаштовано."
-                        ),
-                    )
-
-                send_team_invitation_email(
-                    request,
+            with transaction.atomic():
+                invitation = TeamInvitation.objects.create(
                     team=team,
-                    recipient_name=participant_name,
-                    recipient_email=participant_email,
+                    full_name=participant_name,
+                    email=participant_email,
+                    token=secrets.token_urlsafe(32),
                 )
-                return TeamParticipantActionResult(
-                    field="email",
-                    message=(
-                        "Такого учасника не зареєстровано на платформі. "
-                        "Ми надіслали йому лист із запрошенням зареєструватися."
-                    ),
-                )
+                send_team_invitation_email(request, invitation=invitation)
 
-            participant = form.save(commit=False)
-            participant.team = team
-            participant.save()
-            return TeamParticipantActionResult(added=True)
+            return TeamParticipantActionResult(
+                invited=True,
+                message=(
+                    f"Запрошення надіслано на {participant_email}. "
+                    "Учасник буде доданий до команди після підтвердження через пошту."
+                ),
+            )
         except IntegrityError:
             return TeamParticipantActionResult(
                 field="email",
-                message="Цей учасник уже є в команді.",
+                message="Запрошення цьому учаснику вже надіслано.",
             )
         except Exception:
             logger.exception("Failed to handle participant team invitation flow")
             return TeamParticipantActionResult(
                 field="email",
-                message=(
-                    "Такого учасника не зареєстровано на платформі. "
-                    "Не вдалося надіслати лист-запрошення, спробуйте пізніше."
-                ),
+                message="Не вдалося надіслати лист-запрошення, спробуйте пізніше.",
             )
 
     @staticmethod
