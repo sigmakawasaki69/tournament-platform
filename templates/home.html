@@ -141,6 +141,12 @@
                         <span class="status-badge status-{{ row.tournament.lifecycle_status }}" data-i18n="status.{{ row.tournament.lifecycle_status }}">{{ row.tournament.lifecycle_status_label }}</span>
                     </div>
 
+                    {% if request.user.is_superuser %}
+                        <div class="meta" style="font-size:12px; margin-top:2px; color:#64748b;">
+                            <span data-i18n="common.created_by">Створив</span>: {{ row.tournament.created_by.username|default:"admin" }}
+                        </div>
+                    {% endif %}
+
                     <div class="grid-2 spacer-top">
                         <div class="meta-list">
                             <span data-i18n="home.tournaments.reg_range">Реєстрація</span>: {{ row.tournament.registration_start|date:"d.m.Y H:i"|default:"-" }} - {{ row.tournament.registration_end|date:"d.m.Y H:i"|default:"-" }}<br>
@@ -174,7 +180,7 @@
                     </div>
                 </a>
             {% empty %}
-                <div class="card empty">За цим фільтром турнірів поки немає.</div>
+                <div class="card empty" data-i18n="home.tournaments.filter_empty">За цим фільтром турнірів поки немає.</div>
             {% endfor %}
         </div>
     </section>
@@ -182,22 +188,22 @@
     <section class="section">
         <div class="section-head">
             <div>
-                <h2 class="section-title">Списки за статусом</h2>
-                <div class="section-note">Швидкий огляд турнірів за життєвим циклом.</div>
+                <h2 class="section-title" data-i18n="home.summary.title">Списки за статусом</h2>
+                <div class="section-note" data-i18n="home.summary.note">Швидкий огляд турнірів за життєвим циклом.</div>
             </div>
         </div>
         <div class="summary-grid spacer-top">
             <div class="summary-card">
-                <h3>Відкрита реєстрація</h3>
-                <p class="card-text">{% if featured_tournaments %}{% for row in featured_tournaments %}{{ row.tournament.name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}Зараз немає турнірів із відкритою реєстрацією.{% endif %}</p>
+                <h3 data-i18n="home.summary.open_reg">Відкрита реєстрація</h3>
+                <p class="card-text">{% if featured_tournaments %}{% for row in featured_tournaments %}{{ row.tournament.name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}<span data-i18n="home.summary.no_open">Зараз немає турнірів із відкритою реєстрацією.</span>{% endif %}</p>
             </div>
             <div class="summary-card">
-                <h3>Тривають</h3>
-                <p class="card-text">{% if active_tournaments %}{% for row in active_tournaments %}{{ row.tournament.name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}Активних турнірів зараз немає.{% endif %}</p>
+                <h3 data-i18n="home.summary.running">Тривають</h3>
+                <p class="card-text">{% if active_tournaments %}{% for row in active_tournaments %}{{ row.tournament.name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}<span data-i18n="home.summary.no_running">Активних турнірів зараз немає.</span>{% endif %}</p>
             </div>
             <div class="summary-card">
-                <h3>Завершені</h3>
-                <p class="card-text">{% if finished_tournaments %}{% for row in finished_tournaments %}{{ row.tournament.name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}Підсумкових турнірів поки немає.{% endif %}</p>
+                <h3 data-i18n="home.summary.finished">Завершені</h3>
+                <p class="card-text">{% if finished_tournaments %}{% for row in finished_tournaments %}{{ row.tournament.name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}<span data-i18n="home.summary.no_finished">Підсумкових турнірів поки немає.</span>{% endif %}</p>
             </div>
         </div>
     </section>
@@ -206,8 +212,8 @@
         <div class="card">
             <div class="section-head">
                 <div>
-                    <h2>Оголошення</h2>
-                    <div class="section-note">Оновлення від адміністрації та важливі повідомлення по турнірах.</div>
+                    <h2 data-i18n="home.announcements.title">Оголошення</h2>
+                    <div class="section-note" data-i18n="home.announcements.note">Оновлення від адміністрації та важливі повідомлення по турнірах.</div>
                 </div>
             </div>
             <div class="list">
@@ -215,10 +221,10 @@
                     <div class="summary-card">
                         <h3>{{ announcement.title }}</h3>
                         <p class="card-text">{{ announcement.message }}</p>
-                        <p class="section-note">{% if announcement.tournament %}Турнір: {{ announcement.tournament.name }} · {% endif %}{{ announcement.created_at|date:"d.m.Y H:i" }}</p>
+                        <p class="section-note">{% if announcement.tournament %}<span data-i18n="profile.announcements.tournament">Турнір</span>: {{ announcement.tournament.name }} · {% endif %}{{ announcement.created_at|date:"d.m.Y H:i" }}</p>
                     </div>
                 {% empty %}
-                    <div class="empty">Оголошень поки немає.</div>
+                    <div class="empty" data-i18n="home.announcements.empty">Оголошень поки немає.</div>
                 {% endfor %}
             </div>
         </div>
@@ -226,8 +232,8 @@
         <div class="card">
             <div class="section-head">
                 <div>
-                    <h2>Новини платформи</h2>
-                    <div class="section-note">Короткий автоматичний підсумок по стану турнірів.</div>
+                    <h2 data-i18n="home.news.title">Новини платформи</h2>
+                    <div class="section-note" data-i18n="home.news.note">Короткий автоматичний підсумок по стану турнірів.</div>
                 </div>
             </div>
             <div class="list">
@@ -237,7 +243,7 @@
                         <p class="card-text">{{ news.text }}</p>
                     </div>
                 {% empty %}
-                    <div class="empty">Поки що новин немає.</div>
+                    <div class="empty" data-i18n="home.news.empty">Поки що новин немає.</div>
                 {% endfor %}
             </div>
         </div>
