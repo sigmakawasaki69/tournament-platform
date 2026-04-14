@@ -1,80 +1,65 @@
-<!DOCTYPE html>
-<html lang="uk">
-<head>
-    <meta charset="UTF-8">
-    <title>Архів турнірів</title>
-    <style>
-        body { margin: 0; font-family: Arial, sans-serif; background: #eef4ff; color: #172033; padding: 30px 20px; }
-        .wrap { max-width: 1120px; margin: 0 auto; }
-        .card { background: white; border: 1px solid #dbe3ee; border-radius: 18px; box-shadow: 0 14px 32px rgba(17,24,39,.08); padding: 24px; margin-bottom: 20px; }
-        .topbar, .item-top, .actions { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center; }
-        .meta { color: #64748b; line-height: 1.6; }
-        .btn, .btn-secondary {
-            display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 10px 14px;
-            border-radius: 10px; text-decoration: none; border: none; font-weight: 700; cursor: pointer;
-        }
-        .btn { background: #2563eb; color: white; }
-        .btn-secondary { background: white; color: #2563eb; border: 1px solid #cbd5e1; }
-        .item { border: 1px solid #e2e8f0; border-radius: 14px; padding: 16px; background: #fbfdff; margin-bottom: 12px; }
-        .leader-row { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid #e2e8f0; }
-        .leader-row:last-child { border-bottom: none; }
-    </style>
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block title %}Архів турнірів{% endblock %}
+
+{% block content %}
 <div class="wrap">
     <div class="card topbar">
         <div>
-            <h1 style="margin:0 0 6px;">Архів турнірів</h1>
-            <div class="meta">Тут зібрані завершені турніри, їхні результати, команди та швидкі посилання на сторінки з деталями.</div>
+            <h1 style="margin:0 0 6px;" data-i18n="nav.archive">Архів турнірів</h1>
+            <div class="meta" data-i18n="archive.hero.note">Тут зібрані завершені турніри, їхні результати, команди та швидкі посилання на сторінки з деталями.</div>
         </div>
         <div class="actions">
-            <a class="btn-secondary" href="{% url 'home' %}">Головна</a>
+            <a class="button-secondary" href="{% url 'home' %}" data-i18n="nav.home">Головна</a>
             {% if request.user.is_authenticated %}
-                <a class="btn-secondary" href="{% url 'messages' %}">Повідомлення{% if has_unread_announcements %} ({{ unread_announcements_count }}){% endif %}</a>
-                <a class="btn-secondary" href="{% url 'certificates' %}">Сертифікати{% if has_unread_certificates %} ({{ unread_certificates_count }}){% endif %}</a>
+                <a class="button-secondary" href="{% url 'messages' %}">
+                    <span data-i18n="nav.messages">Повідомлення</span>{% if has_unread_announcements %} <span class="notify-dot">{{ unread_announcements_count }}</span>{% endif %}
+                </a>
+                <a class="button-secondary" href="{% url 'certificates' %}">
+                    <span data-i18n="nav.certificates">Сертифікати</span>{% if has_unread_certificates %} <span class="notify-dot">{{ unread_certificates_count }}</span>{% endif %}
+                </a>
             {% endif %}
         </div>
     </div>
 
     {% for row in archive_rows %}
         <div class="card">
-            <div class="item-top">
+            <div class="item-top" style="display:flex; justify-content:space-between; align-items:flex-start;">
                 <div>
                     <h2 style="margin:0 0 8px;">{{ row.tournament.name }}</h2>
                     <div class="meta">
-                        Завершено: {{ row.tournament.end_date }}<br>
-                        Завдань: {{ row.tasks_count }}<br>
-                        Команд у рейтингу: {{ row.teams_count }}
+                        <span data-i18n="profile.tournaments.end">Завершено</span>: {{ row.tournament.end_date }}<br>
+                        <span data-i18n="home.team_block.total_tasks">Усього завдань</span>: {{ row.tasks_count }}<br>
+                        <span data-i18n="archive.teams_count">Команд у рейтингу</span>: {{ row.teams_count }}
                     </div>
                 </div>
                 <div class="actions">
-                    <a class="btn-secondary" href="{% url 'public_tournament_detail' row.tournament.id %}">Сторінка турніру</a>
+                    <a class="button-secondary" href="{% url 'public_tournament_detail' row.tournament.id %}" data-i18n="profile.tournaments.page">Сторінка турніру</a>
                     {% if row.my_team %}
-                        <a class="btn" href="{% url 'team_results' row.my_team.id %}">Мої сабміти та оцінки</a>
+                        <a class="button" href="{% url 'team_results' row.my_team.id %}" data-i18n="profile.team.results">Результати</a>
                     {% endif %}
                 </div>
             </div>
 
             <div style="margin-top:16px;">
-                <strong>Результати та команди</strong>
+                <strong data-i18n="archive.results_title">Результати та команди</strong>
                 {% for leader in row.leaderboard_preview %}
-                    <div class="leader-row">
+                    <div class="leader-row" style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #edf2f7;">
                         <span>#{{ leader.place }} {{ leader.team.name }}</span>
                         <strong>{% if leader.overall_average is not None %}{{ leader.overall_average|floatformat:1 }}{% else %}-{% endif %}</strong>
                     </div>
                 {% empty %}
-                    <div class="meta" style="margin-top:8px;">Для цього турніру ще немає оцінених результатів.</div>
+                    <div class="meta" style="margin-top:8px;" data-i18n="home.tournaments.leaderboard_empty">Для цього турніру ще немає оцінених результатів.</div>
                 {% endfor %}
             </div>
         </div>
     {% empty %}
         <div class="card">
-            <div class="meta">Завершених турнірів поки немає.</div>
+            <div class="meta" data-i18n="archive.empty">Завершених турнірів поки немає.</div>
         </div>
     {% endfor %}
 </div>
-</body>
-</html>
+{% endblock %}
 
 
 

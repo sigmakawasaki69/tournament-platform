@@ -6,14 +6,14 @@
     <section class="hero">
         <div class="hero-content">
             <div class="toolbar">
-                <a class="button-secondary" href="{% url 'home' %}">Назад</a>
+                <a class="button-secondary" href="{% url 'home' %}" data-i18n="common.back">Назад</a>
             </div>
             <h1>{{ team.name }}</h1>
             <div class="meta-list">
-                Контактна особа (капітан): {{ team.captain_name }}<br>
-                Електронна пошта: {{ team.captain_email }}<br>
-                Школа: {{ team.school|default:"-" }}<br>
-                Зв'язок:
+                <span data-i18n="home.team_block.captain">Контактна особа (капітан)</span>: {{ team.captain_name }}<br>
+                <span data-i18n="profile.info.email">Електронна пошта</span>: {{ team.captain_email }}<br>
+                <span data-i18n="common.school">Школа</span>: {{ team.school|default:"-" }}<br>
+                <span data-i18n="common.contact_method">Зв'язок</span>:
                 {% if team.effective_contact_value %}
                     {{ team.effective_contact_label }} — {{ team.effective_contact_value }}
                 {% else %}
@@ -22,42 +22,41 @@
             </div>
 
             <div class="toolbar spacer-top">
-                <a class="button" href="{% url 'team_participants' team.id %}">Учасники</a>
-                <a class="button-secondary" href="{% url 'team_results' team.id %}">Результати</a>
+                <a class="button" href="{% url 'team_participants' team.id %}" data-i18n="team.hero.participants">Учасники</a>
+                <a class="button-secondary" href="{% url 'team_results' team.id %}" data-i18n="home.team_block.results">Результати</a>
                 {% if can_edit_team %}
-                    <a class="button-success" href="{% url 'edit_team' team.id %}">Редагувати команду</a>
+                    <a class="button-success" href="{% url 'edit_team' team.id %}" data-i18n="team.actions.edit">Редагувати команду</a>
                 {% endif %}
                 {% if can_edit_team %}
                     <form method="post" action="{% url 'delete_team' team.id %}" style="margin:0;">
                         {% csrf_token %}
-                        <button class="button-danger" type="submit">Видалити команду</button>
+                        <button class="button-danger" type="submit" data-i18n="team.actions.delete">Видалити команду</button>
                     </form>
                 {% endif %}
                 {% if can_leave_team %}
                     <form method="post" action="{% url 'leave_team' team.id %}" style="margin:0;">
                         {% csrf_token %}
-                        <button class="button-danger" type="submit">Вийти з команди</button>
+                        <button class="button-danger" type="submit" data-i18n="team.actions.leave">Вийти з команди</button>
                     </form>
                 {% endif %}
             </div>
 
             {% if roster_locked %}
-                <div class="notice spacer-top">Після завершення реєстрації змінювати склад або дані команди може лише адміністратор.</div>
+                <div class="notice spacer-top" data-i18n="team.roster.locked">Після завершення реєстрації змінювати склад або дані команди може лише адміністратор.</div>
             {% endif %}
         </div>
 
         <div class="hero-side">
-            <div class="hero-stat"><strong>{{ participants_count }}</strong>Учасників у команді</div>
-            <div class="hero-stat"><strong>{{ team.registrations.count }}</strong>Турнірів у профілі</div>
-            <div class="hero-stat"><strong>{{ submissions|length }}</strong>Поданих робіт</div>
+            <div class="hero-stat"><strong>{{ participants_count }}</strong><span data-i18n="team.hero.members_count">Учасників у команді</span></div>
+            <div class="hero-stat"><strong>{{ team.registrations.count }}</strong><span data-i18n="team.hero.tournaments_count">Турнірів у профілі</span></div>
+            <div class="hero-stat"><strong>{{ submissions|length }}</strong><span data-i18n="team.hero.submissions_count">Поданих робіт</span></div>
         </div>
     </section>
 
-    <section class="section">
         <div class="section-head">
             <div>
-                <h2 class="section-title">Швидкий блок команди</h2>
-                <div class="section-note">Огляд поточного турніру, завдання та останньої роботи цієї команди.</div>
+                <h2 class="section-title" data-i18n="home.team_block.title">Швидкий блок команди</h2>
+                <div class="section-note" data-i18n="team.submissions.note">Огляд поточного турніру, завдання та останньої роботи цієї команди.</div>
             </div>
         </div>
 
@@ -111,8 +110,8 @@
     <section class="section">
         <div class="section-head">
             <div>
-                <h2 class="section-title">Учасники команди</h2>
-                <div class="section-note">У списку зірочкою позначено контактну особу (капітанa).</div>
+                <h2 class="section-title" data-i18n="team.participants.title">Учасники команди</h2>
+                <div class="section-note" data-i18n="team.participants.note">У списку зірочкою позначено контактну особу (капітанa).</div>
             </div>
         </div>
 
@@ -130,14 +129,14 @@
                 {% endif %}
                 <div class="form-grid form-grid-2 spacer-top">
                     <div class="field-group">
-                        <label for="{{ participant_form.full_name.id_for_label }}">Ім'я</label>
+                        <label for="{{ participant_form.full_name.id_for_label }}" data-i18n="common.name">Ім'я</label>
                         {{ participant_form.full_name }}
                         {% if participant_form.full_name.errors %}
                             <div class="field-errors">{{ participant_form.full_name.errors|join:", " }}</div>
                         {% endif %}
                     </div>
                     <div class="field-group">
-                        <label for="{{ participant_form.email.id_for_label }}">Електронна пошта</label>
+                        <label for="{{ participant_form.email.id_for_label }}" data-i18n="common.email">Електронна пошта</label>
                         {{ participant_form.email }}
                         {% if participant_form.email.errors %}
                             <div class="field-errors">{{ participant_form.email.errors|join:", " }}</div>
@@ -145,7 +144,7 @@
                     </div>
                 </div>
                 <div class="toolbar spacer-top">
-                    <button class="button-success" type="submit">Додати</button>
+                    <button class="button-success" type="submit" data-i18n="common.add">Додати</button>
                 </div>
             </form>
         {% endif %}

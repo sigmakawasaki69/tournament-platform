@@ -1,65 +1,42 @@
-<!DOCTYPE html>
-<html lang="uk">
-<head>
-    <meta charset="UTF-8">
-    <title>Сертифікати</title>
-    <style>
-        body { margin: 0; font-family: Arial, sans-serif; background: #eef4ff; color: #172033; padding: 30px 20px; }
-        .wrap { max-width: 1080px; margin: 0 auto; }
-        .card { background: white; border: 1px solid #dbe3ee; border-radius: 18px; box-shadow: 0 14px 32px rgba(17,24,39,.08); padding: 24px; margin-bottom: 20px; }
-        .topbar, .actions { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center; }
-        .meta { color: #64748b; line-height: 1.6; }
-        .btn, .btn-secondary {
-            display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 10px 14px;
-            border-radius: 10px; text-decoration: none; border: none; font-weight: 700; cursor: pointer;
-        }
-        .btn { background: #2563eb; color: white; }
-        .btn-secondary { background: white; color: #2563eb; border: 1px solid #cbd5e1; }
-        .badge { display: inline-flex; padding: 5px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
-        .participant { background: #dbeafe; color: #1d4ed8; }
-        .winner { background: #fef3c7; color: #92400e; }
-        .item { border: 1px solid #e2e8f0; border-radius: 14px; padding: 16px; background: #fbfdff; margin-bottom: 12px; }
-        .item-top { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center; }
-    </style>
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block title %}Сертифікати{% endblock %}
+
+{% block content %}
 <div class="wrap">
     <div class="card topbar">
         <div>
-            <h1 style="margin:0 0 6px;">Сертифікати</h1>
-            <div class="meta">Ваші внутрішні сертифікати платформи. Після відкриття цієї сторінки індикатор “нове” зникає.</div>
+            <h1 style="margin:0 0 6px;" data-i18n="nav.certificates">Сертифікати</h1>
+            <div class="meta" data-i18n="certificates.hero.note">Ваші внутрішні сертифікати платформи. Після відкриття цієї сторінки індикатор “нове” зникає.</div>
         </div>
         <div class="actions">
-            <a class="btn-secondary" href="{% url 'home' %}">Головна</a>
-            <a class="btn-secondary" href="{% url 'messages' %}">Повідомлення{% if has_unread_announcements %} ({{ unread_announcements_count }}){% endif %}</a>
+            <a class="button-secondary" href="{% url 'home' %}" data-i18n="nav.home">Головна</a>
+            <a class="button-secondary" href="{% url 'messages' %}">
+                <span data-i18n="nav.messages">Повідомлення</span>{% if has_unread_announcements %} <span class="notify-dot">{{ unread_announcements_count }}</span>{% endif %}
+            </a>
         </div>
     </div>
 
     <div class="card">
         {% for certificate in certificates %}
-            <div class="item">
-                <div class="item-top">
+            <div class="item" style="border: 1px solid #e2e8f0; border-radius: 14px; padding: 16px; background: #fbfdff; margin-bottom: 12px;">
+                <div class="item-top" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                     <strong>{{ certificate.tournament.name }}</strong>
-                    <span class="badge {{ certificate.certificate_type }}">{{ certificate.get_certificate_type_display }}</span>
+                    <span class="status-badge status-upcoming">{{ certificate.get_certificate_type_display }}</span>
                 </div>
                 <div class="meta">
-                    {% if certificate.team %}Команда: {{ certificate.team.name }}<br>{% endif %}
-                    Отримувач: {{ certificate.recipient_name }}<br>
-                    Електронна пошта: {{ certificate.recipient_email }}<br>
-                    Дата видачі: {{ certificate.issued_at }}
+                    {% if certificate.team %}<span data-i18n="profile.certificates.team">Команда</span>: {{ certificate.team.name }}<br>{% endif %}
+                    <span data-i18n="certificates.recipient">Отримувач</span>: {{ certificate.recipient_name }}<br>
+                    <span data-i18n="profile.info.email">Електронна пошта</span>: {{ certificate.recipient_email }}<br>
+                    <span data-i18n="profile.certificates.date">Дата видачі</span>: {{ certificate.issued_at }}
                 </div>
                 <div style="margin-top:12px;">
-                    <a class="btn" href="{% url 'download_certificate_pdf' certificate.id %}">Завантажити PDF</a>
+                    <a class="button" href="{% url 'download_certificate_pdf' certificate.id %}" data-i18n="profile.certificates.download">Завантажити PDF</a>
                 </div>
             </div>
         {% empty %}
-            <div class="meta">Сертифікатів поки немає.</div>
+            <div class="meta" data-i18n="profile.certificates.empty">Сертифікатів поки немає.</div>
         {% endfor %}
     </div>
 </div>
-</body>
-</html>
-
-
-
-
+{% endblock %}

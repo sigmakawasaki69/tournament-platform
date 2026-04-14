@@ -5,30 +5,30 @@
 {% block content %}
     <section class="hero">
         <div class="hero-content">
-            <div class="hero-kicker">Особистий кабінет</div>
-            <h1>Профіль користувача</h1>
-            <p>Тут зібрано вашу базову інформацію, команди, турніри, сертифікати та останні оголошення платформи.</p>
+            <div class="hero-kicker" data-i18n="profile.hero.kicker">Особистий кабінет</div>
+            <h1 data-i18n="profile.hero.title">Профіль користувача</h1>
+            <p data-i18n="profile.hero.text">Тут зібрано вашу базову інформацію, команди, турніри, сертифікати та останні оголошення платформи.</p>
         </div>
         <div class="hero-side">
-            <div class="hero-stat"><strong>{{ tournaments_with_state|length }}</strong>Турнірів у профілі</div>
-            <div class="hero-stat"><strong>{{ certificates|length }}</strong>Доступних сертифікатів</div>
+            <div class="hero-stat"><strong>{{ tournaments_with_state|length }}</strong><span data-i18n="profile.hero.tournaments">Турнірів у профілі</span></div>
+            <div class="hero-stat"><strong>{{ certificates|length }}</strong><span data-i18n="profile.hero.certificates">Доступних сертифікатів</span></div>
         </div>
     </section>
 
     <section class="section">
-        <h2 class="section-title">Основна інформація</h2>
+        <h2 class="section-title" data-i18n="profile.info.title">Основна інформація</h2>
         <div class="meta-list spacer-top">
-            Логін: {{ profile_user.username }}<br>
-            Електронна пошта: {{ profile_user.email }}<br>
-            Роль: {{ profile_user.get_role_display }}
+            <span data-i18n="profile.info.username">Логін</span>: {{ profile_user.username }}<br>
+            <span data-i18n="profile.info.email">Електронна пошта</span>: {{ profile_user.email }}<br>
+            <span data-i18n="profile.info.role">Роль</span>: <span data-i18n="role.{{ profile_user.role }}">{{ profile_user.get_role_display }}</span>
         </div>
     </section>
 
     <section class="section">
         <div class="section-head">
             <div>
-                <h2 class="section-title">Моя команда</h2>
-                <div class="section-note">Команда, у якій ви є контактною особою (капітаном) або учасником.</div>
+                <h2 class="section-title" data-i18n="profile.team.title">Моя команда</h2>
+                <div class="section-note" data-i18n="profile.team.note">Команда, у якій ви є контактною особою (капітаном) або учасником.</div>
             </div>
         </div>
 
@@ -36,24 +36,24 @@
             <div class="list spacer-top">
                 <div class="item-card">
                     <h3>{{ my_team.name }}</h3>
-                    <div class="meta-list spacer-top">Контактна особа (капітан): {{ my_team.captain_name }}</div>
+                    <div class="meta-list spacer-top"><span data-i18n="profile.team.captain">Контактна особа (капітан)</span>: {{ my_team.captain_name }}</div>
                     <div class="toolbar spacer-top">
-                        <a class="button" href="{% url 'team_detail' my_team.id %}">Відкрити</a>
-                        <a class="button-secondary" href="{% url 'team_results' my_team.id %}">Результати</a>
+                        <a class="button" href="{% url 'team_detail' my_team.id %}" data-i18n="profile.team.open">Відкрити</a>
+                        <a class="button-secondary" href="{% url 'team_results' my_team.id %}" data-i18n="profile.team.results">Результати</a>
                     </div>
                 </div>
             </div>
         {% else %}
-            <p class="empty spacer-top">У вас ще немає команди.</p>
-            <a class="button-success spacer-top" href="{% url 'create_team' %}">Створити команду</a>
+            <p class="empty spacer-top" data-i18n="profile.team.empty">У вас ще немає команди.</p>
+            <a class="button-success spacer-top" href="{% url 'create_team' %}" data-i18n="profile.team.create">Створити команду</a>
         {% endif %}
     </section>
 
     <section class="section">
         <div class="section-head">
             <div>
-                <h2 class="section-title">Мої турніри</h2>
-                <div class="section-note">Стан ваших заявок, доступ до завдань і підсумкових результатів.</div>
+                <h2 class="section-title" data-i18n="profile.tournaments.title">Мої турніри</h2>
+                <div class="section-note" data-i18n="profile.tournaments.note">Стан ваших заявок, доступ до завдань і підсумкових результатів.</div>
             </div>
         </div>
 
@@ -62,34 +62,34 @@
                 <div class="item-card">
                     <div class="section-head">
                         <h3>{{ item.tournament.name }}</h3>
-                        <span class="status-badge status-{{ item.tournament.lifecycle_status }}">{{ item.tournament.lifecycle_status_label }}</span>
+                        <span class="status-badge status-{{ item.tournament.lifecycle_status }}" data-i18n="status.{{ item.tournament.lifecycle_status }}">{{ item.tournament.lifecycle_status_label }}</span>
                     </div>
                     <div class="meta-list spacer-top">
-                        Початок: {{ item.tournament.start_date }}<br>
-                        Завершення: {{ item.tournament.end_date }}<br>
-                        Реєстрація до: {{ item.tournament.registration_end }}
+                        <span data-i18n="profile.tournaments.start">Початок</span>: {{ item.tournament.start_date }}<br>
+                        <span data-i18n="profile.tournaments.end">Завершення</span>: {{ item.tournament.end_date }}<br>
+                        <span data-i18n="profile.tournaments.reg_end">Реєстрація до</span>: {{ item.tournament.registration_end }}
                     </div>
 
                     {% if item.my_registration and item.my_registration.status == "approved" %}
-                        <div class="message-box success spacer-top">Заявку схвалено. Команда допущена до турніру.</div>
+                        <div class="message-box success spacer-top" data-i18n="profile.tournaments.status_approved">Заявку схвалено. Команда допущена до турніру.</div>
                     {% elif item.my_registration and item.my_registration.status == "pending" %}
-                        <div class="message-box warn spacer-top">Заявку подано. Очікується рішення організатора.</div>
+                        <div class="message-box warn spacer-top" data-i18n="profile.tournaments.status_pending">Заявку подано. Очікується рішення організатора.</div>
                     {% elif item.my_registration and item.my_registration.status == "rejected" %}
-                        <div class="message-box error spacer-top">Попередню заявку відхилено.</div>
+                        <div class="message-box error spacer-top" data-i18n="profile.tournaments.status_rejected">Попередню заявку відхилено.</div>
                     {% endif %}
 
                     <div class="toolbar spacer-top">
-                        <a class="button" href="{% url 'public_tournament_detail' item.tournament.id %}">Сторінка турніру</a>
+                        <a class="button" href="{% url 'public_tournament_detail' item.tournament.id %}" data-i18n="profile.tournaments.page">Сторінка турніру</a>
                         {% if item.can_open_tasks %}
-                            <a class="button-success" href="{% url 'tournament_tasks' item.tournament.id %}">Завдання</a>
+                            <a class="button-success" href="{% url 'tournament_tasks' item.tournament.id %}" data-i18n="profile.tournaments.tasks">Завдання</a>
                         {% endif %}
                         {% if item.can_view_leaderboard %}
-                            <a class="button-secondary" href="{% url 'tournament_leaderboard' item.tournament.id %}">Лідерборд</a>
+                            <a class="button-secondary" href="{% url 'tournament_leaderboard' item.tournament.id %}" data-i18n="profile.tournaments.leaderboard">Лідерборд</a>
                         {% endif %}
                     </div>
                 </div>
             {% empty %}
-                <p class="empty">Доступних турнірів зараз немає.</p>
+                <p class="empty" data-i18n="profile.tournaments.empty">Доступних турнірів зараз немає.</p>
             {% endfor %}
         </div>
     </section>
@@ -98,8 +98,8 @@
         <div class="card">
             <div class="section-head">
                 <div>
-                    <h2>Мої сертифікати</h2>
-                    <div class="section-note">Усі отримані сертифікати з можливістю завантаження PDF.</div>
+                    <h2 data-i18n="profile.certificates.title">Мої сертифікати</h2>
+                    <div class="section-note" data-i18n="profile.certificates.note">Усі отримані сертифікати з можливістю завантаження PDF.</div>
                 </div>
             </div>
             <div class="list spacer-top">
@@ -107,16 +107,16 @@
                     <div class="item-card">
                         <h3>{{ certificate.tournament.name }}</h3>
                         <div class="meta-list spacer-top">
-                            Команда: {{ certificate.team.name|default:"-" }}<br>
-                            Дата видачі: {{ certificate.issued_at }}
+                            <span data-i18n="profile.certificates.team">Команда</span>: {{ certificate.team.name|default:"-" }}<br>
+                            <span data-i18n="profile.certificates.date">Дата видачі</span>: {{ certificate.issued_at }}
                         </div>
                         <div class="toolbar spacer-top">
                             <span class="status-badge status-upcoming">{{ certificate.get_certificate_type_display }}</span>
-                            <a class="button-secondary" href="{% url 'download_certificate_pdf' certificate.id %}">Завантажити PDF</a>
+                            <a class="button-secondary" href="{% url 'download_certificate_pdf' certificate.id %}" data-i18n="profile.certificates.download">Завантажити PDF</a>
                         </div>
                     </div>
                 {% empty %}
-                    <p class="empty">Сертифікатів поки немає.</p>
+                    <p class="empty" data-i18n="profile.certificates.empty">Сертифікатів поки немає.</p>
                 {% endfor %}
             </div>
         </div>
@@ -124,8 +124,8 @@
         <div class="card">
             <div class="section-head">
                 <div>
-                    <h2>Оголошення</h2>
-                    <div class="section-note">Останні повідомлення від адміністрації та організаторів.</div>
+                    <h2 data-i18n="profile.announcements.title">Оголошення</h2>
+                    <div class="section-note" data-i18n="profile.announcements.note">Останні повідомлення від адміністрації та організаторів.</div>
                 </div>
             </div>
             <div class="list spacer-top">
@@ -133,13 +133,13 @@
                     <div class="item-card">
                         <h3>{{ announcement.title }}</h3>
                         <div class="meta-list spacer-top">
-                            {% if announcement.tournament %}Турнір: {{ announcement.tournament.name }}<br>{% endif %}
-                            Дата: {{ announcement.created_at }}
+                            {% if announcement.tournament %}<span data-i18n="profile.announcements.tournament">Турнір</span>: {{ announcement.tournament.name }}<br>{% endif %}
+                            <span data-i18n="profile.announcements.date">Дата</span>: {{ announcement.created_at }}
                         </div>
                         <p class="card-text spacer-top">{{ announcement.message }}</p>
                     </div>
                 {% empty %}
-                    <p class="empty">Оголошень поки немає.</p>
+                    <p class="empty" data-i18n="profile.announcements.empty">Оголошень поки немає.</p>
                 {% endfor %}
             </div>
         </div>

@@ -1,69 +1,18 @@
-<!DOCTYPE html>
-<html lang="uk">
-<head>
-    <meta charset="UTF-8">
-    <title>Підтвердження пошти</title>
-    <style>
-        * { box-sizing: border-box; }
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f4f6fb;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        .card {
-            width: 100%;
-            max-width: 560px;
-            background: white;
-            padding: 32px;
-            border-radius: 18px;
-            box-shadow: 0 12px 30px rgba(0,0,0,0.08);
-        }
-        h1 { margin: 0 0 10px; font-size: 30px; }
-        p { color: #475569; line-height: 1.7; margin: 0 0 14px; }
-        .note {
-            background: #eef5ff;
-            color: #244a7c;
-            padding: 14px;
-            border-radius: 12px;
-            margin: 18px 0;
-        }
-        .actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-top: 18px;
-        }
-        .btn, .btn-secondary {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 42px;
-            padding: 10px 16px;
-            border-radius: 10px;
-            text-decoration: none;
-            font-weight: 700;
-        }
-        .btn { background: #2563eb; color: white; }
-        .btn-secondary { background: #eef4ff; color: #2563eb; }
-    </style>
-</head>
-<body>
-    <div class="card">
-        <h1>Майже готово</h1>
-        <p>Акаунт створено. Ми надіслали лист на вашу електронну пошту з посиланням для підтвердження.</p>
-        <div class="note">
-            Після переходу за посиланням ви зможете увійти на сайт через сторінку входу.
-        </div>
-        <p>Якщо лист не з'явився одразу, перевірте папки «Спам» або «Промоакції».</p>
-        <div class="actions">
-            <a class="btn" href="{% url 'login' %}{% if next_url %}?next={{ next_url|urlencode }}{% endif %}">До входу</a>
-            <a class="btn-secondary" href="{% url 'home' %}">На головну</a>
-        </div>
+{% extends "auth_base.html" %}
+
+{% block title %}Підтвердження пошти{% endblock %}
+
+{% block content %}
+<div class="card" style="width: 100%; max-width: 560px; margin: 0 auto;">
+    <h1 data-i18n="register_success.title">Майже готово</h1>
+    <p data-i18n="register_success.text">Акаунт створено. Ми надіслали лист на вашу електронну пошту з посиланням для підтвердження.</p>
+    <div class="message-box info spacer-top" data-i18n="register_success.note">
+        Після переходу за посиланням ви зможете увійти на сайт через сторінку входу.
     </div>
-</body>
-</html>
+    <p class="spacer-top" data-i18n="register_success.spam_note">Якщо лист не з'явився одразу, перевірте папки «Спам» або «Промоакції».</p>
+    <div class="toolbar spacer-top">
+        <a class="button" href="{% url 'login' %}{% if next_url %}?next={{ next_url|urlencode }}{% endif %}" data-i18n="register_success.login_btn">До входу</a>
+        <a class="button-secondary" href="{% url 'home' %}" data-i18n="nav.home">Головна</a>
+    </div>
+</div>
+{% endblock %}

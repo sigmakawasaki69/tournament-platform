@@ -44,9 +44,9 @@
             старт реєстрації, старт завдань, дедлайни, завершення оцінювання й системні оновлення.
         </p>
         <div class="quick-actions">
-            <a class="button-secondary" href="{% url 'home' %}">На головну</a>
+            <a class="button-secondary" href="{% url 'home' %}" data-i18n="team.hero.home">На головну</a>
             <a class="button-secondary" href="{% url 'certificates' %}">
-                Сертифікати{% if has_unread_certificates %} <span class="notify-dot">{{ unread_certificates_count }}</span>{% endif %}
+                <span data-i18n="team.hero.certificates">Сертифікати</span>{% if has_unread_certificates %} <span class="notify-dot">{{ unread_certificates_count }}</span>{% endif %}
             </a>
         </div>
     </section>
@@ -86,11 +86,11 @@
                 <article class="card message-item" data-message-bucket="{{ item.bucket }}">
                     <div class="section-head">
                         <h3>{{ item.title }}</h3>
-                        <span class="message-badge {{ item.kind }}">{{ item.kind_label }}</span>
+                        <span class="message-badge {{ item.kind }}" data-i18n="kind.{{ item.kind }}">{{ item.kind_label }}</span>
                     </div>
                     <div class="meta-list spacer-top">
-                        {% if item.tournament %}Турнір: {{ item.tournament.name }}<br>{% endif %}
-                        Дата: {{ item.created_at|date:"d.m.Y H:i" }}
+                        {% if item.tournament %}<span data-i18n="profile.announcements.tournament">Турнір</span>: {{ item.tournament.name }}<br>{% endif %}
+                        <span data-i18n="profile.announcements.date">Дата</span>: {{ item.created_at|date:"d.m.Y H:i" }}
                     </div>
                     <p class="card-text spacer-top">{{ item.body }}</p>
                 </article>

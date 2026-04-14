@@ -1,86 +1,67 @@
-<!DOCTYPE html>
-<html lang="uk">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ task.title }}</title>
-    <style>
-        body { margin: 0; font-family: Arial, sans-serif; background: #f4f6fb; padding: 30px 20px; color: #172033; }
-        .wrap { max-width: 760px; margin: 0 auto; }
-        .card { background: white; padding: 24px; border-radius: 16px; box-shadow: 0 10px 24px rgba(0,0,0,.06); }
-        label { display: block; margin-bottom: 6px; font-weight: 700; }
-        .form-input, input, textarea, select {
-            width: 100%;
-            padding: 12px 14px;
-            margin-bottom: 14px;
-            border: 1px solid #d0d7e2;
-            border-radius: 10px;
-            box-sizing: border-box;
-            font: inherit;
-        }
-        .checkbox-row { display: flex; gap: 10px; align-items: center; margin: 8px 0 16px; }
-        .checkbox-row input { width: auto; margin: 0; }
-        .button, .back {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 40px;
-            padding: 10px 15px;
-            border-radius: 10px;
-            text-decoration: none;
-            font-weight: 700;
-        }
-        .button { border: none; background: #2563eb; color: white; cursor: pointer; }
-        .back { color: #2563eb; background: #eef4ff; }
-        .field-errors { color: #b00020; font-size: 14px; margin: -8px 0 10px; }
-        .meta { color: #64748b; line-height: 1.7; margin-bottom: 16px; }
-        .notice { background: #eef4ff; border: 1px solid #dbeafe; color: #1e3a8a; padding: 14px; border-radius: 12px; margin-bottom: 18px; }
-        .error-box { background: #fee2e2; color: #991b1b; padding: 12px 14px; border-radius: 12px; margin-bottom: 16px; }
-    </style>
-</head>
-<body>
-<div class="wrap">
-<div style="margin-bottom:14px;">
-<a class="back" href="{% url 'home' %}">На головну</a>
-</div>
-<div class="card">
-<h1>{{ task.title }}</h1>
-<p class="meta">Турнір: <strong>{{ task.tournament.name }}</strong></p>
-<p class="meta">Команда: <strong>{{ team.name }}</strong></p>
-<p class="meta">
-Початок завдання: <strong>{{ task.effective_start|date:"d.m.Y H:i"|default:"-" }}</strong><br>
-Дедлайн здачі: <strong>{{ task.effective_deadline|date:"d.m.Y H:i"|default:"-" }}</strong>
-</p>
+{% extends "base.html" %}
 
-<div class="notice">
-Ви можете редагувати цю відповідь до дедлайну саме цього завдання. Після завершення дедлайну подачу буде закрито.
-</div>
+{% block title %}{{ task.title }}{% endblock %}
 
-{% if form.non_field_errors %}
-<div class="error-box">{{ form.non_field_errors }}</div>
-{% endif %}
+{% block content %}
+<div class="wrap" style="max-width: 800px; margin: 0 auto;">
+    <div style="margin-bottom:14px;">
+        <a class="button-secondary" href="{% url 'tournament_tasks' task.tournament.id %}" data-i18n="common.back">Назад</a>
+    </div>
 
-<form method="post" enctype="multipart/form-data">
-{% csrf_token %}
+    <div class="card">
+        <h1 data-i18n="submit_solution.title">Надіслати рішення</h1>
+        <h2 style="margin-top:10px;">{{ task.title }}</h2>
 
-{% for field in form.visible_fields %}
-    {% if field.name == 'is_final' %}
-        <div class="checkbox-row">
-            {{ field }}
-            <label for="{{ field.id_for_label }}" style="margin:0;">{{ field.label }}</label>
+        <div class="meta-list spacer-top">
+            <span data-i18n="submit_solution.tournament">Турнір</span>: <strong>{{ task.tournament.name }}</strong><br>
+            <span data-i18n="submit_solution.team">Команда</span>: <strong>{{ team.name }}</strong>
         </div>
-        {% if field.errors %}<div class="field-errors">{{ field.errors }}</div>{% endif %}
-    {% else %}
-        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-        {{ field }}
-        {% if field.errors %}<div class="field-errors">{{ field.errors }}</div>{% endif %}
-    {% endif %}
-{% endfor %}
 
-<button class="button" type="submit">{% if submission %}Оновити відповідь{% else %}Надіслати відповідь{% endif %}</button>
-<a class="back" href="{% url 'tournament_tasks' task.tournament.id %}">Назад</a>
-</form>
+        <div class="task-meta grid-2 spacer-top">
+            <div style="background: #f8fbff; border: 1px solid #dbe7f3; border-radius: 12px; padding: 12px;">
+                <strong style="font-size:12px; color:#64748b;" data-i18n="tournament_tasks.task_start">Початок завдання</strong>
+                {{ task.effective_start|date:"d.m.Y H:i"|default:"-" }}
+            </div>
+            <div style="background: #f8fbff; border: 1px solid #dbe7f3; border-radius: 12px; padding: 12px;">
+                <strong style="font-size:12px; color:#64748b;" data-i18n="tournament_tasks.task_deadline">Дедлайн здачі</strong>
+                {{ task.effective_deadline|date:"d.m.Y H:i"|default:"-" }}
+            </div>
+        </div>
+
+        <div class="message-box info spacer-top" data-i18n="submit_solution.deadline_note">
+            Ви можете редагувати цю відповідь до дедлайну саме цього завдання. Після завершення дедлайну подачу буде закрито.
+        </div>
+
+        {% if form.non_field_errors %}
+            <div class="message-box error spacer-top">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" class="spacer-top">
+            {% csrf_token %}
+
+            {% for field in form.visible_fields %}
+                {% if field.name == 'is_final' %}
+                    <div class="checkbox-row" style="display: flex; gap: 10px; align-items: center; margin: 8px 0 16px;">
+                        {{ field }}
+                        <label for="{{ field.id_for_label }}" style="margin:0; font-weight:700;">{{ field.label }}</label>
+                    </div>
+                    {% if field.errors %}<div class="field-errors" style="color:#dc2626; font-size:14px;">{{ field.errors }}</div>{% endif %}
+                {% else %}
+                    <div class="field-group spacer-top">
+                        <label for="{{ field.id_for_label }}" style="display:block; margin-bottom:6px; font-weight:700;">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}<div class="field-errors" style="color:#dc2626; font-size:14px;">{{ field.errors }}</div>{% endif %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+
+            <div class="toolbar spacer-top">
+                <button class="button-success" type="submit">
+                    {% if submission %}<span data-i18n="submit_solution.update_btn">Оновити відповідь</span>{% else %}<span data-i18n="submit_solution.submit_btn">Надіслати відповідь</span>{% endif %}
+                </button>
+                <a class="button-secondary" href="{% url 'tournament_tasks' task.tournament.id %}" data-i18n="common.back">Назад</a>
+            </div>
+        </form>
+    </div>
 </div>
-</div>
-</body>
-</html>
+{% endblock %}
