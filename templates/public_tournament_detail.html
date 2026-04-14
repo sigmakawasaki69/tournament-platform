@@ -2,7 +2,20 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <title>{{ tournament.name }}</title>
+    <title data-i18n-message>{{ tournament.name }}</title>
+    <script>
+        (function () {
+            try {
+                const savedTheme = localStorage.getItem("tp-theme") || "light";
+                const savedLanguage = localStorage.getItem("tp-language") || "uk";
+                document.documentElement.dataset.theme = savedTheme;
+                document.documentElement.lang = savedLanguage;
+            } catch (error) {
+                document.documentElement.dataset.theme = "light";
+                document.documentElement.lang = "uk";
+            }
+        }());
+    </script>
     <style>
         body { margin: 0; font-family: Arial, sans-serif; background: #f4f6fb; color: #172033; }
         .wrap { max-width: 1180px; margin: 0 auto; padding: 24px 20px 40px; }
@@ -82,8 +95,8 @@
                 <img src="{{ tournament.banner_image.url }}" alt="{{ tournament.name }}" class="hero-banner">
             {% endif %}
             <div>
-                <h1>{{ tournament.name }}</h1>
-                <p>{{ tournament.description|default:"Опис турніру ще не додано." }}</p>
+                <h1 data-i18n-message>{{ tournament.name }}</h1>
+                <p data-i18n-message>{{ tournament.description|default:"Опис турніру ще не додано." }}</p>
             </div>
             <div class="meta" style="color: rgba(255,255,255,.88);">
                 <span data-i18n="home.tournaments.start">Старт</span>: {{ tournament.start_date|default:"-" }}<br>
@@ -98,86 +111,86 @@
         <div class="grid">
             <div>
                 <div class="card">
-                    <h2 class="section-title">Опис турніру</h2>
+                    <h2 class="section-title" data-i18n="public_tournament.description_title">Опис турніру</h2>
                     {% if tournament.registration_form_description %}
-                        <div class="hint">{{ tournament.registration_form_description|linebreaksbr }}</div>
+                        <div class="hint" data-i18n-message>{{ tournament.registration_form_description|linebreaksbr }}</div>
                     {% endif %}
-                    <div class="hint">
+                    <div class="hint" data-i18n="public_reg.form_note">
                         Той, хто подає заявку від команди, автоматично стає контактною особою (капітаном).
                         Доступ до завдань відкривається лише після схвалення заявки організатором.
                     </div>
                 </div>
 
                 <div class="card">
-                    <h2 class="section-title">Розклад турніру</h2>
+                    <h2 class="section-title" data-i18n="public_tournament.schedule_title">Розклад турніру</h2>
                     {% for item in tournament.schedule_items.all %}
                         <div class="task-item">
-                            <strong>{{ item.title }}</strong>
+                            <strong data-i18n-message>{{ item.title }}</strong>
                             <div class="meta">{{ item.starts_at|date:"d.m.Y H:i" }}</div>
                             {% if item.description %}
-                                <div class="meta" style="margin-top:8px;">{{ item.description|linebreaksbr }}</div>
+                                <div class="meta" style="margin-top:8px;" data-i18n-message>{{ item.description|linebreaksbr }}</div>
                             {% endif %}
                         </div>
                     {% empty %}
-                        <div class="meta">Розклад турніру ще не додано.</div>
+                        <div class="meta" data-i18n="public_tournament.no_schedule">Розклад турніру ще не додано.</div>
                     {% endfor %}
                 </div>
 
                 <div class="card">
-                    <h2 class="section-title">Реєстрація на турнір</h2>
+                    <h2 class="section-title" data-i18n="public_tournament.registration_title">Реєстрація на турнір</h2>
 
                     {% if existing_registration and existing_registration.status == "approved" %}
-                        <div class="success">Вашу заявку вже схвалено. Турнір доступний із профілю та сторінки команди.</div>
+                        <div class="success" data-i18n="public_tournament.reg_approved">Вашу заявку вже схвалено. Турнір доступний із профілю та сторінки команди.</div>
                     {% elif existing_registration and existing_registration.status == "pending" %}
-                        <div class="warning">Ваша заявка вже на розгляді в організатора.</div>
+                        <div class="warning" data-i18n="public_tournament.reg_pending">Ваша заявка вже на розгляді в організатора.</div>
                     {% elif existing_registration and existing_registration.status == "rejected" %}
-                        <div class="warning">Попередню заявку відхилено. Ви можете подати нову повторно.</div>
+                        <div class="warning" data-i18n="public_tournament.reg_rejected">Попередню заявку відхилено. Ви можете подати нову повторно.</div>
                     {% endif %}
 
                     {% if not tournament.is_registration_open %}
-                        <div class="warning">Реєстрація зараз закрита або ще не почалася.</div>
+                        <div class="warning" data-i18n="public_tournament.reg_closed">Реєстрація зараз закрита або ще не почалася.</div>
                     {% elif not request.user.is_authenticated %}
-                        <div class="warning">
+                        <div class="warning" data-i18n="public_tournament.reg_login_required">
                             Щоб подати заявку, спочатку увійдіть або зареєструйте обліковий запис.
                             <div class="toolbar" style="margin-top:12px;">
-                                <a class="secondary-btn" href="{{ register_url }}">Зареєструватися</a>
-                                <a class="button" href="{{ login_url }}">Увійти</a>
+                                <a class="secondary-btn" href="{{ register_url }}" data-i18n="nav.register">Зареєструватися</a>
+                                <a class="button" href="{{ login_url }}" data-i18n="nav.login">Увійти</a>
                             </div>
                         </div>
                     {% elif not viewer_can_register %}
-                        <div class="warning">Подавати заявки можуть учасники та адміністратори.</div>
+                        <div class="warning" data-i18n="public_tournament.reg_permission_denied">Подавати заявки можуть учасники та адміністратори.</div>
                     {% elif registration_form %}
                         <form method="post" id="registration-form">
                             {% csrf_token %}
 
-                            <label for="{{ registration_form.team_name.id_for_label }}">Назва команди</label>
+                            <label for="{{ registration_form.team_name.id_for_label }}" data-i18n="common.team_name">Назва команди</label>
                             {{ registration_form.team_name }}
-                            {% if registration_form.team_name.errors %}<div class="field-errors">{{ registration_form.team_name.errors }}</div>{% endif %}
+                            {% if registration_form.team_name.errors %}<div class="field-errors" data-i18n-message>{{ registration_form.team_name.errors|join:", " }}</div>{% endif %}
 
-                            <label for="{{ registration_form.captain_name.id_for_label }}">Ім'я контактної особи (капітан)</label>
+                            <label for="{{ registration_form.captain_name.id_for_label }}" data-i18n="public_reg.participant_name">Ім'я контактної особи (капітан)</label>
                             {{ registration_form.captain_name }}
-                            {% if registration_form.captain_name.errors %}<div class="field-errors">{{ registration_form.captain_name.errors }}</div>{% endif %}
+                            {% if registration_form.captain_name.errors %}<div class="field-errors" data-i18n-message>{{ registration_form.captain_name.errors|join:", " }}</div>{% endif %}
 
-                            <label for="{{ registration_form.captain_email.id_for_label }}">Електронна пошта контактної особи (капітан)</label>
+                            <label for="{{ registration_form.captain_email.id_for_label }}" data-i18n="public_reg.participant_email">Електронна пошта контактної особи (капітан)</label>
                             {{ registration_form.captain_email }}
-                            {% if registration_form.captain_email.errors %}<div class="field-errors">{{ registration_form.captain_email.errors }}</div>{% endif %}
+                            {% if registration_form.captain_email.errors %}<div class="field-errors" data-i18n-message>{{ registration_form.captain_email.errors|join:", " }}</div>{% endif %}
 
-                            <label for="{{ registration_form.school.id_for_label }}">Школа</label>
+                            <label for="{{ registration_form.school.id_for_label }}" data-i18n="common.school">Школа</label>
                             {{ registration_form.school }}
-                            {% if registration_form.school.errors %}<div class="field-errors">{{ registration_form.school.errors }}</div>{% endif %}
+                            {% if registration_form.school.errors %}<div class="field-errors" data-i18n-message>{{ registration_form.school.errors|join:", " }}</div>{% endif %}
 
-                            <label for="{{ registration_form.preferred_contact_method.id_for_label }}">Зручний спосіб зв'язку</label>
+                            <label for="{{ registration_form.preferred_contact_method.id_for_label }}" data-i18n="common.contact_method">Зручний спосіб зв'язку</label>
                             {{ registration_form.preferred_contact_method }}
-                            {% if registration_form.preferred_contact_method.errors %}<div class="field-errors">{{ registration_form.preferred_contact_method.errors }}</div>{% endif %}
+                            {% if registration_form.preferred_contact_method.errors %}<div class="field-errors" data-i18n-message>{{ registration_form.preferred_contact_method.errors|join:", " }}</div>{% endif %}
 
-                            <label for="{{ registration_form.preferred_contact_value.id_for_label }}">Контакт для зв'язку</label>
+                            <label for="{{ registration_form.preferred_contact_value.id_for_label }}" data-i18n="common.contact_value">Контакт для зв'язку</label>
                             {{ registration_form.preferred_contact_value }}
-                            {% if registration_form.preferred_contact_value.errors %}<div class="field-errors">{{ registration_form.preferred_contact_value.errors }}</div>{% endif %}
+                            {% if registration_form.preferred_contact_value.errors %}<div class="field-errors" data-i18n-message>{{ registration_form.preferred_contact_value.errors|join:", " }}</div>{% endif %}
 
                             {% for field in registration_form %}
                                 {% if field.name != "team_name" and field.name != "captain_name" and field.name != "captain_email" and field.name != "school" and field.name != "preferred_contact_method" and field.name != "preferred_contact_value" %}
                                     <div class="field-card">
-                                        <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span style="color:#b91c1c;">*</span>{% endif %}</label>
+                                        <label for="{{ field.id_for_label }}" data-i18n-message>{{ field.label }}{% if field.field.required %}<span style="color:#b91c1c;">*</span>{% endif %}</label>
                                         {% if field.field.widget.attrs.data_field_type == "participants" %}
                                             {{ field }}
                                             <div class="participants-wrap" data-target-id="{{ field.auto_id }}">
@@ -188,12 +201,12 @@
                                         {% else %}
                                             {{ field }}
                                         {% endif %}
-                                        {% if field.errors %}<div class="field-errors">{{ field.errors }}</div>{% endif %}
+                                        {% if field.errors %}<div class="field-errors" data-i18n-message>{{ field.errors|join:", " }}</div>{% endif %}
                                     </div>
                                 {% endif %}
                             {% endfor %}
 
-                            {% if registration_form.non_field_errors %}<div class="field-errors">{{ registration_form.non_field_errors }}</div>{% endif %}
+                            {% if registration_form.non_field_errors %}<div class="field-errors" data-i18n-message>{{ registration_form.non_field_errors|join:", " }}</div>{% endif %}
 
                             <div class="toolbar">
                                 <button class="button" type="submit" data-i18n="public_reg.submit">Надіслати заявку</button>
@@ -205,22 +218,22 @@
 
             <div>
                 <div class="card">
-                    <h2 class="section-title">Завдання</h2>
+                    <h2 class="section-title" data-i18n="public_tournament.tasks_title">Завдання</h2>
                     {% for task in tasks %}
                         <div class="task-item">
-                            <strong>{{ task.title }}</strong>
-                            <div class="meta">{{ task.description|truncatechars:180 }}</div>
+                            <strong data-i18n-message>{{ task.title }}</strong>
+                            <div class="meta" data-i18n-message>{{ task.description|truncatechars:180 }}</div>
                         </div>
                     {% empty %}
-                        <div class="meta">Поки що немає опублікованих завдань.</div>
+                        <div class="meta" data-i18n="public_tournament.no_tasks">Поки що немає опублікованих завдань.</div>
                     {% endfor %}
                 </div>
 
                 <div class="card">
                     <div class="card-top">
-                        <h2 class="section-title" style="margin-bottom:0;">Лідерборд</h2>
+                        <h2 class="section-title" style="margin-bottom:0;" data-i18n="public_tournament.leaderboard_title">Лідерборд</h2>
                         {% if show_public_leaderboard %}
-                            <a class="ghost-btn" href="{% url 'tournament_leaderboard' tournament.id %}">Відкрити повністю</a>
+                            <a class="ghost-btn" href="{% url 'tournament_leaderboard' tournament.id %}" data-i18n="public_tournament.leaderboard_full">Відкрити повністю</a>
                         {% endif %}
                     </div>
                     {% if show_public_leaderboard %}
@@ -230,13 +243,13 @@
                                 <div class="meta">Середній бал: {{ item.overall_average|default:"-" }}</div>
                             </div>
                         {% empty %}
-                            <div class="meta">Поки що немає результатів.</div>
+                            <div class="meta" data-i18n="public_tournament.leaderboard_note">Поки що немає результатів.</div>
                         {% endfor %}
                         {% if leaderboard_total > 5 %}
-                            <div class="meta">Показано перші 5 команд із {{ leaderboard_total }}.</div>
+                            <div class="meta" data-i18n="public_tournament.leaderboard_summary">Показано перші 5 команд із {{ leaderboard_total }}.</div>
                         {% endif %}
                     {% else %}
-                        <div class="meta">Лідерборд стане доступним після завершення оцінювання.</div>
+                        <div class="meta" data-i18n="public_tournament.leaderboard_note">Лідерборд стане доступним після завершення оцінювання.</div>
                     {% endif %}
                 </div>
             </div>
@@ -308,5 +321,7 @@
             });
         })();
     </script>
+    {% load static %}
+    <script src="{% static 'js/ui_preferences.js' %}"></script>
 </body>
 </html>

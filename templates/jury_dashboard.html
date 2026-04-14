@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <title>Панель журі</title>
+    <title data-i18n="jury.title">Панель журі</title>
     <style>
         body { margin: 0; font-family: Arial, sans-serif; background: #f4f6fb; }
         .wrap { max-width: 1100px; margin: 0 auto; padding: 30px 20px; }
@@ -30,33 +30,33 @@
     <div class="wrap">
         <div class="top">
             <div>
-                <h1>Панель журі</h1>
-                <div>Вітаю, {{ request.user.username }}</div>
+                <h1 data-i18n="jury.title">Панель журі</h1>
+                <div><span data-i18n="organizer.welcome">Вітаю</span>, {{ request.user.username }}</div>
             </div>
             <div class="nav">
-                <a class="logout soft" href="{% url 'home' %}">Головна</a>
-                <a class="logout soft" href="{% url 'messages' %}">Повідомлення{% if has_unread_announcements %}<span class="notify-dot">{{ unread_announcements_count }}</span>{% endif %}</a>
-                <a class="logout soft" href="{% url 'certificates' %}">Сертифікати{% if has_unread_certificates %}<span class="notify-dot">{{ unread_certificates_count }}</span>{% endif %}</a>
-                <a class="logout" href="{% url 'logout' %}">Вийти</a>
+                <a class="logout soft" href="{% url 'home' %}" data-i18n="nav.home">Головна</a>
+                <a class="logout soft" href="{% url 'messages' %}" data-i18n="nav.messages">Повідомлення{% if has_unread_announcements %}<span class="notify-dot">{{ unread_announcements_count }}</span>{% endif %}</a>
+                <a class="logout soft" href="{% url 'certificates' %}" data-i18n="nav.certificates">Сертифікати{% if has_unread_certificates %}<span class="notify-dot">{{ unread_certificates_count }}</span>{% endif %}</a>
+                <a class="logout" href="{% url 'logout' %}" data-i18n="nav.logout">Вийти</a>
             </div>
         </div>
 
         <div class="card">
-            <h2>Турніри</h2>
+            <h2 data-i18n="jury.section.tournaments.title">Турніри</h2>
 
             {% for row in tournament_rows %}
                 <div class="item">
                     <div class="name">{{ row.tournament.name }}</div>
                     <div class="meta">
-                        Початок: {{ row.tournament.start_date }}<br>
-                        Завершення: {{ row.tournament.end_date }}<br>
-                        Команд з роботами: {{ row.teams_count }}<br>
-                        Усього робіт: {{ row.submissions_count }}
+                        <span data-i18n="jury.label.start">Початок</span>: {{ row.tournament.start_date }}<br>
+                        <span data-i18n="jury.label.end">Завершення</span>: {{ row.tournament.end_date }}<br>
+                        <span data-i18n="jury.tournament.teams_with_works">Команд з роботами</span>: {{ row.teams_count }}<br>
+                        <span data-i18n="jury.tournament.total_submissions">Усього робіт</span>: {{ row.submissions_count }}
                     </div>
-                    <a class="btn" href="{% url 'jury_tournament_detail' row.tournament.id %}">Відкрити турнір</a>
+                    <a class="btn" href="{% url 'jury_tournament_detail' row.tournament.id %}" data-i18n="jury.tournament.open">Відкрити турнір</a>
                 </div>
             {% empty %}
-                <div>Поки що немає доступних турнірів.</div>
+                <div data-i18n="jury.tournaments.empty">Поки що немає доступних турнірів.</div>
             {% endfor %}
         </div>
     </div>

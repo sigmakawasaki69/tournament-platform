@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Сертифікати{% endblock %}
+{% block title %}<span data-i18n="nav.certificates">Сертифікати</span>{% endblock %}
 
 {% block content %}
 <div class="wrap">
@@ -22,7 +22,7 @@
             <div class="item" style="border: 1px solid #e2e8f0; border-radius: 14px; padding: 16px; background: #fbfdff; margin-bottom: 12px;">
                 <div class="item-top" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                     <strong>{{ certificate.tournament.name }}</strong>
-                    <span class="status-badge status-upcoming">{{ certificate.get_certificate_type_display }}</span>
+                    <span class="status-badge status-upcoming" data-i18n-message>{{ certificate.get_certificate_type_display }}</span>
                 </div>
                 <div class="meta">
                     {% if certificate.team %}<span data-i18n="profile.certificates.team">Команда</span>: {{ certificate.team.name }}<br>{% endif %}

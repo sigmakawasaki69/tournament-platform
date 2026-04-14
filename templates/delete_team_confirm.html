@@ -2,7 +2,20 @@
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
-<title>Підтвердження видалення</title>
+<title data-i18n="team.delete.confirm_title">Підтвердження видалення</title>
+<script>
+    (function () {
+        try {
+            const savedTheme = localStorage.getItem("tp-theme") || "light";
+            const savedLanguage = localStorage.getItem("tp-language") || "uk";
+            document.documentElement.dataset.theme = savedTheme;
+            document.documentElement.lang = savedLanguage;
+        } catch (error) {
+            document.documentElement.dataset.theme = "light";
+            document.documentElement.lang = "uk";
+        }
+    }());
+</script>
 <style>
 body{
 margin:0;
@@ -53,17 +66,19 @@ color:#111827;
 <body>
 <div class="wrap">
 <div class="card">
-<h1>Видалити команду "{{ team.name }}"?</h1>
-<p>Ця дія видалить команду разом з учасниками, реєстраціями та надісланими роботами.</p>
+<h1><span data-i18n="team.delete.confirm_title">Видалити команду</span> "{{ team.name }}"?</h1>
+<p data-i18n="team.delete.confirm_text">Ця дія видалить команду разом з учасниками, реєстраціями та надісланими роботами.</p>
 <div class="actions">
 <form method="post">
 {% csrf_token %}
-<button class="btn btn-red" type="submit">Видалити</button>
+<button class="btn btn-red" type="submit" data-i18n="team.delete.confirm_btn">Видалити</button>
 </form>
-<a class="btn btn-light" href="{% url 'team_detail' team.id %}">Скасувати</a>
+<a class="btn btn-light" href="{% url 'team_detail' team.id %}" data-i18n="common.cancel">Скасувати</a>
 </div>
 </div>
 </div>
+{% load static %}
+<script src="{% static 'js/ui_preferences.js' %}"></script>
 </body>
 </html>
 

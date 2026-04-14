@@ -1,6 +1,6 @@
 {% extends "auth_base.html" %}
 
-{% block title %}Вхід{% endblock %}
+{% block title %}<span data-i18n="nav.login">Вхід</span>{% endblock %}
 
 {% block content %}
     <div class="auth-card">
@@ -10,7 +10,7 @@
         </p>
 
         {% if message %}
-            <div class="message-box {% if blocked_until %}error{% else %}warn{% endif %} spacer-top">
+            <div class="message-box {% if blocked_until %}error{% else %}warn{% endif %} spacer-top" data-i18n-message>
                 {{ message }}
                 {% if blocked_until %}
                     <div class="spacer-top" id="login-block-timer" data-blocked-until="{{ blocked_until_iso }}">
@@ -21,7 +21,7 @@
         {% endif %}
 
         {% if form.non_field_errors %}
-            <div class="message-box warn">{{ form.non_field_errors }}</div>
+            <div class="message-box warn" data-i18n-message>{{ form.non_field_errors|join:", " }}</div>
         {% endif %}
 
         <form method="post" class="spacer-top">
@@ -34,7 +34,7 @@
                 <label for="{{ form.username.id_for_label }}" data-i18n="login.username">Логін</label>
                 {{ form.username }}
                 {% if form.username.errors %}
-                    <div class="field-errors">{{ form.username.errors }}</div>
+                    <div class="field-errors" data-i18n-message>{{ form.username.errors|join:", " }}</div>
                 {% endif %}
             </div>
 
@@ -42,7 +42,7 @@
                 <label for="{{ form.password.id_for_label }}" data-i18n="login.password">Пароль</label>
                 {{ form.password }}
                 {% if form.password.errors %}
-                    <div class="field-errors">{{ form.password.errors }}</div>
+                    <div class="field-errors" data-i18n-message>{{ form.password.errors|join:", " }}</div>
                 {% endif %}
                 <div style="margin-top: 8px; text-align: right;">
                     <a href="{% url 'password_reset_request' %}" style="font-size: 0.9rem; text-decoration: none; color: var(--primary);" data-i18n="login.forgot_password">Забули пароль?</a>

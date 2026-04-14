@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 
-{% block title %}Учасники {{ team.name }}{% endblock %}
+{% block title %}<span data-i18n="team_participants.title_full">Учасники команди</span> {{ team.name }}{% endblock %}
 
 {% block content %}
 <div class="wrap" style="max-width: 900px; margin: 0 auto;">
     <div class="card">
         <div class="top" style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 18px;">
             <div>
-                <h1 style="margin:0 0 8px;"><span data-i18n="team.participants.title">Учасники команди</span> {{ team.name }}</h1>
-                <div class="meta"><span data-i18n="home.team_block.captain">Контактна особа</span>: {{ team.captain_name }}</div>
+                <h1 style="margin:0 0 8px;" data-i18n="team_participants.title_full">Учасники команди</h1>
+                <div class="meta"><span data-i18n="home.team_block.captain">Контактна особа</span>: {{ team.captain_name }} ({{ team.name }})</div>
             </div>
             <div class="toolbar">
                 {% if can_manage_roster %}

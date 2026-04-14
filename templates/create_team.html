@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{% if mode == 'edit' %}Редагувати команду{% else %}Створити команду{% endif %}{% endblock %}
+{% block title %}<span data-i18n="{% if mode == 'edit' %}create_team.title.edit{% else %}create_team.title.create{% endif %}">{% if mode == 'edit' %}Редагувати команду{% else %}Створити команду{% endif %}</span>{% endblock %}
 
 {% block content %}
     <section class="section" style="max-width: 820px; margin: 0 auto;">
@@ -24,40 +24,40 @@
             <div class="field-group">
                 <label for="{{ form.name.id_for_label }}" data-i18n="common.team_name">Назва команди</label>
                 {{ form.name }}
-                {% if form.name.errors %}<div class="field-errors">{{ form.name.errors }}</div>{% endif %}
+                {% if form.name.errors %}<div class="field-errors" data-i18n-message>{{ form.name.errors|join:", " }}</div>{% endif %}
             </div>
 
             <div class="form-grid form-grid-2 spacer-top">
                 <div class="field-group">
                     <label for="{{ form.captain_name.id_for_label }}" data-i18n="public_reg.participant_name">Ім'я контактної особи (капітан)</label>
                     {{ form.captain_name }}
-                    {% if form.captain_name.errors %}<div class="field-errors">{{ form.captain_name.errors }}</div>{% endif %}
+                    {% if form.captain_name.errors %}<div class="field-errors" data-i18n-message>{{ form.captain_name.errors|join:", " }}</div>{% endif %}
                 </div>
 
                 <div class="field-group">
                     <label for="{{ form.captain_email.id_for_label }}" data-i18n="public_reg.participant_email">Електронна пошта контактної особи (капітан)</label>
                     {{ form.captain_email }}
-                    {% if form.captain_email.errors %}<div class="field-errors">{{ form.captain_email.errors }}</div>{% endif %}
+                    {% if form.captain_email.errors %}<div class="field-errors" data-i18n-message>{{ form.captain_email.errors|join:", " }}</div>{% endif %}
                 </div>
             </div>
 
             <div class="field-group spacer-top">
                 <label for="{{ form.school.id_for_label }}" data-i18n="common.school">Школа</label>
                 {{ form.school }}
-                {% if form.school.errors %}<div class="field-errors">{{ form.school.errors }}</div>{% endif %}
+                {% if form.school.errors %}<div class="field-errors" data-i18n-message>{{ form.school.errors|join:", " }}</div>{% endif %}
             </div>
 
             <div class="form-grid form-grid-2 spacer-top">
                 <div class="field-group">
                     <label for="{{ form.preferred_contact_method.id_for_label }}" data-i18n="common.contact_method">Зручний спосіб зв'язку</label>
                     {{ form.preferred_contact_method }}
-                    {% if form.preferred_contact_method.errors %}<div class="field-errors">{{ form.preferred_contact_method.errors }}</div>{% endif %}
+                    {% if form.preferred_contact_method.errors %}<div class="field-errors" data-i18n-message>{{ form.preferred_contact_method.errors|join:", " }}</div>{% endif %}
                 </div>
 
                 <div class="field-group">
                     <label for="{{ form.preferred_contact_value.id_for_label }}" data-i18n="common.contact_value">Контакт для зв'язку</label>
                     {{ form.preferred_contact_value }}
-                    {% if form.preferred_contact_value.errors %}<div class="field-errors">{{ form.preferred_contact_value.errors }}</div>{% endif %}
+                    {% if form.preferred_contact_value.errors %}<div class="field-errors" data-i18n-message>{{ form.preferred_contact_value.errors|join:", " }}</div>{% endif %}
                 </div>
             </div>
 

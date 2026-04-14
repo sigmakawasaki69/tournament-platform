@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <title>Додати учасника</title>
+    <title data-i18n="team.participants.add.title">Додати учасника</title>
     <style>
         body {
             margin: 0;
@@ -63,31 +63,18 @@
 <body>
     <div class="wrap">
         <div class="card">
-            <h1>Додати учасника до команди "{{ team.name }}"</h1>
+            <h1 data-i18n="team.participants.add.title_full">Додати учасника до команди "{{ team.name }}"</h1>
 
             <form method="post">
                 {% csrf_token %}
 
-                <label>Повне ім'я</label>
+                <label data-i18n="common.name">Повне ім'я</label>
                 {{ form.full_name }}
                 {% if form.full_name.errors %}
-                    <div class="field-errors">{{ form.full_name.errors }}</div>
+                    <div class="field-errors" data-i18n-message>{{ form.full_name.errors|join:", " }}</div>
                 {% endif %}
 
-                <label>Електронна пошта</label>
-                {{ form.email }}
-                {% if form.email.errors %}
-                    <div class="field-errors">{{ form.email.errors }}</div>
-                {% endif %}
-
-                <button type="submit">Додати</button>
-                <a href="/team/{{ team.id }}/">Назад</a>
-            </form>
-        </div>
-    </div>
-</body>
-</html>
-
+                <label data-i18n="common.email">Електронна пошта</label>
 
 
 

@@ -101,7 +101,7 @@
         {% if messages %}
             <div class="spacer-top">
                 {% for message in messages %}
-                    <div class="message-box {% if message.tags == 'error' %}error{% elif message.tags == 'warning' %}warn{% elif message.tags == 'success' %}success{% else %}info{% endif %}">
+                    <div class="message-box {% if message.tags == 'error' %}error{% elif message.tags == 'warning' %}warn{% elif message.tags == 'success' %}success{% else %}info{% endif %}" data-i18n-message>
                         {{ message }}
                     </div>
                 {% endfor %}

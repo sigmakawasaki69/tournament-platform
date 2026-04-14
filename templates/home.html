@@ -98,10 +98,10 @@
             {% for row in tournament_rows %}
                 {% if row.tournament.banner_image %}
                     <a href="{% url 'public_tournament_detail' row.tournament.id %}" class="banner-card" style="background-image: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.7)), url('{{ row.tournament.banner_image.url }}');">
-                        <div class="banner-badge status-{{ row.tournament.lifecycle_status }}">{{ row.tournament.lifecycle_status_label }}</div>
+                        <div class="banner-badge status-{{ row.tournament.lifecycle_status }}" data-i18n="status.{{ row.tournament.lifecycle_status }}">{{ row.tournament.lifecycle_status_label }}</div>
                         <div class="banner-info">
-                            <h2 class="banner-title">{{ row.tournament.name }}</h2>
-                            <p class="banner-desc">{{ row.tournament.description|truncatechars:100 }}</p>
+                            <h2 class="banner-title" data-i18n-message>{{ row.tournament.name }}</h2>
+                            <p class="banner-desc" data-i18n-message>{{ row.tournament.description|truncatechars:100 }}</p>
                         </div>
                     </a>
                 {% endif %}
@@ -137,7 +137,7 @@
             {% for row in tournament_rows %}
                 <a class="card card-link" href="{% url 'public_tournament_detail' row.tournament.id %}" data-filter-bucket="{{ row.filter_bucket }}">
                     <div class="section-head">
-                        <h3>{{ row.tournament.name }}</h3>
+                        <h3 data-i18n-message>{{ row.tournament.name }}</h3>
                         <span class="status-badge status-{{ row.tournament.lifecycle_status }}" data-i18n="status.{{ row.tournament.lifecycle_status }}">{{ row.tournament.lifecycle_status_label }}</span>
                     </div>
 
@@ -159,7 +159,7 @@
                         </div>
                     </div>
 
-                    <p class="card-text spacer-top">{{ row.tournament.description|truncatechars:180 }}</p>
+                    <p class="card-text spacer-top" data-i18n-message>{{ row.tournament.description|truncatechars:180 }}</p>
 
                     <div class="spacer-top" style="padding-top:14px;border-top:1px solid #ecf0f6;">
                         <strong data-i18n="home.tournaments.leaderboard">Лідерборд</strong>
@@ -171,11 +171,11 @@
                                         <strong>{% if item.overall_average is not None %}{{ item.overall_average|floatformat:1 }}{% else %}-{% endif %}</strong>
                                     </div>
                                 {% empty %}
-                                    <div class="empty spacer-top">Після завершення оцінювання тут з’являться підсумкові місця.</div>
+                                    <div class="empty spacer-top" data-i18n="home.tournaments.leaderboard_preview">Після завершення оцінювання тут з’являться підсумкові місця.</div>
                                 {% endfor %}
                             </div>
                         {% else %}
-                            <div class="empty spacer-top">Підсумковий лідерборд стане доступним після завершення оцінювання.</div>
+                            <div class="empty spacer-top" data-i18n="home.tournaments.leaderboard_later">Підсумковий лідерборд стане доступним після завершення оцінювання.</div>
                         {% endif %}
                     </div>
                 </a>
@@ -219,8 +219,8 @@
             <div class="list">
                 {% for announcement in announcements %}
                     <div class="summary-card">
-                        <h3>{{ announcement.title }}</h3>
-                        <p class="card-text">{{ announcement.message }}</p>
+                        <h3 data-i18n-message>{{ announcement.title }}</h3>
+                        <p class="card-text" data-i18n-message>{{ announcement.message }}</p>
                         <p class="section-note">{% if announcement.tournament %}<span data-i18n="profile.announcements.tournament">Турнір</span>: {{ announcement.tournament.name }} · {% endif %}{{ announcement.created_at|date:"d.m.Y H:i" }}</p>
                     </div>
                 {% empty %}
@@ -239,8 +239,8 @@
             <div class="list">
                 {% for news in news_rows %}
                     <div class="summary-card">
-                        <h3>{{ news.tournament.name }}</h3>
-                        <p class="card-text">{{ news.text }}</p>
+                        <h3 data-i18n-message>{{ news.tournament.name }}</h3>
+                        <p class="card-text" data-i18n-message>{{ news.text }}</p>
                     </div>
                 {% empty %}
                     <div class="empty" data-i18n="home.news.empty">Поки що новин немає.</div>

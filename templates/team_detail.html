@@ -63,47 +63,47 @@
         {% if quick_overview %}
             <div class="quick-grid spacer-top">
                 <div class="quick-card">
-                    <div class="quick-kicker">Ваш турнір</div>
+                    <div class="quick-kicker" data-i18n="team.detail.your_tournament">Ваш турнір</div>
                     <div class="quick-title">{{ quick_overview.tournament.name }}</div>
-                    <div class="meta-list">Статус: {{ quick_overview.tournament.lifecycle_status_label }}</div>
+                    <div class="meta-list"><span data-i18n="home.team_block.status">Статус</span>: <span data-i18n-message>{{ quick_overview.tournament.lifecycle_status_label }}</span></div>
                     <div class="quick-actions spacer-top">
-                        <a class="button" href="{% url 'public_tournament_detail' quick_overview.tournament.id %}">Відкрити</a>
+                        <a class="button" href="{% url 'public_tournament_detail' quick_overview.tournament.id %}" data-i18n="profile.team.open">Відкрити</a>
                         {% if quick_overview.tournament.is_running or quick_overview.tournament.is_finished %}
-                            <a class="button-secondary" href="{% url 'tournament_tasks' quick_overview.tournament.id %}">Завдання</a>
+                            <a class="button-secondary" href="{% url 'tournament_tasks' quick_overview.tournament.id %}" data-i18n="profile.tournaments.tasks">Завдання</a>
                         {% endif %}
                     </div>
                 </div>
 
                 <div class="quick-card">
-                    <div class="quick-kicker">Ваше завдання</div>
+                    <div class="quick-kicker" data-i18n="team.detail.your_task">Ваше завдання</div>
                     {% if quick_overview.next_task %}
                         <div class="quick-title">{{ quick_overview.next_task.title }}</div>
-                        <div class="meta-list">Усього задач: {{ quick_overview.tasks_total }}</div>
+                        <div class="meta-list"><span data-i18n="home.team_block.total_tasks">Усього задач</span>: {{ quick_overview.tasks_total }}</div>
                         {% if quick_overview.tournament.is_running %}
                             <div class="quick-actions spacer-top">
-                                <a class="button-success" href="{% url 'submit_solution' quick_overview.next_task.id %}">Подати роботу</a>
+                                <a class="button-success" href="{% url 'submit_solution' quick_overview.next_task.id %}" data-i18n="home.team_block.submit_work">Подати роботу</a>
                             </div>
                         {% endif %}
                     {% else %}
-                        <div class="empty spacer-top">У турнірі поки немає опублікованих задач.</div>
+                        <div class="empty spacer-top" data-i18n="team.detail.no_tasks">У турнірі поки немає опублікованих задач.</div>
                     {% endif %}
                 </div>
 
                 <div class="quick-card">
-                    <div class="quick-kicker">Остання робота</div>
+                    <div class="quick-kicker" data-i18n="team.detail.last_submission">Остання робота</div>
                     {% if quick_overview.latest_submission %}
                         <div class="quick-title">{{ quick_overview.latest_submission.task.title }}</div>
-                        <div class="meta-list">Подано: {{ quick_overview.latest_submission.submitted_at }}<br>Усього робіт: {{ quick_overview.submitted_total }}</div>
+                        <div class="meta-list"><span data-i18n="admin.submissions.submitted_at">Подано</span>: {{ quick_overview.latest_submission.submitted_at }}<br><span data-i18n="home.team_block.submitted">Усього робіт</span>: {{ quick_overview.submitted_total }}</div>
                         <div class="quick-actions spacer-top">
-                            <a class="button-secondary" href="{% url 'team_results' team.id %}">Оцінки та результати</a>
+                            <a class="button-secondary" href="{% url 'team_results' team.id %}" data-i18n="profile.team.results">Оцінки та результати</a>
                         </div>
                     {% else %}
-                        <div class="empty spacer-top">Для цього турніру робіт ще немає.</div>
+                        <div class="empty spacer-top" data-i18n="team.detail.no_submissions">Для цього турніру робіт ще немає.</div>
                     {% endif %}
                 </div>
             </div>
         {% else %}
-            <div class="empty spacer-top">Команда ще не має схваленого турніру, тому швидкий блок поки порожній.</div>
+            <div class="empty spacer-top" data-i18n="team.detail.waiting_approval">Команда ще не має схваленого турніру, тому швидкий блок поки порожній.</div>
         {% endif %}
     </section>
 
@@ -120,8 +120,8 @@
                 {% csrf_token %}
                 <div class="section-head">
                     <div>
-                        <h3>Додати учасника</h3>
-                        <div class="section-note">Адміністратор або контактна особа (капітан) може додавати учасників прямо на цій сторінці.</div>
+                        <h3 data-i18n="team.participants.add.title">Додати учасника</h3>
+                        <div class="section-note" data-i18n="team.participants.add.note">Адміністратор або контактна особа (капітан) може додавати учасників прямо на цій сторінці.</div>
                     </div>
                 </div>
                 {% if participant_form.non_field_errors %}
@@ -161,15 +161,15 @@
                     <div class="meta-list">{{ participant.email }}</div>
                 </div>
             {% empty %}
-                <div class="empty">У команди поки немає інших учасників, окрім контактної особи (капітанa).</div>
+                <div class="empty" data-i18n="team.participants.others">У команди поки немає інших учасників, окрім контактної особи (капітанa).</div>
             {% endfor %}
         </div>
 
         {% if invitations %}
             <div class="section-head spacer-top">
                 <div>
-                    <h3 class="section-title">Очікують підтвердження</h3>
-                    <div class="section-note">Ці учасники отримали запрошення на пошту, але ще не підтвердили свою участь.</div>
+                    <h3 class="section-title" data-i18n="team.participants.invitations.title">Очікують підтвердження</h3>
+                    <div class="section-note" data-i18n="team.participants.invitations.note">Ці учасники отримали запрошення на пошту, але ще не підтвердили свою участь.</div>
                 </div>
             </div>
             <div class="list spacer-top">
@@ -187,18 +187,18 @@
         <div class="card">
             <div class="section-head">
                 <div>
-                    <h2>Турніри команди</h2>
-                    <div class="section-note">Усі заявки цієї команди на турніри.</div>
+                    <h2 data-i18n="team.tournaments.title">Турніри команди</h2>
+                    <div class="section-note" data-i18n="team.tournaments.note">Усі заявки цієї команди на турніри.</div>
                 </div>
             </div>
             <div class="list spacer-top">
                 {% for reg in team.registrations.all %}
                     <div class="item-card">
                         <h3>{{ reg.tournament.name }}</h3>
-                        <div class="meta-list">Статус заявки: {{ reg.get_status_display }}<br>Подано: {{ reg.created_at }}</div>
+                        <div class="meta-list"><span data-i18n="team.tournaments.status">Статус заявки</span>: <span data-i18n-message>{{ reg.get_status_display }}</span><br><span data-i18n="admin.submissions.submitted_at">Подано</span>: {{ reg.created_at }}</div>
                     </div>
                 {% empty %}
-                    <div class="empty">Команда ще не зареєстрована на турніри.</div>
+                    <div class="empty" data-i18n="team.tournaments.empty">Команда ще не зареєстрована на турніри.</div>
                 {% endfor %}
             </div>
         </div>
@@ -206,15 +206,15 @@
         <div class="card">
             <div class="section-head">
                 <div>
-                    <h2>Надіслані роботи</h2>
-                    <div class="section-note">Останні сабміти команди по всіх турнірах.</div>
+                    <h2 data-i18n="team.submissions.title">Надіслані роботи</h2>
+                    <div class="section-note" data-i18n="team.submissions.note">Останні сабміти команди по всіх турнірах.</div>
                 </div>
             </div>
             <div class="list spacer-top">
                 {% for submission in submissions %}
                     <div class="item-card">
                         <h3>{{ submission.task.title }}</h3>
-                        <div class="meta-list">Турнір: {{ submission.task.tournament.name }}<br>Подано: {{ submission.submitted_at }}</div>
+                        <div class="meta-list"><span data-i18n="profile.announcements.tournament">Турнір</span>: {{ submission.task.tournament.name }}<br><span data-i18n="admin.submissions.submitted_at">Подано</span>: {{ submission.submitted_at }}</div>
                         {% if submission.response_items %}
                             <div class="meta-list links spacer-top">
                                 {% for item in submission.response_items %}
@@ -230,7 +230,7 @@
                         {% endif %}
                     </div>
                 {% empty %}
-                    <div class="empty">Команда ще не надсилала робіт.</div>
+                    <div class="empty" data-i18n="team.submissions.empty">Команда ще не надсилала робіт.</div>
                 {% endfor %}
             </div>
         </div>

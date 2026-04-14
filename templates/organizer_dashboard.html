@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <title>Кабінет організатора</title>
+    <title data-i18n="organizer.title">Кабінет організатора</title>
     <style>
         :root {
             --bg: #eef4ff;
@@ -78,35 +78,35 @@
     <div class="wrap">
         <div class="topbar">
             <div>
-                <div class="title">Кабінет організатора</div>
-                <div class="meta">Вітаю, {{ request.user.username }}</div>
+                <div class="title" data-i18n="organizer.title">Кабінет організатора</div>
+                <div class="meta"><span data-i18n="organizer.welcome">Вітаю</span>, {{ request.user.username }}</div>
             </div>
             <div class="actions">
-                <a class="button-secondary" href="{% url 'home' %}">Головна</a>
-                <a class="button-secondary nav-badge" href="{% url 'messages' %}">Повідомлення{% if has_unread_announcements %}<span class="notify-dot">{{ unread_announcements_count }}</span>{% endif %}</a>
-                <a class="button-secondary nav-badge" href="{% url 'certificates' %}">Сертифікати{% if has_unread_certificates %}<span class="notify-dot">{{ unread_certificates_count }}</span>{% endif %}</a>
-                <a class="button" href="{% url 'create_tournament' %}">Створити турнір</a>
-                <a class="button-danger" href="{% url 'logout' %}">Вийти</a>
+                <a class="button-secondary" href="{% url 'home' %}" data-i18n="nav.home">Головна</a>
+                <a class="button-secondary nav-badge" href="{% url 'messages' %}" data-i18n="nav.messages">Повідомлення{% if has_unread_announcements %}<span class="notify-dot">{{ unread_announcements_count }}</span>{% endif %}</a>
+                <a class="button-secondary nav-badge" href="{% url 'certificates' %}" data-i18n="nav.certificates">Сертифікати{% if has_unread_certificates %}<span class="notify-dot">{{ unread_certificates_count }}</span>{% endif %}</a>
+                <a class="button" href="{% url 'create_tournament' %}" data-i18n="nav.create_tournament">Створити турнір</a>
+                <a class="button-danger" href="{% url 'logout' %}" data-i18n="nav.logout">Вийти</a>
             </div>
         </div>
 
         <div class="hero">
             <div class="hero-main">
-                <div class="hero-kicker">Робочий кабінет</div>
-                <h1>Керуйте турнірами, заявками, завданнями та дедлайнами</h1>
-                <p>Тут можна створювати та редагувати свої турніри, перевіряти заявки команд і швидко переходити до завдань та експорту результатів.</p>
+                <div class="hero-kicker" data-i18n="organizer.hero.kicker">Робочий кабінет</div>
+                <h1 data-i18n="organizer.hero.title">Керуйте турнірами, заявками, завданнями та дедлайнами</h1>
+                <p data-i18n="organizer.hero.text">Тут можна створювати та редагувати свої турніри, перевіряти заявки команд і швидко переходити до завдань та експорту результатів.</p>
             </div>
             <div class="hero-side">
-                <div class="stat"><strong>{{ tournaments|length }}</strong>Мої турніри</div>
-                <div class="stat"><strong>{{ registrations|length }}</strong>Усього заявок</div>
+                <div class="stat"><strong>{{ tournaments|length }}</strong><span data-i18n="organizer.stat.my_tournaments">Мої турніри</span></div>
+                <div class="stat"><strong>{{ registrations|length }}</strong><span data-i18n="organizer.stat.total_registrations">Усього заявок</span></div>
             </div>
         </div>
 
         <section class="section">
             <div class="section-head">
                 <div>
-                    <h2 class="section-title">Мої турніри</h2>
-                    <div class="section-note">Усі ваші активні, майбутні та завершені турніри в одному списку.</div>
+                    <h2 class="section-title" data-i18n="organizer.section.tournaments.title">Мої турніри</h2>
+                    <div class="section-note" data-i18n="organizer.section.tournaments.note">Усі ваші активні, майбутні та завершені турніри в одному списку.</div>
                 </div>
             </div>
             <div class="card">
@@ -115,47 +115,47 @@
                         <div class="item">
                             <div class="item-title">
                                 <strong>{{ tournament.name }}</strong>
-                                <span class="status-badge status-{{ tournament.lifecycle_status }}">{{ tournament.lifecycle_status_label }}</span>
+                                <span class="status-badge status-{{ tournament.lifecycle_status }}" data-i18n-message>{{ tournament.lifecycle_status_label }}</span>
                             </div>
                             <div class="meta">
-                                Реєстрація: {{ tournament.registration_start|default:"-" }} - {{ tournament.registration_end|default:"-" }}<br>
-                                Турнір: {{ tournament.start_date|default:"-" }} - {{ tournament.end_date|default:"-" }}<br>
-                                Статус оцінювання: {{ tournament.evaluation_status_label }}<br>
-                                Журі:
+                                <span data-i18n="organizer.label.registration">Реєстрація</span>: {{ tournament.registration_start|default:"-" }} - {{ tournament.registration_end|default:"-" }}<br>
+                                <span data-i18n="organizer.label.tournament">Турнір</span>: {{ tournament.start_date|default:"-" }} - {{ tournament.end_date|default:"-" }}<br>
+                                <span data-i18n="organizer.tournament.evaluation_status">Статус оцінювання</span>: <span data-i18n-message>{{ tournament.evaluation_status_label }}</span><br>
+                                <span data-i18n="organizer.tournament.jury">Журі</span>:
                                 {% for jury in tournament.jury_users.all %}
                                     {{ jury.username }}{% if not forloop.last %}, {% endif %}
                                 {% empty %}
-                                    не призначено
+                                    <span data-i18n="organizer.tournament.jury_none">не призначено</span>
                                 {% endfor %}
                             </div>
                             <div class="actions-inline">
-                                <a class="button-secondary" href="{% url 'edit_tournament' tournament.id %}">Редагувати</a>
-                                <a class="button" href="{% url 'create_tournament_task' tournament.id %}">Додати завдання</a>
+                                <a class="button-secondary" href="{% url 'edit_tournament' tournament.id %}" data-i18n="organizer.action.edit">Редагувати</a>
+                                <a class="button" href="{% url 'create_tournament_task' tournament.id %}" data-i18n="organizer.action.add_task">Додати завдання</a>
                                 {% if tournament.evaluation_results_ready %}
-                                    <a class="button-secondary" href="{% url 'export_tournament_results_csv' tournament.id %}">Експорт результатів CSV</a>
+                                    <a class="button-secondary" href="{% url 'export_tournament_results_csv' tournament.id %}" data-i18n="organizer.action.export_csv">Експорт результатів CSV</a>
                                 {% endif %}
                                 {% if tournament.lifecycle_status != 'running' and tournament.lifecycle_status != 'finished' %}
                                     <form method="post" action="{% url 'start_tournament_now' tournament.id %}">
                                         {% csrf_token %}
-                                        <button class="button-secondary" type="submit">Розпочати зараз</button>
+                                        <button class="button-secondary" type="submit" data-i18n="organizer.action.start_now">Розпочати зараз</button>
                                     </form>
                                 {% endif %}
                                 {% if tournament.lifecycle_status != 'finished' %}
                                     <form method="post" action="{% url 'finish_tournament_now' tournament.id %}">
                                         {% csrf_token %}
-                                        <button class="button-danger" type="submit">Завершити зараз</button>
+                                        <button class="button-danger" type="submit" data-i18n="organizer.action.finish_now">Завершити зараз</button>
                                     </form>
                                 {% endif %}
                                 {% if tournament.is_finished and not tournament.evaluation_results_ready %}
                                     <form method="post" action="{% url 'finish_evaluation_now' tournament.id %}">
                                         {% csrf_token %}
-                                        <button class="button-secondary" type="submit">Завершити оцінювання</button>
+                                        <button class="button-secondary" type="submit" data-i18n="organizer.action.finish_evaluation">Завершити оцінювання</button>
                                     </form>
                                 {% endif %}
                             </div>
                         </div>
                     {% empty %}
-                        <div class="meta">У вас ще немає турнірів.</div>
+                        <div class="meta" data-i18n="organizer.tournaments.empty">У вас ще немає турнірів.</div>
                     {% endfor %}
                 </div>
             </div>
@@ -164,8 +164,8 @@
         <section class="section">
             <div class="section-head">
                 <div>
-                    <h2 class="section-title">Заявки на мої турніри</h2>
-                    <div class="section-note">Тут видно команди, їхні контактні дані та поточний статус заявки.</div>
+                    <h2 class="section-title" data-i18n="organizer.section.registrations.title">Заявки на мої турніри</h2>
+                    <div class="section-note" data-i18n="organizer.section.registrations.note">Тут видно команди, їхні контактні дані та поточний статус заявки.</div>
                 </div>
             </div>
             <div class="card">
@@ -174,28 +174,28 @@
                         <div class="item">
                             <div class="item-title">
                                 <strong>{{ reg.team.name }} → {{ reg.tournament.name }}</strong>
-                                <span class="status-badge status-{{ reg.status }}">{{ reg.get_status_display }}</span>
+                                <span class="status-badge status-{{ reg.status }}" data-i18n-message>{{ reg.get_status_display }}</span>
                             </div>
                             <div class="meta">
-                                Контактна особа (капітан): {{ reg.team.captain_name }} * ({{ reg.team.captain_email }})<br>
-                                Зв'язок: {% if reg.team.effective_contact_value %}{{ reg.team.effective_contact_label }} — {{ reg.team.effective_contact_value }}{% else %}-{% endif %}<br>
-                                Подав: {{ reg.registered_by.username }}
+                                <span data-i18n="organizer.label.contact_person">Контактна особа (капітан)</span>: {{ reg.team.captain_name }} * ({{ reg.team.captain_email }})<br>
+                                <span data-i18n="organizer.label.contact">Зв'язок</span>: {% if reg.team.effective_contact_value %}<span data-i18n-message>{{ reg.team.effective_contact_label }}</span> — {{ reg.team.effective_contact_value }}{% else %}-{% endif %}<br>
+                                <span data-i18n="organizer.label.submitted_by">Подав</span>: {{ reg.registered_by.username }}
                             </div>
                             {% if reg.status == "pending" %}
                                 <div class="actions-inline">
                                     <form method="post" action="{% url 'approve_registration' reg.id %}">
                                         {% csrf_token %}
-                                        <button class="button" type="submit">Схвалити</button>
+                                        <button class="button" type="submit" data-i18n="organizer.action.approve">Схвалити</button>
                                     </form>
                                     <form method="post" action="{% url 'reject_registration' reg.id %}">
                                         {% csrf_token %}
-                                        <button class="button-secondary" type="submit">Відхилити</button>
+                                        <button class="button-secondary" type="submit" data-i18n="organizer.action.reject">Відхилити</button>
                                     </form>
                                 </div>
                             {% endif %}
                         </div>
                     {% empty %}
-                        <div class="meta">Заявок поки немає.</div>
+                        <div class="meta" data-i18n="organizer.registrations.empty">Заявок поки немає.</div>
                     {% endfor %}
                 </div>
             </div>

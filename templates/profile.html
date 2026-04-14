@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Профіль{% endblock %}
+{% block title %}<span data-i18n="nav.profile">Профіль</span>{% endblock %}
 
 {% block content %}
     <section class="hero">
@@ -111,7 +111,7 @@
                             <span data-i18n="profile.certificates.date">Дата видачі</span>: {{ certificate.issued_at }}
                         </div>
                         <div class="toolbar spacer-top">
-                            <span class="status-badge status-upcoming">{{ certificate.get_certificate_type_display }}</span>
+                            <span class="status-badge status-upcoming" data-i18n-message>{{ certificate.get_certificate_type_display }}</span>
                             <a class="button-secondary" href="{% url 'download_certificate_pdf' certificate.id %}" data-i18n="profile.certificates.download">Завантажити PDF</a>
                         </div>
                     </div>
@@ -136,7 +136,7 @@
                             {% if announcement.tournament %}<span data-i18n="profile.announcements.tournament">Турнір</span>: {{ announcement.tournament.name }}<br>{% endif %}
                             <span data-i18n="profile.announcements.date">Дата</span>: {{ announcement.created_at }}
                         </div>
-                        <p class="card-text spacer-top">{{ announcement.message }}</p>
+                        <p class="card-text spacer-top" data-i18n-message>{{ announcement.message }}</p>
                     </div>
                 {% empty %}
                     <p class="empty" data-i18n="profile.announcements.empty">Оголошень поки немає.</p>

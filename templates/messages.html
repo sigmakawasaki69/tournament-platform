@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Повідомлення{% endblock %}
+{% block title %}<span data-i18n="nav.messages">Повідомлення</span>{% endblock %}
 
 {% block extra_head %}
     <style>
@@ -85,14 +85,14 @@
             {% for item in message_items %}
                 <article class="card message-item" data-message-bucket="{{ item.bucket }}">
                     <div class="section-head">
-                        <h3>{{ item.title }}</h3>
+                        <h3 data-i18n-message>{{ item.title }}</h3>
                         <span class="message-badge {{ item.kind }}" data-i18n="kind.{{ item.kind }}">{{ item.kind_label }}</span>
                     </div>
                     <div class="meta-list spacer-top">
                         {% if item.tournament %}<span data-i18n="profile.announcements.tournament">Турнір</span>: {{ item.tournament.name }}<br>{% endif %}
                         <span data-i18n="profile.announcements.date">Дата</span>: {{ item.created_at|date:"d.m.Y H:i" }}
                     </div>
-                    <p class="card-text spacer-top">{{ item.body }}</p>
+                    <p class="card-text spacer-top" data-i18n-message>{{ item.body }}</p>
                 </article>
             {% empty %}
                 <div class="empty" data-i18n="messages.empty">Поки що для вас немає повідомлень.</div>

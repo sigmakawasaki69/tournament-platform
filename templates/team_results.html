@@ -76,7 +76,7 @@
                                     <span data-i18n="team_results.summary">Підсумок</span>: {{ evaluation.total|floatformat:1 }}
                                 </div>
                                 {% if evaluation.comment %}
-                                    <p style="margin:10px 0 0;">{{ evaluation.comment }}</p>
+                                    <p style="margin:10px 0 0;" data-i18n-message>{{ evaluation.comment }}</p>
                                 {% endif %}
                             </div>
                         {% endfor %}

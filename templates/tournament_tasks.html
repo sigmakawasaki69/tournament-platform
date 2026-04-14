@@ -9,8 +9,8 @@
             <div class="toolbar">
                 <a class="button-secondary" href="{% url 'profile' %}" data-i18n="tournament_tasks.back_to_profile">Назад до профілю</a>
             </div>
-            <h1 style="margin:14px 0 10px;">{{ tournament.name }}</h1>
-            <p class="muted">{{ tournament.description }}</p>
+            <h1 style="margin:14px 0 10px;" data-i18n-message>{{ tournament.name }}</h1>
+            <p class="muted" data-i18n-message>{{ tournament.description }}</p>
             <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;">
                 {% if show_leaderboard %}
                     <a class="button-success" href="{% url 'tournament_leaderboard' tournament.id %}" data-i18n="tournament_tasks.full_leaderboard">Повний лідерборд</a>
@@ -47,8 +47,8 @@
                     <span class="status-badge status-{{ task.lifecycle_status }}" data-i18n="status.{{ task.lifecycle_status }}">
                         {{ task.lifecycle_status_label }}
                     </span>
-                    <h3 style="margin:10px 0;">{{ task.title }}</h3>
-                    <p class="muted">{{ task.description }}</p>
+                    <h3 style="margin:10px 0;" data-i18n-message>{{ task.title }}</h3>
+                    <p class="muted" data-i18n-message>{{ task.description }}</p>
 
                     <div class="task-meta" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin: 12px 0;">
                         <div style="background: #f8fbff; border: 1px solid #dbe7f3; border-radius: 12px; padding: 12px;">
@@ -61,13 +61,13 @@
                         </div>
                     </div>
 
-                    <p><strong data-i18n="tournament_tasks.requirements">Вимоги:</strong><br>{{ task.requirements|linebreaksbr }}</p>
-                    <p><strong data-i18n="tournament_tasks.must_have">Обов'язково має бути:</strong><br>{{ task.must_have|linebreaksbr }}</p>
+                    <p><strong data-i18n="tournament_tasks.requirements">Вимоги:</strong><br><span data-i18n-message>{{ task.requirements|linebreaksbr }}</span></p>
+                    <p><strong data-i18n="tournament_tasks.must_have">Обов'язково має бути:</strong><br><span data-i18n-message>{{ task.must_have|linebreaksbr }}</span></p>
 
                     {% if show_official_solutions and task.official_solution %}
                         <div class="solution-box" style="margin-top: 16px; padding: 14px; border-radius: 12px; background: #eff6ff; border: 1px solid #bfdbfe;">
                             <strong data-i18n="tournament_tasks.official_solution">Офіційна відповідь / розбір</strong>
-                            <p style="margin:10px 0 0;white-space:pre-line;">{{ task.official_solution }}</p>
+                            <p style="margin:10px 0 0;white-space:pre-line;" data-i18n-message>{{ task.official_solution }}</p>
                         </div>
                     {% endif %}
 

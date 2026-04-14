@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ task.title }}{% endblock %}
+{% block title %}<span data-i18n-message>{{ task.title }}</span>{% endblock %}
 
 {% block content %}
 <div class="wrap" style="max-width: 800px; margin: 0 auto;">
@@ -10,7 +10,7 @@
 
     <div class="card">
         <h1 data-i18n="submit_solution.title">Надіслати рішення</h1>
-        <h2 style="margin-top:10px;">{{ task.title }}</h2>
+        <h2 style="margin-top:10px;" data-i18n-message>{{ task.title }}</h2>
 
         <div class="meta-list spacer-top">
             <span data-i18n="submit_solution.tournament">Турнір</span>: <strong>{{ task.tournament.name }}</strong><br>
@@ -33,7 +33,7 @@
         </div>
 
         {% if form.non_field_errors %}
-            <div class="message-box error spacer-top">{{ form.non_field_errors }}</div>
+            <div class="message-box error spacer-top" data-i18n-message>{{ form.non_field_errors|join:", " }}</div>
         {% endif %}
 
         <form method="post" enctype="multipart/form-data" class="spacer-top">
@@ -43,14 +43,14 @@
                 {% if field.name == 'is_final' %}
                     <div class="checkbox-row" style="display: flex; gap: 10px; align-items: center; margin: 8px 0 16px;">
                         {{ field }}
-                        <label for="{{ field.id_for_label }}" style="margin:0; font-weight:700;">{{ field.label }}</label>
+                        <label for="{{ field.id_for_label }}" style="margin:0; font-weight:700;" data-i18n-message>{{ field.label }}</label>
                     </div>
-                    {% if field.errors %}<div class="field-errors" style="color:#dc2626; font-size:14px;">{{ field.errors }}</div>{% endif %}
+                    {% if field.errors %}<div class="field-errors" style="color:#dc2626; font-size:14px;" data-i18n-message>{{ field.errors|join:", " }}</div>{% endif %}
                 {% else %}
                     <div class="field-group spacer-top">
-                        <label for="{{ field.id_for_label }}" style="display:block; margin-bottom:6px; font-weight:700;">{{ field.label }}</label>
+                        <label for="{{ field.id_for_label }}" style="display:block; margin-bottom:6px; font-weight:700;" data-i18n-message>{{ field.label }}</label>
                         {{ field }}
-                        {% if field.errors %}<div class="field-errors" style="color:#dc2626; font-size:14px;">{{ field.errors }}</div>{% endif %}
+                        {% if field.errors %}<div class="field-errors" style="color:#dc2626; font-size:14px;" data-i18n-message>{{ field.errors|join:", " }}</div>{% endif %}
                     </div>
                 {% endif %}
             {% endfor %}

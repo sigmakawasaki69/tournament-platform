@@ -1,18 +1,18 @@
 {% extends "auth_base.html" %}
 
-{% block title %}Підтвердження пошти{% endblock %}
+{% block title %}<span data-i18n="verify_email.success_title">Підтвердження пошти</span>{% endblock %}
 
 {% block content %}
 <div class="card" style="width: 100%; max-width: 560px; margin: 0 auto;">
     {% if verification_failed %}
-        <h1 data-i18n="verify_email.failed_title">Посилання недійсне</h1>
-        <p data-i18n="verify_email.failed_text">Не вдалося підтвердити електронну пошту. Можливо, посилання вже використане або пошкоджене.</p>
+        <h1 data-i18n="verify_email.failed_title">Помилка підтвердження</h1>
+        <p data-i18n="verify_email.failed_text">Посилання недійсне або термін його дії закінчився.</p>
         <div class="toolbar spacer-top">
             <a class="button-secondary" href="{% url 'register' %}" data-i18n="verify_email.retry_btn">Зареєструватися знову</a>
         </div>
     {% else %}
         <h1 data-i18n="verify_email.success_title">Пошту підтверджено</h1>
-        <p data-i18n="verify_email.success_text">Тепер ви можете увійти в акаунт.</p>
+        <p data-i18n="verify_email.success_text">Ви успішно підтвердили свою електронну пошту. Тепер ви можете увійти на платформу.</p>
         <div class="toolbar spacer-top">
             <a class="button" href="{% url 'login' %}" data-i18n="register_success.login_btn">До входу</a>
         </div>
