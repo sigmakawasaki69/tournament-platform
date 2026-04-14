@@ -340,6 +340,12 @@ a {
     align-content: start;
 }
 
+.hero-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
 .hero-kicker {
     display: inline-flex;
     width: fit-content;

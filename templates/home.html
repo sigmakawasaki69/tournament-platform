@@ -8,6 +8,11 @@
             <div class="hero-kicker" data-i18n="home.hero.kicker">Публічний доступ</div>
             <h1 data-i18n="home.hero.title">Турніри, заявки, результати та сповіщення без зайвих переходів.</h1>
             <p data-i18n="home.hero.text">На цій сторінці ви можете побачити: активні, майбутні та завершені турніри, новини платформи, повідомлення від системи та підсумковий лідерборд.</p>
+            {% if request.user.is_authenticated %}
+                <div class="hero-actions spacer-top">
+                    <a href="{% url 'profile' %}" class="button" data-i18n="home.hero.profile">Мій профіль</a>
+                </div>
+            {% endif %}
         </div>
         <div class="hero-side">
             <div class="hero-stat"><strong>{{ tournament_rows|length }}</strong><span data-i18n="home.stat.total">Усього опублікованих турнірів</span></div>

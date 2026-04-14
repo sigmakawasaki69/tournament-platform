@@ -1562,8 +1562,7 @@ def participant_dashboard(request):
 
 @login_required
 def profile_view(request):
-    if not is_participant_user(request.user) and not request.user.is_superuser:
-        return redirect('redirect_by_role')
+    # Дозволяємо перегляд профілю всім авторизованим користувачам
 
     my_teams = Team.objects.filter(
         Q(captain_user=request.user) | Q(participants__email=request.user.email)

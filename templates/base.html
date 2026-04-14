@@ -60,6 +60,7 @@
                                 <span class="notify-dot">{{ unread_certificates_count }}</span>
                             {% endif %}
                         </a>
+                        <a class="button-secondary" href="{% url 'profile' %}" data-i18n="nav.profile">Профіль</a>
                         <a class="button-secondary" href="{% url 'archive' %}" data-i18n="nav.archive">Архів</a>
 
                         {% if request.user.is_superuser or request.user.role == 'admin' %}
@@ -80,7 +81,6 @@
                                 </div>
                             </details>
                         {% elif request.user.role == 'participant' %}
-                            <a class="button-secondary" href="{% url 'profile' %}" data-i18n="nav.profile">Профіль</a>
                             <a class="button-secondary" href="{% url 'my_team' %}" data-i18n="nav.my_team">Моя команда</a>
                         {% elif request.user.role == 'jury' %}
                             <a class="button-secondary" href="{% url 'jury_dashboard' %}" data-i18n="nav.jury">Журі</a>
