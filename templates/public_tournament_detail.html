@@ -89,6 +89,9 @@
                 Початок: {{ tournament.start_date|default:"-" }}<br>
                 Завершення: {{ tournament.end_date|default:"-" }}<br>
                 Реєстрація: {{ tournament.registration_start|default:"-" }} - {{ tournament.registration_end|default:"-" }}
+                {% if request.user.is_superuser %}
+                    <br>Створив: <strong>{{ tournament.created_by.username }}</strong>
+                {% endif %}
             </div>
         </div>
 

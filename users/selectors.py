@@ -273,7 +273,7 @@ def build_public_tournament_rows(*, leaderboard_builder):
 
 
 def build_admin_dashboard_data():
-    tournaments = list(Tournament.objects.prefetch_related("tasks").all())
+    tournaments = list(Tournament.objects.select_related("created_by").prefetch_related("tasks").all())
     registrations = (
         TournamentRegistration.objects.select_related("tournament", "team", "registered_by")
         .prefetch_related("members")
