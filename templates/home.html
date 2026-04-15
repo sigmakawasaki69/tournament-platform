@@ -3,21 +3,21 @@
 {% block title %}Головна{% endblock %}
 
 {% block content %}
-    <section class="hero">
+    <section class="hero" style="padding: 20px; gap: 14px;">
         <div class="hero-content">
             <div class="hero-kicker" data-i18n="home.hero.kicker">Публічний доступ</div>
-            <h1 data-i18n="home.hero.title">Турніри, заявки, результати та сповіщення без зайвих переходів.</h1>
-            <p data-i18n="home.hero.text">На цій сторінці ви можете побачити: активні, майбутні та завершені турніри, новини платформи, повідомлення від системи та підсумковий лідерборд.</p>
+            <h1 data-i18n="home.hero.title">Турніри, заявки, результати та сповіщення</h1>
+            <p data-i18n="home.hero.text">Все в одному просторі без зайвих кліків.</p>
             {% if request.user.is_authenticated %}
-                <div class="hero-actions spacer-top">
+                <div class="hero-actions" style="margin-top: 10px;">
                     <a href="{% url 'profile' %}" class="button" data-i18n="home.hero.profile">Мій профіль</a>
                 </div>
             {% endif %}
         </div>
         <div class="hero-side">
-            <div class="hero-stat"><strong>{{ tournament_rows|length }}</strong><span data-i18n="home.stat.total">Усього опублікованих турнірів</span></div>
-            <div class="hero-stat"><strong>{{ featured_tournaments|length }}</strong><span data-i18n="home.stat.open">Турніри з відкритою реєстрацією</span></div>
-            <div class="hero-stat"><strong>{{ finished_tournaments|length }}</strong><span data-i18n="home.stat.finished">Завершені події з підсумками</span></div>
+            <div class="hero-stat" style="padding: 12px;"><strong>{{ tournament_rows|length }}</strong><span data-i18n="home.stat.total">Турнірів</span></div>
+            <div class="hero-stat" style="padding: 12px;"><strong>{{ featured_tournaments|length }}</strong><span data-i18n="home.stat.open">Відкрита реєстрація</span></div>
+            <div class="hero-stat" style="padding: 12px;"><strong>{{ finished_tournaments|length }}</strong><span data-i18n="home.stat.finished">Завершено</span></div>
         </div>
     </section>
 
