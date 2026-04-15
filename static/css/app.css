@@ -677,20 +677,7 @@ textarea {
 
 @media (max-width: 760px) { ... }
 
-/* Banners Section */
-.banners-section {
-    padding: 0;
-    background: transparent;
-    border: none;
-    box-shadow: none;
-}
-
-.banners-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 20px;
-}
-
+/* Banners & Carousel */
 .banner-card {
     position: relative;
     height: 280px;
@@ -707,11 +694,6 @@ textarea {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     border: 1px solid var(--border);
     box-shadow: var(--shadow-soft);
-}
-
-.banner-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
 }
 
 .banner-badge {
@@ -755,13 +737,102 @@ textarea {
     align-items: center;
     justify-content: center;
     text-align: center;
+    background: linear-gradient(135deg, var(--primary) 0%, #3b82f6 100%);
 }
 
-@media (max-width: 480px) {
-    .banners-grid {
-        grid-template-columns: 1fr;
+.carousel-wrapper {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-soft);
+    margin-bottom: 24px;
+}
+
+.carousel-track {
+    display: flex;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform;
+}
+
+.carousel-slide {
+    flex: 0 0 100%;
+    width: 100%;
+}
+
+.carousel-slide .banner-card {
+    border-radius: 0;
+    margin: 0;
+    border: none;
+    box-shadow: none;
+    height: 380px; /* Slightly taller for carousel impact */
+}
+
+.carousel-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.24);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #fff;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.carousel-btn:hover {
+    background: rgba(255, 255, 255, 0.36);
+    transform: translateY(-50%) scale(1.05);
+}
+
+.carousel-btn:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
+.carousel-prev { left: 16px; }
+.carousel-next { right: 16px; }
+
+.carousel-indicators {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 10;
+}
+
+.carousel-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.3s;
+}
+
+.carousel-dot.active {
+    background: #fff;
+    transform: scale(1.2);
+}
+
+@media (max-width: 768px) {
+    .carousel-slide .banner-card {
+        height: 280px;
     }
-    .banner-card {
-        height: 180px;
+    .carousel-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
     }
 }
