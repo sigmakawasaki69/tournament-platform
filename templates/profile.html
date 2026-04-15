@@ -68,6 +68,7 @@
                         <span data-i18n="profile.tournaments.start">Початок</span>: {{ item.tournament.start_date }}<br>
                         <span data-i18n="profile.tournaments.end">Завершення</span>: {{ item.tournament.end_date }}<br>
                         <span data-i18n="profile.tournaments.reg_end">Реєстрація до</span>: {{ item.tournament.registration_end }}
+                        {% if request.user.role != "participant" %}<br><span data-i18n="admin.tournaments.created_at">Створено</span>: {{ item.tournament.created_at|date:"d.m.Y H:i" }}{% endif %}
                     </div>
 
                     {% if item.my_registration and item.my_registration.status == "approved" %}

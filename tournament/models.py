@@ -46,6 +46,7 @@ class Tournament(models.Model):
         verbose_name="Максимальна кількість людей у команді",
     )
     is_draft = models.BooleanField(default=True, db_index=True, verbose_name="Чернетка")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата створення", null=True, blank=True)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,

@@ -2176,6 +2176,8 @@ def password_reset_confirm_view(request):
             messages.error(request, "Пароль має бути не коротшим за 8 символів.")
         elif password != confirm_password:
             messages.error(request, "Паролі не співпадають.")
+        elif CustomUser.objects.get(email__iexact=email).check_password(password):
+            messages.error(request, "Ви не можете змінити пароль на той самий.")
         else:
             user = CustomUser.objects.get(email__iexact=email)
             user.set_password(password)
