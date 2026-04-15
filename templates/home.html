@@ -96,8 +96,8 @@
     <section class="section banners-section">
         <div class="banners-grid">
             {% for row in tournament_rows %}
-                {% if row.tournament.banner_url or row.tournament.banner_image %}
-                    <a href="{% url 'public_tournament_detail' row.tournament.id %}" class="banner-card" style="background-image: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.7)), url('{% if row.tournament.banner_url %}{{ row.tournament.banner_url }}{% else %}{{ row.tournament.banner_image.url }}{% endif %}');">
+                {% if row.tournament.banner_image %}
+                    <a href="{% url 'public_tournament_detail' row.tournament.id %}" class="banner-card" style="background-image: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.7)), url('{{ row.tournament.banner_image.url }}');">
                         <div class="banner-badge status-{{ row.tournament.lifecycle_status }}" data-i18n="status.{{ row.tournament.lifecycle_status }}">{{ row.tournament.lifecycle_status_label }}</div>
                         <div class="banner-info">
                             <h2 class="banner-title" data-i18n-message>{{ row.tournament.name }}</h2>

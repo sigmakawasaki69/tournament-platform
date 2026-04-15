@@ -91,8 +91,8 @@
         </div>
 
         <div class="hero">
-            {% if tournament.banner_url or tournament.banner_image %}
-                <img src="{% if tournament.banner_url %}{{ tournament.banner_url }}{% else %}{{ tournament.banner_image.url }}{% endif %}" alt="{{ tournament.name }}" class="hero-banner">
+            {% if tournament.banner_image %}
+                <img src="{{ tournament.banner_image.url }}" alt="{{ tournament.name }}" class="hero-banner">
             {% endif %}
             <div>
                 <h1 data-i18n-message>{{ tournament.name }}</h1>

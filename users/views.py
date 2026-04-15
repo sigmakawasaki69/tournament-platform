@@ -192,22 +192,14 @@ def build_certificate_pdf_response(certificate):
     if template is None:
         raise ValidationError('Для цього типу сертифіката ще не завантажено шаблон.')
 
-    # Пріоритет: 1. Пряме посилання (background_url), 2. Завантажений файл (background_image)
-    if template.background_url:
-        try:
-            response = requests.get(template.background_url, timeout=10)
-            response.raise_for_status()
-            source_image = Image.open(BytesIO(response.content))
-        except Exception as e:
-            raise ValidationError(f'Не вдалося завантажити шаблон за посиланням: {str(e)}')
-    elif template.background_image:
-        try:
-            # Image.open працює з об'єктами файлів (включаючи ті, що з Cloudinary)
-            source_image = Image.open(template.background_image)
-        except Exception:
-            raise ValidationError('Файл шаблону сертифіката не знайдено або пошкоджено. Завантажте шаблон ще раз.')
-    else:
-        raise ValidationError('Шаблон сертифіката не містить ні файлу, ні посилання.')
+    if not template.background_image:
+        raise ValidationError('Для цього шаблону сертифіката не завантажено макет (зображення).')
+
+    try:
+        # Image.open працює з об'єктами файлів (включаючи ті, що з Cloudinary)
+        source_image = Image.open(template.background_image)
+    except Exception:
+        raise ValidationError('Файл шаблону сертифіката не знайдено або пошкоджено. Завантажте шаблон ще раз.')
 
     with source_image:
         image = source_image.convert('RGB')

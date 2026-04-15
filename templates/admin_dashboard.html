@@ -373,7 +373,7 @@
                 </div>
                 {% for tournament in active_tournaments %}
                     <div class="item">
-                        <img src="{% if tournament.banner_url %}{{ tournament.banner_url }}{% elif tournament.banner_image %}{{ tournament.banner_image.url }}{% else %}https://placehold.co/600x400?text=No+Banner{% endif %}" class="item-banner" alt="{{ tournament.name }}">
+                        <img src="{% if tournament.banner_image %}{{ tournament.banner_image.url }}{% else %}https://placehold.co/600x400?text=No+Banner{% endif %}" class="item-banner" alt="{{ tournament.name }}">
                         <div class="item-content">
                             <div class="name">
                                 {{ tournament.name }}
@@ -455,7 +455,7 @@
             <div class="card">
                 {% for tournament in inactive_tournaments %}
                     <div class="item">
-                        <img src="{% if tournament.banner_url %}{{ tournament.banner_url }}{% elif tournament.banner_image %}{{ tournament.banner_image.url }}{% else %}https://placehold.co/600x400?text=No+Banner{% endif %}" class="item-banner" alt="{{ tournament.name }}">
+                        <img src="{% if tournament.banner_image %}{{ tournament.banner_image.url }}{% else %}https://placehold.co/600x400?text=No+Banner{% endif %}" class="item-banner" alt="{{ tournament.name }}">
                         <div class="item-content">
                             <div class="name">
                                 {{ tournament.name }}

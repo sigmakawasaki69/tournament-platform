@@ -256,7 +256,6 @@ class TournamentForm(forms.ModelForm):
             'max_teams',
             'jury_users',
             'banner_image',
-            'banner_url',
             'is_draft',
         ]
         widgets = {
@@ -268,7 +267,6 @@ class TournamentForm(forms.ModelForm):
             'max_teams': forms.NumberInput(attrs={'class': 'form-input'}),
             'jury_users': forms.SelectMultiple(attrs={'class': 'form-input', 'size': 6}),
             'banner_image': forms.FileInput(attrs={'class': 'form-input'}),
-            'banner_url': forms.URLInput(attrs={'class': 'form-input', 'placeholder': 'https://...'}),
             'is_draft': forms.CheckboxInput(),
         }
 
@@ -1078,12 +1076,11 @@ class AnnouncementForm(forms.ModelForm):
 class CertificateTemplateForm(forms.ModelForm):
     class Meta:
         model = CertificateTemplate
-        fields = ['tournament', 'certificate_type', 'background_image', 'background_url']
+        fields = ['tournament', 'certificate_type', 'background_image']
         widgets = {
             'tournament': forms.Select(attrs={'class': 'form-input'}),
             'certificate_type': forms.Select(attrs={'class': 'form-input'}),
             'background_image': forms.ClearableFileInput(attrs={'class': 'form-input'}),
-            'background_url': forms.URLInput(attrs={'class': 'form-input', 'placeholder': 'https://...'}),
         }
 
     def __init__(self, *args, **kwargs):

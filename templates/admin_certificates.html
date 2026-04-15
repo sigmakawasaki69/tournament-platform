@@ -84,12 +84,8 @@
                     {{ template_form.certificate_type }}
                 </div>
                 <div class="field">
-                    <label for="{{ template_form.background_image.id_for_label }}">Макет сертифіката (файл)</label>
+                    <label for="{{ template_form.background_image.id_for_label }}">Макет сертифіката</label>
                     {{ template_form.background_image }}
-                </div>
-                <div class="field">
-                    <label for="{{ template_form.background_url.id_for_label }}">АБО посилання на зовнішній макет</label>
-                    {{ template_form.background_url }}
                 </div>
                 {% if template_form.errors %}
                     <div class="message-box error">{{ template_form.errors }}</div>
