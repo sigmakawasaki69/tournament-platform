@@ -136,7 +136,11 @@
                                     <small style="color:var(--muted);" data-i18n="create_tournament.label.banner_current">Поточний банер</small>
                                 </div>
                             {% endif %}
-                            {{ tournament_form.banner_image }}{% if tournament_form.banner_image.errors %}<div class="err" data-i18n-message>{{ tournament_form.banner_image.errors }}</div>{% endif %}</div>
+                            {{ tournament_form.banner_image }}{% if tournament_form.banner_image.errors %}<div class="err" data-i18n-message>{{ tournament_form.banner_image.errors }}</div>{% endif %}
+                        </div>
+                        <div class="span2"><label data-i18n="create_tournament.label.banner_url">АБО посилання на зовнішній банер</label>
+                            {{ tournament_form.banner_url }}{% if tournament_form.banner_url.errors %}<div class="err" data-i18n-message>{{ tournament_form.banner_url.errors }}</div>{% endif %}
+                        </div>
                         <div class="span2"><label data-i18n="create_tournament.label.jury">Журі турніру</label>{{ tournament_form.jury_users }}{% if tournament_form.jury_users.errors %}<div class="err" data-i18n-message>{{ tournament_form.jury_users.errors }}</div>{% endif %}</div>
                         <div class="span2"><label data-i18n="create_tournament.label.allowed_contacts">Доступні месенджери для команди</label>{{ tournament_form.allowed_contact_methods }}{% if tournament_form.allowed_contact_methods.errors %}<div class="err" data-i18n-message>{{ tournament_form.allowed_contact_methods.errors }}</div>{% endif %}</div>
                     </div>

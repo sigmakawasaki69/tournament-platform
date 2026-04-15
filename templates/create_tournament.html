@@ -207,6 +207,11 @@
                                 {% if form.banner_image.errors %}<div class="field-errors">{{ form.banner_image.errors }}</div>{% endif %}
                             </div>
                             <div class="field-group field-span-2">
+                                <label>АБО посилання на зовнішній банер</label>
+                                {{ form.banner_url }}
+                                {% if form.banner_url.errors %}<div class="field-errors">{{ form.banner_url.errors }}</div>{% endif %}
+                            </div>
+                            <div class="field-group field-span-2">
                                 <label>Журі турніру</label>
                                 {{ form.jury_users }}
                                 {% if form.jury_users.errors %}<div class="field-errors">{{ form.jury_users.errors }}</div>{% endif %}
