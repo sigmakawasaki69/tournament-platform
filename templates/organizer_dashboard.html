@@ -58,7 +58,9 @@
         .section-note { color: var(--muted); }
         .card { padding: 22px; }
         .stack { display: grid; gap: 12px; }
-        .item { border: 1px solid #e2e8f0; border-radius: 18px; padding: 16px; background: linear-gradient(180deg, #fbfdff 0%, #f7fbff 100%); }
+        .item { border: 1px solid #e2e8f0; border-radius: 18px; padding: 16px; background: linear-gradient(180deg, #fbfdff 0%, #f7fbff 100%); display: flex; gap: 16px; align-items: flex-start; }
+        .item-banner { flex: 0 0 140px; width: 140px; height: 90px; border-radius: 12px; object-fit: cover; background: #f1f5f9; border: 1px solid #e2e8f0; }
+        .item-content { flex: 1; }
         .item-title { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 8px; }
         .status-badge { display: inline-flex; align-items: center; padding: 5px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
         .status-approved { background: #dcfce7; color: #166534; }
@@ -113,7 +115,9 @@
                 <div class="stack">
                     {% for tournament in tournaments %}
                         <div class="item">
-                            <div class="item-title">
+                            <img src="{% if tournament.banner_url %}{{ tournament.banner_url }}{% elif tournament.banner_image %}{{ tournament.banner_image.url }}{% else %}https://placehold.co/600x400?text=No+Banner{% endif %}" class="item-banner" alt="{{ tournament.name }}">
+                            <div class="item-content">
+                                <div class="item-title">
                                 <strong>{{ tournament.name }}</strong>
                                 <span class="status-badge status-{{ tournament.lifecycle_status }}" data-i18n-message>{{ tournament.lifecycle_status_label }}</span>
                             </div>

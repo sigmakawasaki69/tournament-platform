@@ -99,6 +99,21 @@
             border-radius: 16px;
             padding: 14px;
             margin-bottom: 12px;
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+        .item-banner {
+            flex: 0 0 120px;
+            width: 120px;
+            height: 80px;
+            border-radius: 10px;
+            object-fit: cover;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+        }
+        .item-content {
+            flex: 1;
         }
         .item:last-child {
             margin-bottom: 0;
@@ -358,69 +373,72 @@
                 </div>
                 {% for tournament in active_tournaments %}
                     <div class="item">
-                        <div class="name">
-                            {{ tournament.name }}
-                            <span class="status-badge status-{{ tournament.lifecycle_status }}">{{ tournament.lifecycle_status_label }}</span>
-                        </div>
-                        <div class="meta">
-                            Чернетка: {{ tournament.is_draft|yesno:"так,ні" }}<br>
-                            Початок: {{ tournament.start_date|default:"-" }}<br>
-                            Завершення: {{ tournament.end_date|default:"-" }}<br>
-                            Реєстрація: {{ tournament.registration_start|default:"-" }} - {{ tournament.registration_end|default:"-" }}<br>
-                            Макс. команд: {{ tournament.max_teams|default:"без ліміту" }}<br>
-                            Створив: {{ tournament.created_by }}<br>
-                            Завдань: {{ tournament.tasks.count }}<br>
-                            Полів анкети: {{ tournament.registration_fields_config|length }}
-                        </div>
-                        {% if tournament.registration_fields_config %}
-                            <details class="meta" style="margin-top: 8px;">
-                                <summary>Поля анкети</summary>
-                                <div style="margin-top: 8px;">
-                                    {% for field in tournament.registration_fields_config %}
-                                        {{ field.label }}: {{ field.type }}{% if field.required %} (обов'язкове){% else %} (необов'язкове){% endif %}<br>
-                                    {% endfor %}
-                                </div>
-                            </details>
-                        {% endif %}
-                        <div class="actions">
-                            {% if tournament.is_draft or not tournament.registration_end or tournament.registration_end > now %}
-                                <a class="button" href="{% url 'edit_tournament' tournament.id %}">Редагувати</a>
-                                <a class="button-secondary" href="{% url 'create_tournament_task' tournament.id %}">Додати завдання</a>
-                            {% else %}
-                                <span class="button button-disabled">Редагувати</span>
-                                <span class="button-secondary button-disabled">Додати завдання</span>
+                        <img src="{% if tournament.banner_url %}{{ tournament.banner_url }}{% elif tournament.banner_image %}{{ tournament.banner_image.url }}{% else %}https://placehold.co/600x400?text=No+Banner{% endif %}" class="item-banner" alt="{{ tournament.name }}">
+                        <div class="item-content">
+                            <div class="name">
+                                {{ tournament.name }}
+                                <span class="status-badge status-{{ tournament.lifecycle_status }}">{{ tournament.lifecycle_status_label }}</span>
+                            </div>
+                            <div class="meta">
+                                Чернетка: {{ tournament.is_draft|yesno:"так,ні" }}<br>
+                                Початок: {{ tournament.start_date|default:"-" }}<br>
+                                Завершення: {{ tournament.end_date|default:"-" }}<br>
+                                Реєстрація: {{ tournament.registration_start|default:"-" }} - {{ tournament.registration_end|default:"-" }}<br>
+                                Макс. команд: {{ tournament.max_teams|default:"без ліміту" }}<br>
+                                Створив: {{ tournament.created_by }}<br>
+                                Завдань: {{ tournament.tasks.count }}<br>
+                                Полів анкети: {{ tournament.registration_fields_config|length }}
+                            </div>
+                            {% if tournament.registration_fields_config %}
+                                <details class="meta" style="margin-top: 8px;">
+                                    <summary>Поля анкети</summary>
+                                    <div style="margin-top: 8px;">
+                                        {% for field in tournament.registration_fields_config %}
+                                            {{ field.label }}: {{ field.type }}{% if field.required %} (обов'язкове){% else %} (необов'язкове){% endif %}<br>
+                                        {% endfor %}
+                                    </div>
+                                </details>
                             {% endif %}
-                            <form class="inline-form" method="post" action="{% url 'delete_tournament' tournament.id %}">
-                                {% csrf_token %}
-                                <input type="hidden" name="next" value="{% url 'admin_dashboard' %}#active-tournaments">
-                                <button class="button-danger" type="submit">Видалити турнір</button>
-                            </form>
-                        </div>
-                        <div class="task-list">
-                            {% for task in tournament.tasks.all %}
-                                <div class="task-row">
-                                    <div>
-                                        <strong>{{ task.title }}</strong>
-                                        {% if task.is_draft %}
-                                            <span class="status-badge status-draft">чернетка</span>
-                                        {% endif %}
+                            <div class="actions">
+                                {% if tournament.is_draft or not tournament.registration_end or tournament.registration_end > now %}
+                                    <a class="button" href="{% url 'edit_tournament' tournament.id %}">Редагувати</a>
+                                    <a class="button-secondary" href="{% url 'create_tournament_task' tournament.id %}">Додати завдання</a>
+                                {% else %}
+                                    <span class="button button-disabled">Редагувати</span>
+                                    <span class="button-secondary button-disabled">Додати завдання</span>
+                                {% endif %}
+                                <form class="inline-form" method="post" action="{% url 'delete_tournament' tournament.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="next" value="{% url 'admin_dashboard' %}#active-tournaments">
+                                    <button class="button-danger" type="submit">Видалити турнір</button>
+                                </form>
+                            </div>
+                            <div class="task-list">
+                                {% for task in tournament.tasks.all %}
+                                    <div class="task-row">
+                                        <div>
+                                            <strong>{{ task.title }}</strong>
+                                            {% if task.is_draft %}
+                                                <span class="status-badge status-draft">чернетка</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="task-actions">
+                                            {% if tournament.is_draft or not tournament.registration_end or tournament.registration_end > now %}
+                                                <a class="button" href="{% url 'edit_task' task.id %}">Редагувати</a>
+                                            {% else %}
+                                                <span class="button button-disabled">Редагувати</span>
+                                            {% endif %}
+                                            <form class="inline-form" method="post" action="{% url 'delete_task' task.id %}">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="next" value="{% url 'admin_dashboard' %}#active-tournaments">
+                                                <button class="button-danger" type="submit">Видалити</button>
+                                            </form>
+                                        </div>
                                     </div>
-                                    <div class="task-actions">
-                                        {% if tournament.is_draft or not tournament.registration_end or tournament.registration_end > now %}
-                                            <a class="button" href="{% url 'edit_task' task.id %}">Редагувати</a>
-                                        {% else %}
-                                            <span class="button button-disabled">Редагувати</span>
-                                        {% endif %}
-                                        <form class="inline-form" method="post" action="{% url 'delete_task' task.id %}">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="next" value="{% url 'admin_dashboard' %}#active-tournaments">
-                                            <button class="button-danger" type="submit">Видалити</button>
-                                        </form>
-                                    </div>
-                                </div>
-                            {% empty %}
-                                <div class="empty">Поки немає завдань.</div>
-                            {% endfor %}
+                                {% empty %}
+                                    <div class="empty">Поки немає завдань.</div>
+                                {% endfor %}
+                            </div>
                         </div>
                     </div>
                 {% empty %}
@@ -437,49 +455,52 @@
             <div class="card">
                 {% for tournament in inactive_tournaments %}
                     <div class="item">
-                        <div class="name">
-                            {{ tournament.name }}
-                            <span class="status-badge status-{{ tournament.lifecycle_status }}">{{ tournament.lifecycle_status_label }}</span>
-                        </div>
-                        <div class="meta">
-                            Чернетка: {{ tournament.is_draft|yesno:"так,ні" }}<br>
-                            Початок: {{ tournament.start_date|default:"-" }}<br>
-                            Завершення: {{ tournament.end_date|default:"-" }}<br>
-                            Реєстрація: {{ tournament.registration_start|default:"-" }} - {{ tournament.registration_end|default:"-" }}<br>
-                            Макс. команд: {{ tournament.max_teams|default:"без ліміту" }}<br>
-                            Створив: {{ tournament.created_by }}<br>
-                            Завдань: {{ tournament.tasks.count }}
-                        </div>
-                        <div class="actions">
-                            <span class="button button-disabled">Редагувати</span>
-                            <span class="button-secondary button-disabled">Додати завдання</span>
-                            <form class="inline-form" method="post" action="{% url 'delete_tournament' tournament.id %}">
-                                {% csrf_token %}
-                                <input type="hidden" name="next" value="{% url 'admin_dashboard' %}#inactive-tournaments">
-                                <button class="button-danger" type="submit">Видалити турнір</button>
-                            </form>
-                        </div>
-                        <div class="task-list">
-                            {% for task in tournament.tasks.all %}
-                                <div class="task-row">
-                                    <div>
-                                        <strong>{{ task.title }}</strong>
-                                        {% if task.is_draft %}
-                                            <span class="status-badge status-draft">чернетка</span>
-                                        {% endif %}
+                        <img src="{% if tournament.banner_url %}{{ tournament.banner_url }}{% elif tournament.banner_image %}{{ tournament.banner_image.url }}{% else %}https://placehold.co/600x400?text=No+Banner{% endif %}" class="item-banner" alt="{{ tournament.name }}">
+                        <div class="item-content">
+                            <div class="name">
+                                {{ tournament.name }}
+                                <span class="status-badge status-{{ tournament.lifecycle_status }}">{{ tournament.lifecycle_status_label }}</span>
+                            </div>
+                            <div class="meta">
+                                Чернетка: {{ tournament.is_draft|yesno:"так,ні" }}<br>
+                                Початок: {{ tournament.start_date|default:"-" }}<br>
+                                Завершення: {{ tournament.end_date|default:"-" }}<br>
+                                Реєстрація: {{ tournament.registration_start|default:"-" }} - {{ tournament.registration_end|default:"-" }}<br>
+                                Макс. команд: {{ tournament.max_teams|default:"без ліміту" }}<br>
+                                Створив: {{ tournament.created_by }}<br>
+                                Завдань: {{ tournament.tasks.count }}
+                            </div>
+                            <div class="actions">
+                                <span class="button button-disabled">Редагувати</span>
+                                <span class="button-secondary button-disabled">Додати завдання</span>
+                                <form class="inline-form" method="post" action="{% url 'delete_tournament' tournament.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="next" value="{% url 'admin_dashboard' %}#inactive-tournaments">
+                                    <button class="button-danger" type="submit">Видалити турнір</button>
+                                </form>
+                            </div>
+                            <div class="task-list">
+                                {% for task in tournament.tasks.all %}
+                                    <div class="task-row">
+                                        <div>
+                                            <strong>{{ task.title }}</strong>
+                                            {% if task.is_draft %}
+                                                <span class="status-badge status-draft">чернетка</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="task-actions">
+                                            <span class="button button-disabled">Редагувати</span>
+                                            <form class="inline-form" method="post" action="{% url 'delete_task' task.id %}">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="next" value="{% url 'admin_dashboard' %}#inactive-tournaments">
+                                                <button class="button-danger" type="submit">Видалити</button>
+                                            </form>
+                                        </div>
                                     </div>
-                                    <div class="task-actions">
-                                        <span class="button button-disabled">Редагувати</span>
-                                        <form class="inline-form" method="post" action="{% url 'delete_task' task.id %}">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="next" value="{% url 'admin_dashboard' %}#inactive-tournaments">
-                                            <button class="button-danger" type="submit">Видалити</button>
-                                        </form>
-                                    </div>
-                                </div>
-                            {% empty %}
-                                <div class="empty">Поки немає завдань.</div>
-                            {% endfor %}
+                                {% empty %}
+                                    <div class="empty">Поки немає завдань.</div>
+                                {% endfor %}
+                            </div>
                         </div>
                     </div>
                 {% empty %}
@@ -605,7 +626,3 @@
     </div>
 </body>
 </html>
-
-
-
-
