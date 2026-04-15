@@ -79,6 +79,12 @@ class Tournament(models.Model):
         blank=True,
         verbose_name="Банер турніру",
     )
+    banner_url = models.URLField(
+        null=True,
+        blank=True,
+        max_length=500,
+        verbose_name="Посилання на зовнішній банер",
+    )
 
 
     class Meta:
@@ -762,6 +768,12 @@ class CertificateTemplate(models.Model):
     background_image = models.ImageField(
         upload_to="certificate_templates/",
         verbose_name="Шаблон сертифіката",
+    )
+    background_url = models.URLField(
+        null=True,
+        blank=True,
+        max_length=500,
+        verbose_name="Посилання на зовнішній шаблон",
     )
     uploaded_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,

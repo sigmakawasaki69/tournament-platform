@@ -9,6 +9,8 @@ import random
 
 from urllib.error import HTTPError, URLError
 from PIL import Image, ImageDraw, ImageFont
+import requests
+from io import BytesIO
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.tokens import default_token_generator
@@ -187,12 +189,27 @@ def build_certificate_pdf_response(certificate):
         tournament=certificate.tournament,
         certificate_type=certificate.certificate_type,
     )
-    if template is None or not template.background_image:
+    if template is None:
         raise ValidationError('Для цього типу сертифіката ще не завантажено шаблон.')
-    if not getattr(template.background_image, 'path', None) or not os.path.exists(template.background_image.path):
-        raise ValidationError('Файл шаблону сертифіката не знайдено. Завантажте шаблон ще раз.')
 
-    with Image.open(template.background_image.path) as source_image:
+    # Пріоритет: 1. Пряме посилання (background_url), 2. Завантажений файл (background_image)
+    if template.background_url:
+        try:
+            response = requests.get(template.background_url, timeout=10)
+            response.raise_for_status()
+            source_image = Image.open(BytesIO(response.content))
+        except Exception as e:
+            raise ValidationError(f'Не вдалося завантажити шаблон за посиланням: {str(e)}')
+    elif template.background_image:
+        try:
+            # Image.open працює з об'єктами файлів (включаючи ті, що з Cloudinary)
+            source_image = Image.open(template.background_image)
+        except Exception:
+            raise ValidationError('Файл шаблону сертифіката не знайдено або пошкоджено. Завантажте шаблон ще раз.')
+    else:
+        raise ValidationError('Шаблон сертифіката не містить ні файлу, ні посилання.')
+
+    with source_image:
         image = source_image.convert('RGB')
 
     width, height = image.size
