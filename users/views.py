@@ -1018,6 +1018,10 @@ def update_user_role(request, user_id):
     if new_role not in allowed_roles:
         return redirect(reverse('admin_users'))
 
+    if (user.role == 'admin' or user.is_superuser) and not request.user.is_superuser:
+        messages.error(request, "Тільки суперкористувач може змінювати роль адміністраторів.")
+        return redirect(reverse('admin_users'))
+
     user.role = new_role
     if new_role == 'participant':
         user.is_approved = True
@@ -1034,6 +1038,10 @@ def delete_user(request, user_id):
 
     user = get_object_or_404(CustomUser, id=user_id)
     if user.id == request.user.id:
+        return redirect(reverse('admin_users'))
+
+    if (user.role == 'admin' or user.is_superuser) and not request.user.is_superuser:
+        messages.error(request, "Тільки суперкористувач може видаляти адміністраторів.")
         return redirect(reverse('admin_users'))
 
     user.delete()
@@ -1115,7 +1123,7 @@ def edit_tournament(request, tournament_id):
     tournament = get_object_or_404(Tournament, id=tournament_id)
     if not can_manage_tournament_instance(request.user, tournament):
         return redirect('redirect_by_role')
-    if is_tournament_edit_locked(tournament):
+    if is_tournament_edit_locked(tournament) and not request.user.is_superuser:
         return redirect(get_dashboard_url_for_user(request.user))
 
     if request.method == 'POST':
@@ -1370,7 +1378,7 @@ def create_task(request, tournament_id=None):
         tournament = get_object_or_404(Tournament, id=tournament_id)
         if not can_manage_tournament_instance(request.user, tournament):
             return redirect('redirect_by_role')
-        if is_tournament_edit_locked(tournament):
+        if is_tournament_edit_locked(tournament) and not request.user.is_superuser:
             return redirect(get_dashboard_url_for_user(request.user))
 
     if request.method == 'POST':
@@ -1409,7 +1417,7 @@ def edit_task(request, task_id):
     task = get_object_or_404(Task, id=task_id)
     if not can_manage_tournament_instance(request.user, task.tournament):
         return redirect('redirect_by_role')
-    if is_tournament_edit_locked(task.tournament):
+    if is_tournament_edit_locked(task.tournament) and not request.user.is_superuser:
         return redirect(get_dashboard_url_for_user(request.user))
 
     if request.method == 'POST':

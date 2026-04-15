@@ -23,7 +23,7 @@ def can_manage_users(user):
 
 
 def can_create_admins(user):
-    return is_admin_user(user)
+    return user.is_superuser
 
 
 def can_manage_tournaments(user):
