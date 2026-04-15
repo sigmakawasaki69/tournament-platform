@@ -22,78 +22,100 @@
     {% block extra_head %}{% endblock %}
 </head>
 <body>
+    <div id="sidebar-drawer" class="drawer">
+        <div class="drawer-header">
+            <div class="drawer-title" data-i18n="nav.management.title caps">Меню навігації</div>
+            <button id="drawer-close" class="btn-icon" aria-label="Закрити меню">&times;</button>
+        </div>
+        
+        <nav class="drawer-nav">
+            <a href="{% url 'home' %}" class="drawer-link active">
+                <span data-i18n="nav.home">Головна</span>
+            </a>
+            <a href="{% url 'messages' %}" class="drawer-link">
+                <span data-i18n="nav.messages">Повідомлення</span>
+                {% if has_unread_announcements %}
+                    <span class="notify-dot inline">{{ unread_announcements_count }}</span>
+                {% endif %}
+            </a>
+            <a href="{% url 'certificates' %}" class="drawer-link">
+                <span data-i18n="nav.certificates">Сертифікати</span>
+                {% if has_unread_certificates %}
+                    <span class="notify-dot inline">{{ unread_certificates_count }}</span>
+                {% endif %}
+            </a>
+            <a href="{% url 'profile' %}" class="drawer-link" data-i18n="nav.profile">Профіль</a>
+            <a href="{% url 'archive' %}" class="drawer-link" data-i18n="nav.archive">Архів</a>
+
+            <div class="drawer-divider"></div>
+
+            {% if request.user.is_authenticated %}
+                {% if request.user.is_superuser or request.user.role == 'admin' %}
+                    <div class="drawer-section-title" data-i18n="nav.management">Керування</div>
+                    <a href="{% url 'admin_users' %}" class="drawer-link" data-i18n="nav.users">Користувачі</a>
+                    <a href="{% url 'admin_active_tournaments' %}" class="drawer-link" data-i18n="nav.active_tournaments">Активні турніри</a>
+                    <a href="{% url 'admin_inactive_tournaments' %}" class="drawer-link" data-i18n="nav.inactive_tournaments">Неактивні турніри</a>
+                    <a href="{% url 'admin_teams' %}" class="drawer-link" data-i18n="nav.teams">Команди</a>
+                    <a href="{% url 'admin_registrations' %}" class="drawer-link" data-i18n="nav.registrations">Заявки</a>
+                    <a href="{% url 'admin_submissions' %}" class="drawer-link" data-i18n="nav.submissions">Роботи</a>
+                    <a href="{% url 'admin_announcements' %}" class="drawer-link" data-i18n="nav.announcements">Оголошення</a>
+                    <a href="{% url 'admin_certificates' %}" class="drawer-link" data-i18n="nav.admin_certificates">Сертифікати</a>
+                {% elif request.user.role == 'participant' %}
+                    <a href="{% url 'my_team' %}" class="drawer-link" data-i18n="nav.my_team">Моя команда</a>
+                {% elif request.user.role == 'jury' %}
+                    <a href="{% url 'jury_dashboard' %}" class="drawer-link" data-i18n="nav.jury">Журі</a>
+                {% elif request.user.role == 'organizer' %}
+                    <a href="{% url 'organizer_dashboard' %}" class="drawer-link" data-i18n="nav.my_tournaments">Мої турніри</a>
+                    <a href="{% url 'create_tournament' %}" class="drawer-link" data-i18n="nav.create_tournament">Створити турнір</a>
+                {% endif %}
+            {% endif %}
+        </nav>
+    </div>
+    <div id="drawer-overlay" class="drawer-overlay"></div>
+
     <div class="page-shell">
-        <header class="topbar">
-            <div class="topbar-brand">
-                <div>
-                    <div class="brand-title" data-i18n="brand.title">Турнірна платформа</div>
-                    <div class="brand-subtitle" data-i18n="brand.subtitle">Турніри, команди, повідомлення, сертифікати та результати в одному просторі.</div>
+        <header class="topbar minimalist">
+            <div class="topbar-left">
+                <button id="menu-toggle" class="btn-icon hamburger" aria-label="Відкрити меню">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </button>
+                
+                <div class="prefs-dropdown-wrap">
+                    <button id="prefs-toggle" class="btn-icon secondary" title="Налаштування">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+                    </button>
+                    <div id="prefs-menu" class="dropdown-panel">
+                        <div class="preference-stack">
+                            <div class="preference-group">
+                                <span class="preference-label" data-i18n="theme.label">Тема</span>
+                                <button type="button" class="preference-button" data-theme-option="light" data-i18n="theme.light">Світла</button>
+                                <button type="button" class="preference-button" data-theme-option="dark" data-i18n="theme.dark">Темна</button>
+                            </div>
+                            <div class="preference-group">
+                                <span class="preference-label" data-i18n="lang.label">Мова</span>
+                                <button type="button" class="preference-button" data-language-option="uk" data-i18n="lang.uk">UA</button>
+                                <button type="button" class="preference-button" data-language-option="en" data-i18n="lang.en">EN</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
+                <div class="topbar-title" data-i18n="brand.title">Турнірна платформа</div>
             </div>
 
-            <div class="auth-actions">
-                <div class="preference-stack" aria-label="Site preferences">
-                    <div class="preference-group">
-                        <span class="preference-label" data-i18n="theme.label">Тема</span>
-                        <button type="button" class="preference-button" data-theme-option="light" aria-pressed="false" data-i18n="theme.light">Світла</button>
-                        <button type="button" class="preference-button" data-theme-option="dark" aria-pressed="false" data-i18n="theme.dark">Темна</button>
-                    </div>
-                    <div class="preference-group">
-                        <span class="preference-label" data-i18n="lang.label">Мова</span>
-                        <button type="button" class="preference-button" data-language-option="uk" aria-pressed="false" data-i18n="lang.uk">UA</button>
-                        <button type="button" class="preference-button" data-language-option="en" aria-pressed="false" data-i18n="lang.en">EN</button>
-                    </div>
-                </div>
-
+            <div class="topbar-right">
                 {% if request.user.is_authenticated %}
-                    <nav class="nav-links" aria-label="Основна навігація">
-                        <a class="button-secondary" href="{% url 'home' %}" data-i18n="nav.home">Головна</a>
-                        <a class="button-secondary" href="{% url 'messages' %}">
-                            <span data-i18n="nav.messages">Повідомлення</span>
-                            {% if has_unread_announcements %}
-                                <span class="notify-dot">{{ unread_announcements_count }}</span>
-                            {% endif %}
-                        </a>
-                        <a class="button-secondary" href="{% url 'certificates' %}">
-                            <span data-i18n="nav.certificates">Сертифікати</span>
-                            {% if has_unread_certificates %}
-                                <span class="notify-dot">{{ unread_certificates_count }}</span>
-                            {% endif %}
-                        </a>
-                        <a class="button-secondary" href="{% url 'profile' %}" data-i18n="nav.profile">Профіль</a>
-                        <a class="button-secondary" href="{% url 'archive' %}" data-i18n="nav.archive">Архів</a>
-
-                        {% if request.user.is_superuser or request.user.role == 'admin' %}
-                            <details class="nav-dropdown">
-                                <summary class="button-secondary" data-i18n="nav.management">Керування</summary>
-                                <div class="dropdown-menu">
-                                    <div class="dropdown-title" data-i18n="nav.management.title">Адмінські розділи</div>
-                                    <a href="{% url 'admin_users' %}" data-i18n="nav.users">Користувачі</a>
-                                    <a href="{% url 'admin_users' %}?action=create-user" data-i18n="nav.create_user">Створити користувача</a>
-                                    <a href="{% url 'admin_active_tournaments' %}" data-i18n="nav.active_tournaments">Активні турніри</a>
-                                    <a href="{% url 'admin_inactive_tournaments' %}" data-i18n="nav.inactive_tournaments">Неактивні турніри</a>
-                                    <a href="{% url 'admin_active_tournaments' %}?action=create-tournament" data-i18n="nav.create_tournament">Створити турнір</a>
-                                    <a href="{% url 'admin_teams' %}" data-i18n="nav.teams">Команди</a>
-                                    <a href="{% url 'admin_registrations' %}" data-i18n="nav.registrations">Заявки</a>
-                                    <a href="{% url 'admin_submissions' %}" data-i18n="nav.submissions">Роботи</a>
-                                    <a href="{% url 'admin_announcements' %}" data-i18n="nav.announcements">Оголошення</a>
-                                    <a href="{% url 'admin_certificates' %}" data-i18n="nav.admin_certificates">Сертифікати</a>
-                                </div>
-                            </details>
-                        {% elif request.user.role == 'participant' %}
-                            <a class="button-secondary" href="{% url 'my_team' %}" data-i18n="nav.my_team">Моя команда</a>
-                        {% elif request.user.role == 'jury' %}
-                            <a class="button-secondary" href="{% url 'jury_dashboard' %}" data-i18n="nav.jury">Журі</a>
-                        {% elif request.user.role == 'organizer' %}
-                            <a class="button-secondary" href="{% url 'organizer_dashboard' %}" data-i18n="nav.my_tournaments">Мої турніри</a>
-                            <a class="button-secondary" href="{% url 'create_tournament' %}" data-i18n="nav.create_tournament">Створити турнір</a>
-                        {% endif %}
-                    </nav>
-
-                    <a class="button" href="{% url 'logout' %}" data-i18n="nav.logout">Вийти</a>
+                    <a href="{% url 'profile' %}" class="user-avatar-link" title="{{ request.user.username }}">
+                        <div class="avatar-circle">
+                            {{ request.user.username|slice:":1"|upper }}
+                        </div>
+                    </a>
+                    <a class="btn-text logout-btn" href="{% url 'logout' %}" data-i18n="nav.logout">Вийти</a>
                 {% else %}
-                    <a class="button-secondary" href="{% url 'login' %}" data-i18n="nav.login">Увійти</a>
-                    <a class="button" href="{% url 'register' %}" data-i18n="nav.register">Зареєструватися</a>
+                    <a class="button-compact" href="{% url 'login' %}" data-i18n="nav.login">Увійти</a>
+                    <a class="button" href="{% url 'register' %}" data-i18n="nav.register">Реєстрація</a>
                 {% endif %}
             </div>
         </header>
@@ -112,14 +134,45 @@
     </div>
 
     <script src="{% static 'js/ui_preferences.js' %}"></script>
-    <script>
-        document.addEventListener('click', function (event) {
-            document.querySelectorAll('.nav-dropdown[open]').forEach(function (dropdown) {
-                if (!dropdown.contains(event.target)) {
-                    dropdown.removeAttribute('open');
+    <script rendered="true">
+        (function() {
+            // Drawer logic
+            const menuToggle = document.getElementById('menu-toggle');
+            const drawer = document.getElementById('sidebar-drawer');
+            const overlay = document.getElementById('drawer-overlay');
+            const closeBtn = document.getElementById('drawer-close');
+
+            function openDrawer() {
+                drawer.classList.add('open');
+                overlay.classList.add('visible');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeDrawer() {
+                drawer.classList.remove('open');
+                overlay.classList.remove('visible');
+                document.body.style.overflow = '';
+            }
+
+            menuToggle.addEventListener('click', openDrawer);
+            closeBtn.addEventListener('click', closeDrawer);
+            overlay.addEventListener('click', closeDrawer);
+
+            // Prefs logic
+            const prefsToggle = document.getElementById('prefs-toggle');
+            const prefsMenu = document.getElementById('prefs-menu');
+
+            prefsToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                prefsMenu.classList.toggle('visible');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!prefsMenu.contains(e.target)) {
+                    prefsMenu.classList.remove('visible');
                 }
             });
-        });
+        })();
     </script>
     {% block extra_scripts %}{% endblock %}
 </body>
