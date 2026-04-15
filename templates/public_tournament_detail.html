@@ -91,9 +91,7 @@
         </div>
 
         <div class="hero">
-            {% if tournament.banner_image %}
-                <img src="{{ tournament.banner_image.url }}" alt="{{ tournament.name }}" class="hero-banner">
-            {% endif %}
+            <img src="{% if tournament.banner_image %}{{ tournament.banner_image.url }}{% else %}https://placehold.co/1200x600?text=No+Banner{% endif %}" alt="{{ tournament.name }}" class="hero-banner">
             <div>
                 <h1 data-i18n-message>{{ tournament.name }}</h1>
                 <p data-i18n-message>{{ tournament.description|default:"Опис турніру ще не додано." }}</p>
