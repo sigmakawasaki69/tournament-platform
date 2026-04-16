@@ -206,6 +206,7 @@ class TournamentForm(forms.ModelForm):
         help_text='Кожен рядок: YYYY-MM-DDTHH:MM|Назва події|Опис події.',
         widget=forms.Textarea(attrs={'class': 'form-input', 'rows': 6}),
     )
+    clear_banner = forms.BooleanField(required=False, widget=forms.HiddenInput())
     start_date = forms.DateTimeField(
         input_formats=['%Y-%m-%dT%H:%M'],
         widget=forms.DateTimeInput(
@@ -405,6 +406,10 @@ class TournamentForm(forms.ModelForm):
             'allowed_contact_methods',
             Tournament.DEFAULT_CONTACT_METHODS,
         )
+        
+        if self.cleaned_data.get('clear_banner'):
+            instance.banner_image = None
+            
         if commit:
             instance.save()
             self.save_m2m()

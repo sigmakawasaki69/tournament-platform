@@ -1505,3 +1505,12 @@ select.button-compact {
     height: 20px;
     margin: 0;
 }
+
+/* Banner Removal & Spacing */
+#remove-banner-btn:hover {
+    background: rgba(220, 38, 38, 0.05); /* Soft error red background */
+}
+
+.item-card.spacer-top {
+    margin-top: 24px;
+}

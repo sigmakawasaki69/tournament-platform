@@ -87,12 +87,16 @@
                         <div class="field-group span-2">
                             <label data-i18n="admin.tournaments.label_banner">Банер турніру</label>
                             {% if form.instance.banner_image %}
-                                <div style="margin-bottom:12px;">
+                                <div id="current-banner-wrap" style="margin-bottom:12px;">
                                     <img src="{{ form.instance.banner_image.url }}" alt="Banner" id="banner-current-preview" style="max-width:300px; border-radius:12px; display:block;">
-                                    <small class="section-note" data-i18n="admin.tournaments.current_banner">Поточний банер</small>
+                                    <div style="margin-top: 8px; display: flex; align-items: center; gap: 8px;">
+                                        <small class="section-note" data-i18n="admin.tournaments.current_banner">Поточний банер</small>
+                                        <button type="button" class="button-secondary" id="remove-banner-btn" style="padding: 4px 8px; font-size: 12px; color: var(--error); border-color: var(--error);">Видалити банер</button>
+                                    </div>
                                 </div>
                             {% endif %}
                             {{ form.banner_image }}
+                            {{ form.clear_banner }}
                             {% if form.banner_image.errors %}<div class="field-errors">{{ form.banner_image.errors }}</div>{% endif %}
                             <div id="banner-new-preview" style="margin-top:12px; display:none;">
                                 <img id="banner-preview-img" src="" alt="Preview" style="max-width:300px; border-radius:12px; display:block; border: 1px solid var(--border);">
@@ -187,11 +191,12 @@
                     </div>
                 </div>
 
+
                 {% if mode == 'edit' and tournament %}
-                    <div class="item-card">
+                    <div class="item-card spacer-top">
                         <div class="section-head">
                             <h2 class="section-title" data-i18n="admin.tournaments.tasks_title">Завдання турніру</h2>
-                            <a class="button-secondary" href="{% url 'create_tournament_task' tournament.id %}" data-i18n="admin.tournaments.btn_add_task">+ Додати</a>
+                            <a class="button-secondary" href="{% url 'create_tournament_task' tournament.id %}" data-i18n="admin.tournaments.btn_add_task">+ Додати завдання</a>
                         </div>
                         <div class="list spacer-top">
                             {% for task in tasks %}
@@ -381,10 +386,29 @@
                         previewWrap.style.display = 'block';
                     };
                     reader.readAsDataURL(file);
+                    // Якщо вибрали новий файл, скасовуємо видалення старого
+                    const clearCheck = document.getElementById('id_clear_banner');
+                    const currentWrap = document.getElementById('current-banner-wrap');
+                    if (clearCheck) clearCheck.checked = false;
+                    if (currentWrap) currentWrap.style.opacity = '1';
                 } else {
                     previewWrap.style.display = 'none';
                 }
             });
+
+            const removeBtn = document.getElementById('remove-banner-btn');
+            const clearCheck = document.getElementById('id_clear_banner');
+            const currentWrap = document.getElementById('current-banner-wrap');
+            if (removeBtn && clearCheck && currentWrap) {
+                removeBtn.addEventListener('click', function() {
+                    clearCheck.checked = true;
+                    currentWrap.style.opacity = '0.3';
+                    currentWrap.style.pointerEvents = 'none';
+                    bannerInput.value = ''; // Скидаємо вибраний файл
+                    previewWrap.style.display = 'none';
+                    alert("Банер буде видалено після збереження форми.");
+                });
+            }
         })();
     </script>
 {% endblock %}
