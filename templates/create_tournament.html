@@ -50,8 +50,17 @@
     </div>
 
     <section class="section spacer-top">
-        {% if form.non_field_errors %}
-            <div class="message-box error spacer-bottom">{{ form.non_field_errors }}</div>
+        {% if form.errors %}
+            <div class="message-box error spacer-bottom">
+                <strong>Помилки у формі:</strong>
+                <ul style="margin:8px 0 0; padding-left:20px;">
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                </ul>
+            </div>
         {% endif %}
 
         <form method="post" id="tournament-form" enctype="multipart/form-data">
@@ -79,11 +88,15 @@
                             <label data-i18n="admin.tournaments.label_banner">Банер турніру</label>
                             {% if form.instance.banner_image %}
                                 <div style="margin-bottom:12px;">
-                                    <img src="{{ form.instance.banner_image.url }}" alt="Banner" style="max-width:300px; border-radius:12px; display:block;">
+                                    <img src="{{ form.instance.banner_image.url }}" alt="Banner" id="banner-current-preview" style="max-width:300px; border-radius:12px; display:block;">
                                     <small class="section-note" data-i18n="admin.tournaments.current_banner">Поточний банер</small>
                                 </div>
                             {% endif %}
                             {{ form.banner_image }}
+                            <div id="banner-new-preview" style="margin-top:12px; display:none;">
+                                <img id="banner-preview-img" src="" alt="Preview" style="max-width:300px; border-radius:12px; display:block; border: 1px solid var(--border);">
+                                <small class="section-note">Попередній перегляд нового банера</small>
+                            </div>
                         </div>
                         <div class="field-group span-2">
                             <label data-i18n="admin.tournaments.label_jury">Журі турніру</label>
@@ -192,19 +205,16 @@
                     </div>
                 {% endif %}
 
-                <div class="toolbar spacer-top">
+                <div class="toolbar spacer-top" style="justify-content: flex-end; gap: 12px; border-top: 1px solid var(--border); padding-top: 24px;">
                     {% if mode == 'edit' and tournament and tournament.is_finished and not tournament.evaluation_results_ready %}
                         <form method="post" action="{% url 'finish_evaluation_now' tournament.id %}" style="display:inline;">
                             {% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}">
-                            <button type="submit" class="button-secondary" style="border-color: var(--primary); color: var(--primary);" data-i18n="admin.tournaments.btn_finish_eval">Завершити оцінювання</button>
+                            <button type="submit" class="button-secondary" data-i18n="admin.tournaments.btn_finish_eval">Завершити оцінювання</button>
                         </form>
                     {% endif %}
-                    
-                <div class="toolbar spacer-top" style="justify-content: flex-end; gap: 16px; border-top: 1px solid var(--border); padding-top: 24px;">
                     <a class="button-secondary" href="{% url 'home' %}" data-i18n="admin.tournaments.btn_cancel">Скасувати</a>
                     <button type="button" class="button-secondary" id="submit-draft" data-i18n="admin.tournaments.btn_save_draft">Зберегти як чернетку</button>
-                    <button type="submit" class="button" id="submit-publish" style="min-width: 200px;">{% if mode == 'edit' %}Оновити{% else %}Створити та опублікувати{% endif %}</button>
-                </div>
+                    <button type="submit" class="button" id="submit-publish">{% if mode == 'edit' %}Оновити{% else %}Створити та опублікувати{% endif %}</button>
                 </div>
             </div>
         </form>
@@ -339,16 +349,28 @@
             if (publishBtn && draftCheckbox) {
                 publishBtn.addEventListener('click', (e) => {
                     draftCheckbox.checked = false;
-                    // Button is type="submit", will naturally submit
                 });
             }
+        })();
 
-            form.addEventListener('submit', (e) => {
-                console.log('Form submission started...');
-                const invalidFields = form.querySelectorAll(':invalid');
-                if (invalidFields.length > 0) {
-                    console.warn('Form group has invalid fields:', invalidFields);
-                    // Let browser show validation tooltips
+        // Banner Preview
+        (function() {
+            const bannerInput = document.getElementById('{{ form.banner_image.id_for_label }}');
+            const previewWrap = document.getElementById('banner-new-preview');
+            const previewImg = document.getElementById('banner-preview-img');
+            if (!bannerInput || !previewWrap || !previewImg) return;
+
+            bannerInput.addEventListener('change', function() {
+                const file = this.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewImg.src = e.target.result;
+                        previewWrap.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    previewWrap.style.display = 'none';
                 }
             });
         })();

@@ -421,12 +421,13 @@ a {
 .button-danger,
 .button-success,
 .chip {
-    min-height: 40px;
-    padding: 10px 14px;
-    border-radius: 12px;
+    min-height: 34px;
+    padding: 7px 14px;
+    border-radius: 10px;
     border: 1px solid var(--border);
     cursor: pointer;
     font: inherit;
+    font-size: 13px;
 }
 
 .button {
@@ -597,32 +598,15 @@ a {
     display: grid;
     grid-template-columns: minmax(0, 1.4fr) minmax(240px, 320px);
     gap: 18px;
-        .admin-hero {
-            padding: 32px;
-            border-radius: var(--radius-xl);
-            color: #fff;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            display: grid;
-            grid-template-columns: 1.4fr 0.6fr;
-            gap: 24px;
-            margin-bottom: 32px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-            position: relative;
-            overflow: hidden;
-        }
-        .admin-hero::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -10%;
-            width: 300px;
-            height: 300px;
-            background: var(--primary);
-            filter: blur(120px);
-            opacity: 0.15;
-            pointer-events: none;
-        }
+    align-items: stretch;
+    padding: 32px;
+    border-radius: var(--radius-xl);
+    color: #fff;
+    background: linear-gradient(135deg, #020617 0%, #1e1b4b 58%, #312e81 100%);
+    box-shadow: 0 20px 40px rgba(2, 6, 23, 0.2);
+    position: relative;
+    overflow: hidden;
+}
 
 .hero::after {
     content: '';
@@ -636,11 +620,35 @@ a {
 }
 
 .admin-hero {
-    background: linear-gradient(135deg, #0f172a 0%, #020617 100%);
-    padding: 24px 32px;
+    display: grid;
+    grid-template-columns: 1.4fr 0.6fr;
+    gap: 24px;
+    padding: 32px;
     border-radius: var(--radius-xl);
     color: #fff;
-    margin-bottom: 24px;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 32px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.admin-hero::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: var(--primary);
+    filter: blur(120px);
+    opacity: 0.15;
+    pointer-events: none;
+}
+
+@media (max-width: 920px) {
+    .admin-hero { grid-template-columns: 1fr; }
 }
 
 :root[data-theme="dark"] .hero {
@@ -1097,6 +1105,23 @@ a {
     display: grid;
     gap: 8px;
 }
+
+.field-errors,
+.field-errors ul {
+    color: var(--danger);
+    font-size: 12px;
+    font-weight: 600;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+:root[data-theme="dark"] .message-box.error {
+    background: rgba(239, 68, 68, 0.1);
+    color: #fca5a5;
+}
+
+.spacer-bottom { margin-bottom: 24px; }
 
 .field-group label {
     font-weight: 700;
