@@ -93,6 +93,7 @@
                                 </div>
                             {% endif %}
                             {{ form.banner_image }}
+                            {% if form.banner_image.errors %}<div class="field-errors">{{ form.banner_image.errors }}</div>{% endif %}
                             <div id="banner-new-preview" style="margin-top:12px; display:none;">
                                 <img id="banner-preview-img" src="" alt="Preview" style="max-width:300px; border-radius:12px; display:block; border: 1px solid var(--border);">
                                 <small class="section-note">Попередній перегляд нового банера</small>
@@ -101,12 +102,14 @@
                         <div class="field-group span-2">
                             <label data-i18n="admin.tournaments.label_jury">Журі турніру</label>
                             {{ form.jury_users }}
+                            {% if form.jury_users.errors %}<div class="field-errors">{{ form.jury_users.errors }}</div>{% endif %}
                         </div>
                         <div class="field-group span-2">
                             <label data-i18n="admin.tournaments.label_contacts">Доступні месенджери</label>
                             <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
                                 {{ form.allowed_contact_methods }}
                             </div>
+                            {% if form.allowed_contact_methods.errors %}<div class="field-errors">{{ form.allowed_contact_methods.errors }}</div>{% endif %}
                         </div>
                     </div>
                 </div>
@@ -116,6 +119,7 @@
                         <h2 class="section-title" data-i18n="admin.tournaments.fields_title">Поля анкети реєстрації</h2>
                         <button type="button" class="button-secondary" id="add-field" data-i18n="admin.tournaments.btn_add_field">+ Додати поле</button>
                     </div>
+                    {% if form.registration_fields_definition.errors %}<div class="field-errors spacer-top">{{ form.registration_fields_definition.errors }}</div>{% endif %}
                     <p class="section-note spacer-top" data-i18n="admin.tournaments.fields_note">Додаткові поля, які команди заповнюють при реєстрації (наприклад, "Посилання на GitHub").</p>
                     <div class="builder">
                         <div id="registration-fields-builder"></div>
@@ -129,6 +133,7 @@
                         <h2 class="section-title" data-i18n="admin.tournaments.schedule_title">Розклад турніру</h2>
                         <button type="button" class="button-secondary" id="add-schedule-item" data-i18n="admin.tournaments.btn_add_event">+ Додати подію</button>
                     </div>
+                    {% if form.schedule_definition.errors %}<div class="field-errors spacer-top">{{ form.schedule_definition.errors }}</div>{% endif %}
                     <p class="section-note spacer-top" data-i18n="admin.tournaments.schedule_note">Для опублікованого турніру має бути хоча б один пункт розкладу.</p>
                     <div class="builder">
                         <div id="schedule-builder"></div>
@@ -143,30 +148,37 @@
                         <div class="field-group">
                             <label data-i18n="admin.tournaments.label_start">Дата початку</label>
                             {{ form.start_date }}
+                            {% if form.start_date.errors %}<div class="field-errors">{{ form.start_date.errors }}</div>{% endif %}
                         </div>
                         <div class="field-group">
                             <label data-i18n="admin.tournaments.label_end">Дата завершення</label>
                             {{ form.end_date }}
+                            {% if form.end_date.errors %}<div class="field-errors">{{ form.end_date.errors }}</div>{% endif %}
                         </div>
                         <div class="field-group">
                             <label data-i18n="admin.tournaments.label_reg_start">Початок реєстрації</label>
                             {{ form.registration_start }}
+                            {% if form.registration_start.errors %}<div class="field-errors">{{ form.registration_start.errors }}</div>{% endif %}
                         </div>
                         <div class="field-group">
                             <label data-i18n="admin.tournaments.label_reg_end">Кінець реєстрації</label>
                             {{ form.registration_end }}
+                            {% if form.registration_end.errors %}<div class="field-errors">{{ form.registration_end.errors }}</div>{% endif %}
                         </div>
                         <div class="field-group">
                             <label data-i18n="admin.tournaments.label_min_members">Мін. учасників</label>
                             {{ form.min_team_members }}
+                            {% if form.min_team_members.errors %}<div class="field-errors">{{ form.min_team_members.errors }}</div>{% endif %}
                         </div>
                         <div class="field-group">
                             <label data-i18n="admin.tournaments.label_max_members">Макс. учасників</label>
                             {{ form.max_team_members }}
+                            {% if form.max_team_members.errors %}<div class="field-errors">{{ form.max_team_members.errors }}</div>{% endif %}
                         </div>
                         <div class="field-group">
                             <label data-i18n="admin.tournaments.label_max_teams">Макс. команд</label>
                             {{ form.max_teams }}
+                            {% if form.max_teams.errors %}<div class="field-errors">{{ form.max_teams.errors }}</div>{% endif %}
                         </div>
                         <div class="field-group checkbox-row">
                             {{ form.is_draft }}

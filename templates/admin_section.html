@@ -130,27 +130,37 @@
                     <div class="field-group">
                         <label data-i18n="create_tournament.label.name">Назва</label>
                         {{ tournament_form.name }}
+                        {% if tournament_form.name.errors %}<div class="field-errors">{{ tournament_form.name.errors }}</div>{% endif %}
                     </div>
                     <div class="field-group">
                         <label data-i18n="create_tournament.label.description">Опис</label>
                         {{ tournament_form.description }}
+                        {% if tournament_form.description.errors %}<div class="field-errors">{{ tournament_form.description.errors }}</div>{% endif %}
                     </div>
                     <div class="field-group">
                         <label data-i18n="create_tournament.label.reg_form_description">Опис форми реєстрації</label>
                         {{ tournament_form.registration_form_description }}
+                        {% if tournament_form.registration_form_description.errors %}<div class="field-errors">{{ tournament_form.registration_form_description.errors }}</div>{% endif %}
                     </div>
                     <div class="field-group">
                         <label data-i18n="create_tournament.label.banner">Банер</label>
                         {{ tournament_form.banner_image }}
+                        {% if tournament_form.banner_image.errors %}<div class="field-errors">{{ tournament_form.banner_image.errors }}</div>{% endif %}
+                        <div id="inline-banner-preview" style="margin-top:12px; display:none;">
+                            <img id="inline-banner-preview-img" src="" alt="Preview" style="max-width:300px; border-radius:12px; display:block; border: 1px solid var(--border);">
+                            <small class="section-note">Попередній перегляд банера</small>
+                        </div>
                     </div>
                     <div class="grid-2">
                         <div class="field-group">
                             <label data-i18n="create_tournament.label.jury">Журі</label>
                             {{ tournament_form.jury_users }}
+                            {% if tournament_form.jury_users.errors %}<div class="field-errors">{{ tournament_form.jury_users.errors }}</div>{% endif %}
                         </div>
                         <div class="field-group">
                             <label data-i18n="create_tournament.label.allowed_contacts">Месенджери</label>
                             {{ tournament_form.allowed_contact_methods }}
+                            {% if tournament_form.allowed_contact_methods.errors %}<div class="field-errors">{{ tournament_form.allowed_contact_methods.errors }}</div>{% endif %}
                         </div>
                     </div>
                 </div>
@@ -160,6 +170,7 @@
                         <h3 data-i18n="create_tournament.section.fields.title">Поля анкети</h3>
                         <button type="button" class="button-secondary" id="add-field" data-i18n="create_tournament.section.fields.add">+ Додати поле</button>
                     </div>
+                    {% if tournament_form.registration_fields_definition.errors %}<div class="field-errors spacer-top">{{ tournament_form.registration_fields_definition.errors }}</div>{% endif %}
                     <div id="registration-fields-builder" class="spacer-top"></div>
                     <div id="builder-empty" class="empty" data-i18n="builder.empty">Поля не додані.</div>
                     <div style="display:none;">{{ tournament_form.registration_fields_definition }}</div>
@@ -170,6 +181,7 @@
                         <h3 data-i18n="create_tournament.section.schedule.title">Розклад</h3>
                         <button type="button" class="button-secondary" id="add-schedule-item" data-i18n="create_tournament.section.schedule.add">+ Додати подію</button>
                     </div>
+                    {% if tournament_form.schedule_definition.errors %}<div class="field-errors spacer-top">{{ tournament_form.schedule_definition.errors }}</div>{% endif %}
                     <div id="schedule-builder" class="spacer-top"></div>
                     <div id="schedule-builder-empty" class="empty" data-i18n="schedule.empty">Розклад порожній.</div>
                     <div style="display:none;">{{ tournament_form.schedule_definition }}</div>
@@ -177,17 +189,45 @@
 
                 <div class="form-grid spacer-top">
                     <div class="grid-2">
-                        <div class="field-group"><label data-i18n="create_tournament.label.start_date">Старт</label>{{ tournament_form.start_date }}</div>
-                        <div class="field-group"><label data-i18n="create_tournament.label.end_date">Фініш</label>{{ tournament_form.end_date }}</div>
+                        <div class="field-group">
+                            <label data-i18n="create_tournament.label.start_date">Старт</label>
+                            {{ tournament_form.start_date }}
+                            {% if tournament_form.start_date.errors %}<div class="field-errors">{{ tournament_form.start_date.errors }}</div>{% endif %}
+                        </div>
+                        <div class="field-group">
+                            <label data-i18n="create_tournament.label.end_date">Фініш</label>
+                            {{ tournament_form.end_date }}
+                            {% if tournament_form.end_date.errors %}<div class="field-errors">{{ tournament_form.end_date.errors }}</div>{% endif %}
+                        </div>
                     </div>
                     <div class="grid-2">
-                        <div class="field-group"><label data-i18n="create_tournament.label.reg_start">Реєстрація з</label>{{ tournament_form.registration_start }}</div>
-                        <div class="field-group"><label data-i18n="create_tournament.label.reg_end">Реєстрація до</label>{{ tournament_form.registration_end }}</div>
+                        <div class="field-group">
+                            <label data-i18n="create_tournament.label.reg_start">Реєстрація з</label>
+                            {{ tournament_form.registration_start }}
+                            {% if tournament_form.registration_start.errors %}<div class="field-errors">{{ tournament_form.registration_start.errors }}</div>{% endif %}
+                        </div>
+                        <div class="field-group">
+                            <label data-i18n="create_tournament.label.reg_end">Реєстрація до</label>
+                            {{ tournament_form.registration_end }}
+                            {% if tournament_form.registration_end.errors %}<div class="field-errors">{{ tournament_form.registration_end.errors }}</div>{% endif %}
+                        </div>
                     </div>
                     <div class="grid-3">
-                        <div class="field-group"><label data-i18n="create_tournament.label.min_members">Мін. учасників</label>{{ tournament_form.min_team_members }}</div>
-                        <div class="field-group"><label data-i18n="create_tournament.label.max_members">Макс. учасників</label>{{ tournament_form.max_team_members }}</div>
-                        <div class="field-group"><label data-i18n="create_tournament.label.max_teams">Макс. команд</label>{{ tournament_form.max_teams }}</div>
+                        <div class="field-group">
+                            <label data-i18n="create_tournament.label.min_members">Мін. учасників</label>
+                            {{ tournament_form.min_team_members }}
+                            {% if tournament_form.min_team_members.errors %}<div class="field-errors">{{ tournament_form.min_team_members.errors }}</div>{% endif %}
+                        </div>
+                        <div class="field-group">
+                            <label data-i18n="create_tournament.label.max_members">Макс. учасників</label>
+                            {{ tournament_form.max_team_members }}
+                            {% if tournament_form.max_team_members.errors %}<div class="field-errors">{{ tournament_form.max_team_members.errors }}</div>{% endif %}
+                        </div>
+                        <div class="field-group">
+                            <label data-i18n="create_tournament.label.max_teams">Макс. команд</label>
+                            {{ tournament_form.max_teams }}
+                            {% if tournament_form.max_teams.errors %}<div class="field-errors">{{ tournament_form.max_teams.errors }}</div>{% endif %}
+                        </div>
                     </div>
                 </div>
 
@@ -384,11 +424,11 @@
     </template>
     <template id="schedule-item-template">
         <div class="builder-row">
-            <div class="schedule-grid">
+            <div class="schedule-grid" style="display: grid; grid-template-columns: auto 1fr 1fr auto; gap: 10px; align-items: center; margin-bottom: 10px;">
                 <input type="datetime-local" class="schedule-starts-at">
                 <input type="text" class="schedule-title" placeholder="Подія">
                 <input type="text" class="schedule-description" placeholder="Опис">
-                <button type="button" class="button-danger schedule-remove">×</button>
+                <button type="button" class="button-danger schedule-remove" style="padding: 5px 10px;">×</button>
             </div>
         </div>
     </template>
@@ -440,6 +480,8 @@
                 row.querySelector('.builder-label').value = data.label || '';
                 row.querySelector('.builder-type').value = data.type || 'text';
                 row.querySelector('.builder-required').checked = data.required !== false;
+                
+                row.querySelectorAll('input, select').forEach(el => el.addEventListener('input', sync));
                 row.querySelector('.builder-remove').addEventListener('click', () => { row.remove(); sync(); });
                 builder.appendChild(row);
                 sync();
@@ -452,6 +494,8 @@
                 row.querySelector('.schedule-starts-at').value = data.s || '';
                 row.querySelector('.schedule-title').value = data.t || '';
                 row.querySelector('.schedule-description').value = data.d || '';
+                
+                row.querySelectorAll('input').forEach(el => el.addEventListener('input', syncSch));
                 row.querySelector('.schedule-remove').addEventListener('click', () => { row.remove(); syncSch(); });
                 schBuilder.appendChild(row);
                 syncSch();
@@ -470,6 +514,43 @@
                 schHidden.value.split('\n').filter(Boolean).forEach(line => {
                     const p = line.split('|');
                     addSchRow({ s: p[0], t: p[1], d: p[2] });
+                });
+            }
+
+            // Banner Preview
+            const bannerInput = document.getElementById('id_banner_image');
+            const bannerPreview = document.getElementById('inline-banner-preview');
+            const bannerImg = document.getElementById('inline-banner-preview-img');
+            if (bannerInput && bannerPreview && bannerImg) {
+                bannerInput.addEventListener('change', function() {
+                    const file = this.files[0];
+                    if (file && file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = e => {
+                            bannerImg.src = e.target.result;
+                            bannerPreview.style.display = 'block';
+                        };
+                        reader.readAsDataURL(file);
+                    } else {
+                        bannerPreview.style.display = 'none';
+                    }
+                });
+            }
+
+            // Button Logic
+            const publishBtn = document.getElementById('inline-btn-publish');
+            const draftBtn = document.getElementById('inline-btn-draft');
+            const draftField = document.getElementById('inline-is-draft');
+            if (publishBtn && draftField) {
+                publishBtn.addEventListener('click', () => {
+                    draftField.value = ''; 
+                    draftField.disabled = true;
+                });
+            }
+            if (draftBtn && draftField) {
+                draftBtn.addEventListener('click', () => {
+                    draftField.value = 'on';
+                    draftField.disabled = false;
                 });
             }
         })();
