@@ -414,7 +414,6 @@
                 tournamentCards.forEach(function (card) {
                     const matches = status === 'all' || card.dataset.filterBucket === status;
                     card.hidden = !matches;
-                    // Reset opacity/transform if needed for a clean state
                     if (matches) {
                         visibleCount += 1;
                     }
@@ -422,8 +421,16 @@
                 
                 emptyState.hidden = visibleCount > 0;
                 
-                // Reset carousel to start when filter changes
+                // Reset carousel completely to 0 and re-sync
                 tCurrentIndex = 0;
+                if (tTrack) {
+                    tTrack.style.transition = 'none';
+                    tTrack.style.transform = 'translateX(0)';
+                    // Force reflow
+                    tTrack.offsetHeight;
+                    tTrack.style.transition = '';
+                }
+                
                 updateTournamentCarouselState();
 
                 if (updateUrl) {

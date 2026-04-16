@@ -1,10 +1,9 @@
-/* Form Global Styles & Dark Mode Support */
 input, select, textarea {
-    background-color: var(--surface);
+    background-color: var(--surface-strong);
     color: var(--text);
     border: 1px solid var(--border);
     border-radius: 10px;
-    padding: 10px 14px;
+    padding: 8px 12px;
     font-size: 14px;
     transition: border-color 0.2s, box-shadow 0.2s;
     outline: none;
@@ -28,9 +27,9 @@ input:focus, select:focus, textarea:focus {
 :root[data-theme="dark"] input, 
 :root[data-theme="dark"] select, 
 :root[data-theme="dark"] textarea {
-    background-color: #111a2b;
-    border-color: #253657;
-    color: #f8fafc;
+    background-color: var(--surface-strong) !important;
+    border-color: var(--border-strong);
+    color: var(--text);
 }
 
 :root[data-theme="dark"] select option {
@@ -825,7 +824,7 @@ a {
 
 .tournament-viewport {
     overflow: hidden;
-    padding: 10px 4px;
+    padding: 20px 4px;
     margin: -10px -4px;
 }
 
@@ -938,7 +937,7 @@ a {
 }
 
 .item-card {
-    padding: 18px;
+    padding: 14px 18px;
     border-radius: var(--radius-sm);
 }
 
@@ -1132,11 +1131,11 @@ input,
 select,
 textarea {
     width: 100%;
-    padding: 12px 14px;
-    border: 1px solid #cbd5e1;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
     border-radius: 12px;
     font: inherit;
-    background: #fff;
+    background: var(--surface-strong);
 }
 
 textarea {
@@ -1162,12 +1161,18 @@ textarea {
 }
 
 .notice {
-    padding: 12px 14px;
+    padding: 10px 12px;
     border-radius: 12px;
     border: 1px solid #f8d7a7;
     background: #fff7e8;
     color: #8a5a00;
     line-height: 1.6;
+}
+
+:root[data-theme="dark"] .notice {
+    background: rgba(138, 90, 0, 0.15);
+    border-color: rgba(248, 215, 167, 0.2);
+    color: #fcd34d;
 }
 
 .spacer-top {
@@ -1458,7 +1463,6 @@ textarea {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 24px;
-    align-items: stretch !important;
 }
 
 @media (max-width: 920px) {
@@ -1513,4 +1517,9 @@ select.button-compact {
 
 .item-card.spacer-top {
     margin-top: 24px;
+}
+
+/* Fix public tournament detail grid stretch */
+.grid-layout {
+    align-items: start !important;
 }
