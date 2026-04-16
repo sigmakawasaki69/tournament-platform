@@ -151,7 +151,12 @@
 
         <div class="message-box info spacer-top" id="tournament-filter-empty" hidden data-i18n="home.tournaments.filter_empty">За цим фільтром турнірів поки немає.</div>
 
-        <div class="grid-3 spacer-top">
+        <div class="tournament-carousel-container spacer-top" id="tournament-carousel-section">
+            <button class="t-nav-btn t-nav-prev" id="t-prev-btn" aria-label="Previous">&lsaquo;</button>
+            <button class="t-nav-btn t-nav-next" id="t-next-btn" aria-label="Next">&rsaquo;</button>
+            
+            <div class="tournament-viewport">
+                <div class="tournament-track" id="tournament-track">
             {% for row in tournament_rows %}
                 <a class="card card-link" href="{% url 'public_tournament_detail' row.tournament.id %}" data-filter-bucket="{{ row.filter_bucket }}">
                     <div class="card-body">
@@ -199,9 +204,9 @@
                     </div>
                 </a>
 
-            {% empty %}
-                <div class="card empty" data-i18n="home.tournaments.filter_empty">За цим фільтром турнірів поки немає.</div>
-            {% endfor %}
+                    {% endfor %}
+                </div>
+            </div>
         </div>
     </section>
 
@@ -358,8 +363,44 @@
             const filterLinks = Array.from(document.querySelectorAll('[data-home-filter]'));
             const tournamentCards = Array.from(document.querySelectorAll('[data-filter-bucket]'));
             const emptyState = document.getElementById('tournament-filter-empty');
+            
+            // Tournament Carousel Elements
+            const tTrack = document.getElementById('tournament-track');
+            const tPrevBtn = document.getElementById('t-prev-btn');
+            const tNextBtn = document.getElementById('t-next-btn');
+            
             if (!filterLinks.length || !tournamentCards.length || !emptyState) {
                 return;
+            }
+
+            let tCurrentIndex = 0;
+            let visibleCards = [];
+
+            function updateTournamentCarouselState() {
+                if (!tTrack || !tPrevBtn || !tNextBtn) return;
+                
+                visibleCards = tournamentCards.filter(card => !card.hidden);
+                const totalVisible = visibleCards.length;
+                
+                // Determine how many cards are visible in the viewport based on screen size
+                const viewportWidth = tTrack.parentElement.offsetWidth;
+                const cardWidth = visibleCards.length > 0 ? visibleCards[0].offsetWidth : 0;
+                const cardsInView = Math.round(viewportWidth / (cardWidth || 1)) || 1;
+
+                // Toggle visibility of navigation buttons
+                const canScroll = totalVisible > cardsInView;
+                tPrevBtn.disabled = tCurrentIndex === 0;
+                tNextBtn.disabled = tCurrentIndex >= totalVisible - cardsInView;
+                
+                // If can't scroll, just hide buttons entirely
+                tPrevBtn.style.display = canScroll ? 'flex' : 'none';
+                tNextBtn.style.display = canScroll ? 'flex' : 'none';
+
+                // Calculate move distance
+                // Gap is 20px as defined in CSS
+                const gap = 20;
+                const moveDist = tCurrentIndex * (cardWidth + gap);
+                tTrack.style.transform = `translateX(-${moveDist}px)`;
             }
 
             function applyHomeFilter(status, updateUrl) {
@@ -369,14 +410,22 @@
                     link.classList.toggle('active', isActive);
                     link.setAttribute('aria-pressed', isActive ? 'true' : 'false');
                 });
+                
                 tournamentCards.forEach(function (card) {
                     const matches = status === 'all' || card.dataset.filterBucket === status;
                     card.hidden = !matches;
+                    // Reset opacity/transform if needed for a clean state
                     if (matches) {
                         visibleCount += 1;
                     }
                 });
+                
                 emptyState.hidden = visibleCount > 0;
+                
+                // Reset carousel to start when filter changes
+                tCurrentIndex = 0;
+                updateTournamentCarouselState();
+
                 if (updateUrl) {
                     const url = new URL(window.location.href);
                     if (status === 'all') {
@@ -387,6 +436,30 @@
                     window.history.replaceState({}, '', url);
                 }
             }
+
+            // Carousel Button Events
+            if (tPrevBtn && tNextBtn) {
+                tPrevBtn.addEventListener('click', () => {
+                    if (tCurrentIndex > 0) {
+                        tCurrentIndex--;
+                        updateTournamentCarouselState();
+                    }
+                });
+
+                tNextBtn.addEventListener('click', () => {
+                    const viewportWidth = tTrack.parentElement.offsetWidth;
+                    const cardWidth = visibleCards[0].offsetWidth;
+                    const cardsInView = Math.round(viewportWidth / (cardWidth || 1)) || 1;
+                    
+                    if (tCurrentIndex < visibleCards.length - cardsInView) {
+                        tCurrentIndex++;
+                        updateTournamentCarouselState();
+                    }
+                });
+            }
+
+            // Handle window resize to re-calculate carousel
+            window.addEventListener('resize', updateTournamentCarouselState);
 
             filterLinks.forEach(function (link) {
                 link.addEventListener('click', function (event) {

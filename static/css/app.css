@@ -694,6 +694,8 @@ a {
     padding: 16px;
     display: flex;
     flex-direction: column;
+    height: 100%;
+    min-height: 0;
 }
 
 .auth-card {
@@ -743,14 +745,94 @@ a {
 }
 
 .grid-3 {
+    display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
     align-items: stretch;
+}
+
+/* Tournament Carousel Modern Styles */
+.tournament-carousel-container {
+    position: relative;
+    margin: 0 -12px;
+    padding: 12px;
+}
+
+.tournament-viewport {
+    overflow: hidden;
+    padding: 10px 4px;
+    margin: -10px -4px;
+}
+
+.tournament-track {
+    display: flex;
+    gap: 20px;
+    transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    align-items: stretch;
+}
+
+.tournament-track > * {
+    flex: 0 0 calc(33.333% - 13.5px);
+    display: flex;
+    flex-direction: column;
+}
+
+@media (max-width: 1024px) {
+    .tournament-track > * {
+        flex: 0 0 calc(50% - 10px);
+    }
+}
+
+@media (max-width: 640px) {
+    .tournament-track > * {
+        flex: 0 0 100%;
+    }
+}
+
+.t-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #fff;
+    border: 1px solid var(--border);
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+}
+
+.t-nav-btn:hover:not(:disabled) {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.t-nav-btn:disabled {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.t-nav-prev { left: -22px; }
+.t-nav-next { right: -22px; }
+
+:root[data-theme="dark"] .t-nav-btn {
+    background: #1e293b;
+    border-color: #334155;
 }
 
 .card-body {
     flex: 1;
     display: flex;
     flex-direction: column;
+    min-height: 0;
 }
 
 @media (max-width: 1024px) {
