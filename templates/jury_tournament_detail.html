@@ -1,193 +1,151 @@
-<!DOCTYPE html>
-<html lang="uk">
-<head>
-    <meta charset="UTF-8">
-    <title>{{ tournament.name }} - роботи команд</title>
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ tournament.name }} - оцінювання{% endblock %}
+
+{% block extra_head %}
     <style>
-        body { margin: 0; font-family: Arial, sans-serif; background: #f4f6fb; }
-        .wrap { max-width: 1200px; margin: 0 auto; padding: 30px 20px; }
-        .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 12px; }
-        .card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 10px 24px rgba(0,0,0,.06); }
-        details.team-folder { border: 1px solid #dbe1ea; border-radius: 14px; background: #fbfdff; padding: 14px 16px; margin-bottom: 14px; }
-        details.team-folder summary { cursor: pointer; font-size: 18px; font-weight: 700; }
-        .submission, .schedule-item { border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px; margin-top: 12px; background: white; }
-        .meta { color: #555; line-height: 1.6; }
-        .links a { color: #2563eb; text-decoration: none; word-break: break-all; }
-        .btn, .logout {
-            display: inline-flex; align-items: center; justify-content: center; text-decoration: none;
-            color: white; padding: 8px 12px; border-radius: 9px; min-height: 36px; font-size: 13px; line-height: 1.2; font-weight: 600;
+        .team-folder {
+            padding: 24px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            background: var(--surface-strong);
+            margin-bottom: 24px;
         }
-        .btn { background: #2563eb; }
-        .logout { background: #dc2626; }
-        .section { margin-top: 12px; }
-        .eval-box { margin-top: 14px; padding: 14px; border-radius: 12px; background: #f8fbff; border: 1px solid #dbe5f0; }
-        .eval-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 12px; }
-        .eval-box label { display: block; margin-bottom: 6px; font-weight: 700; }
-        .eval-box input, .eval-box textarea { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid #cbd5e1; font: inherit; }
-        .save-btn { border: none; background: #16a34a; color: white; padding: 8px 12px; border-radius: 9px; cursor: pointer; min-height: 36px; font-size: 13px; line-height: 1.2; font-weight: 600; }
-        .score-note { color: #0f766e; font-weight: 700; margin-top: 10px; }
-        @media (max-width: 800px) { .eval-grid { grid-template-columns: 1fr; } }
+        .team-folder summary {
+            font-size: 20px;
+            font-weight: 800;
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .team-folder summary::after {
+            content: '↓';
+            opacity: 0.5;
+        }
+        .team-folder[open] summary::after {
+            content: '↑';
+        }
+        .submission-item {
+            padding: 18px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            background: var(--bg-soft);
+            margin-top: 16px;
+        }
+        .eval-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 12px;
+        }
+        @media (max-width: 640px) {
+            .eval-grid { grid-template-columns: 1fr; }
+        }
     </style>
-</head>
-<body>
-    <div class="wrap">
-        <div class="top">
-            <div>
-                <h1>{{ tournament.name }}</h1>
-                <div>Роботи команд для журі</div>
-            </div>
-            <div>
-                <a class="btn" href="{% url 'jury_dashboard' %}">Назад до турнірів</a>
-                <a class="logout" href="{% url 'logout' %}">Вийти</a>
-            </div>
-        </div>
+{% endblock %}
 
-        <div class="card" style="margin-bottom: 20px;">
-            <h2 style="margin-top: 0;">Розклад турніру</h2>
-            {% for item in tournament.schedule_items.all %}
-                <div class="schedule-item">
-                    <strong>{{ item.title }}</strong>
-                    <div class="meta">{{ item.starts_at|date:"d.m.Y H:i" }}</div>
-                    {% if item.description %}
-                        <div class="meta" style="margin-top:8px;">{{ item.description|linebreaksbr }}</div>
-                    {% endif %}
-                </div>
-            {% empty %}
-                <div class="meta">Розклад турніру ще не додано.</div>
-            {% endfor %}
+{% block content %}
+    <div class="hero">
+        <div class="hero-content">
+            <div class="hero-kicker">{{ tournament.name }}</div>
+            <h1 data-i18n="jury.tournament.submissions">Роботи команд</h1>
+            <p data-i18n="jury.tournament.submissions_note">Оцінюйте роботи учасників за встановленими критеріями.</p>
         </div>
+        <div class="hero-side">
+            <div class="hero-stat"><strong>{{ pending_team_rows|length }}</strong><span data-i18n="jury.tournament.pending">Неоцінені</span></div>
+        </div>
+    </div>
 
-        <div class="card" style="margin-bottom: 20px;">
-            <h2 style="margin-top: 0;">Неоцінені роботи</h2>
+    <section class="section spacer-top">
+        <h2 class="section-title">Неоцінені роботи</h2>
+        <div class="list spacer-top">
             {% for row in pending_team_rows %}
                 <details class="team-folder">
                     <summary>{{ row.team.name }}</summary>
-                    <div class="section meta">
-                        Контактна особа: {{ row.team.captain_name }}<br>
-                        Електронна пошта: {{ row.team.captain_email }}
-                    </div>
-
+                    <div class="section-note spacer-top">Капітан: {{ row.team.captain_name }} ({{ row.team.captain_email }})</div>
                     {% for row_submission in row.submissions %}
-                        <div class="submission">
-                            <div><strong>{{ row_submission.submission.task.title }}</strong></div>
-                            <div class="meta links">
-                                Подано: {{ row_submission.submission.submitted_at }}<br>
+                        <div class="submission-item">
+                            <h3>{{ row_submission.submission.task.title }}</h3>
+                            <div class="toolbar spacer-top">
                                 {% for item in row_submission.submission.response_items %}
-                                    {{ item.label }}:
-                                    {% if item.is_link %}
-                                        <a href="{{ item.value }}">{{ item.display_value|default:item.value }}</a>
-                                    {% else %}
-                                        {{ item.display_value|default:item.value }}
-                                    {% endif %}
-                                    <br>
-                                {% empty %}
-                                    -
+                                    <div class="meta-item">
+                                        <strong>{{ item.label }}:</strong>
+                                        {% if item.is_link %}
+                                            <a href="{{ item.value }}" class="btn-text" target="_blank">{{ item.display_value|default:item.value }}</a>
+                                        {% else %}
+                                            {{ item.display_value|default:item.value }}
+                                        {% endif %}
+                                    </div>
                                 {% endfor %}
                             </div>
-
-                            <div class="eval-box">
-                                <form method="post" action="{% url 'submit_evaluation' row_submission.submission.id %}">
-                                    {% csrf_token %}
-                                    <div class="eval-grid">
-                                        <div>
-                                            <label for="{{ row_submission.evaluation_form.score_backend.id_for_label }}">Бекенд</label>
-                                            {{ row_submission.evaluation_form.score_backend }}
-                                        </div>
-                                        <div>
-                                            <label for="{{ row_submission.evaluation_form.score_frontend.id_for_label }}">Фронтенд</label>
-                                            {{ row_submission.evaluation_form.score_frontend }}
-                                        </div>
-                                        <div>
-                                            <label for="{{ row_submission.evaluation_form.score_functionality.id_for_label }}">Функціональність</label>
-                                            {{ row_submission.evaluation_form.score_functionality }}
-                                        </div>
-                                        <div>
-                                            <label for="{{ row_submission.evaluation_form.score_ux.id_for_label }}">UX/UI</label>
-                                            {{ row_submission.evaluation_form.score_ux }}
-                                        </div>
+                            <form method="post" action="{% url 'submit_evaluation' row_submission.submission.id %}" class="spacer-top">
+                                {% csrf_token %}
+                                <div class="eval-grid">
+                                    <div class="field-group">
+                                        <label>Бекенд</label>
+                                        {{ row_submission.evaluation_form.score_backend }}
                                     </div>
-                                    <div>
-                                        <label for="{{ row_submission.evaluation_form.comment.id_for_label }}">Коментар</label>
-                                        {{ row_submission.evaluation_form.comment }}
+                                    <div class="field-group">
+                                        <label>Фронтенд</label>
+                                        {{ row_submission.evaluation_form.score_frontend }}
                                     </div>
-                                    <button class="save-btn" type="submit">Зберегти оцінку</button>
-                                </form>
-                            </div>
+                                    <div class="field-group">
+                                        <label>Функціонал</label>
+                                        {{ row_submission.evaluation_form.score_functionality }}
+                                    </div>
+                                    <div class="field-group">
+                                        <label>UI/UX</label>
+                                        {{ row_submission.evaluation_form.score_ux }}
+                                    </div>
+                                </div>
+                                <div class="field-group spacer-top">
+                                    <label>Коментар</label>
+                                    {{ row_submission.evaluation_form.comment }}
+                                </div>
+                                <div class="toolbar spacer-top">
+                                    <button class="button" type="submit">Зберегти оцінку</button>
+                                </div>
+                            </form>
                         </div>
                     {% endfor %}
                 </details>
             {% empty %}
-                <div>Неоцінених робіт зараз немає.</div>
+                <p class="empty">Усі роботи в цьому турнірі оцінені.</p>
             {% endfor %}
         </div>
+    </section>
 
-        <div class="card">
-            <h2 style="margin-top: 0;">Оцінені роботи</h2>
+    <section class="section spacer-top">
+        <h2 class="section-title">Оцінені роботи</h2>
+        <div class="list spacer-top">
             {% for row in evaluated_team_rows %}
                 <details class="team-folder">
                     <summary>{{ row.team.name }}</summary>
-                    <div class="section meta">
-                        Контактна особа: {{ row.team.captain_name }}<br>
-                        Електронна пошта: {{ row.team.captain_email }}
-                    </div>
-
                     {% for row_submission in row.submissions %}
-                        <div class="submission">
-                            <div><strong>{{ row_submission.submission.task.title }}</strong></div>
-                            <div class="meta links">
-                                Подано: {{ row_submission.submission.submitted_at }}<br>
-                                {% for item in row_submission.submission.response_items %}
-                                    {{ item.label }}:
-                                    {% if item.is_link %}
-                                        <a href="{{ item.value }}">{{ item.display_value|default:item.value }}</a>
-                                    {% else %}
-                                        {{ item.display_value|default:item.value }}
+                        <div class="submission-item">
+                            <h3>{{ row_submission.submission.task.title }}</h3>
+                            <form method="post" action="{% url 'submit_evaluation' row_submission.submission.id %}" class="spacer-top">
+                                {% csrf_token %}
+                                <div class="eval-grid">
+                                    <div class="field-group"><label>Бекенд</label>{{ row_submission.evaluation_form.score_backend }}</div>
+                                    <div class="field-group"><label>Фронтенд</label>{{ row_submission.evaluation_form.score_frontend }}</div>
+                                    <div class="field-group"><label>Функціонал</label>{{ row_submission.evaluation_form.score_functionality }}</div>
+                                    <div class="field-group"><label>UI/UX</label>{{ row_submission.evaluation_form.score_ux }}</div>
+                                </div>
+                                <div class="toolbar spacer-top">
+                                    <button class="button-secondary" type="submit">Оновити оцінку</button>
+                                    {% if row_submission.my_evaluation %}
+                                        <span class="status-badge status-approved">Оцінка: {{ row_submission.my_evaluation.total_score|floatformat:1 }}</span>
                                     {% endif %}
-                                    <br>
-                                {% empty %}
-                                    -
-                                {% endfor %}
-                            </div>
-
-                            <div class="eval-box">
-                                <form method="post" action="{% url 'submit_evaluation' row_submission.submission.id %}">
-                                    {% csrf_token %}
-                                    <div class="eval-grid">
-                                        <div>
-                                            <label for="{{ row_submission.evaluation_form.score_backend.id_for_label }}">Бекенд</label>
-                                            {{ row_submission.evaluation_form.score_backend }}
-                                        </div>
-                                        <div>
-                                            <label for="{{ row_submission.evaluation_form.score_frontend.id_for_label }}">Фронтенд</label>
-                                            {{ row_submission.evaluation_form.score_frontend }}
-                                        </div>
-                                        <div>
-                                            <label for="{{ row_submission.evaluation_form.score_functionality.id_for_label }}">Функціональність</label>
-                                            {{ row_submission.evaluation_form.score_functionality }}
-                                        </div>
-                                        <div>
-                                            <label for="{{ row_submission.evaluation_form.score_ux.id_for_label }}">UX/UI</label>
-                                            {{ row_submission.evaluation_form.score_ux }}
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label for="{{ row_submission.evaluation_form.comment.id_for_label }}">Коментар</label>
-                                        {{ row_submission.evaluation_form.comment }}
-                                    </div>
-                                    <button class="save-btn" type="submit">Оновити оцінку</button>
-                                </form>
-
-                                {% if row_submission.my_evaluation %}
-                                    <div class="score-note">Ваша поточна оцінка: {{ row_submission.my_evaluation.total_score|floatformat:1 }}</div>
-                                {% endif %}
-                            </div>
+                                </div>
+                            </form>
                         </div>
                     {% endfor %}
                 </details>
-            {% empty %}
-                <div>Оцінених робіт поки немає.</div>
             {% endfor %}
         </div>
-    </div>
-</body>
-</html>
+    </section>
+{% endblock %}

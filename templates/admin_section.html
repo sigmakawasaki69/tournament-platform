@@ -1,335 +1,456 @@
-<!DOCTYPE html>
-<html lang="uk">
-<head>
-    <meta charset="UTF-8">
-    <title data-i18n="admin.title">Адмін-панель</title>
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Адмін-панель{% endblock %}
+
+{% block extra_head %}
     <style>
-        :root { --bg:#eef4ff; --panel:#fff; --line:#d7e1ef; --text:#172033; --muted:#66758b; --primary:#2457d8; --primary-dark:#173b77; --danger:#dc2626; --shadow:0 18px 42px rgba(15,23,42,.08); }
-        * { box-sizing:border-box; }
-        body { margin:0; font-family:Arial,sans-serif; color:var(--text); background:radial-gradient(circle at top left,rgba(36,87,216,.12),transparent 30%), linear-gradient(180deg,#eef4ff 0%,#f8fbff 45%,#fff 100%); }
-        a { color:inherit; }
-        .page { max-width:1360px; margin:0 auto; padding:24px 20px 40px; }
-        .layout { display:grid; grid-template-columns:280px minmax(0,1fr); gap:20px; align-items:start; }
-        .sidebar,.hero,.section,.form-card { background:#fff; border:1px solid var(--line); border-radius:24px; box-shadow:var(--shadow); }
-        .sidebar { position:sticky; top:18px; padding:18px; }
-        .brand { padding-bottom:16px; border-bottom:1px solid #e5edf7; margin-bottom:16px; }
-        .brand h1 { margin:0; font-size:30px; }
-        .brand p { margin:8px 0 0; color:var(--muted); line-height:1.6; }
-        .nav,.sidebar-actions,.stack { display:grid; gap:10px; }
-        .nav a,.btn,.btn-sec,.btn-ghost,.btn-danger { display:inline-flex; align-items:center; justify-content:center; min-height:40px; padding:10px 15px; border-radius:12px; text-decoration:none; font-weight:700; }
-        .nav a { justify-content:space-between; background:#fbfdff; border:1px solid #dbe5f3; color:var(--primary); }
-        .nav a.active { background:linear-gradient(135deg,var(--primary-dark),var(--primary)); color:#fff; border-color:transparent; }
-        .btn,.btn-sec,.btn-ghost,.btn-danger { border:1px solid transparent; cursor:pointer; }
-        .btn { background:var(--primary); color:#fff; }
-        .btn-sec { background:#0f766e; color:#fff; }
-        .btn-ghost { background:#fff; color:var(--primary); border-color:#cbd5e1; }
-        .btn-danger { background:var(--danger); color:#fff; }
-        .disabled { opacity:.55; pointer-events:none; }
-        .main { display:grid; gap:18px; }
-        .hero { padding:24px; display:grid; grid-template-columns:1.1fr .9fr; gap:18px; }
-        .hero-main { background:linear-gradient(135deg,var(--primary-dark),var(--primary)); color:#fff; border-radius:20px; padding:24px; }
-        .hero-main h2 { margin:0 0 10px; font-size:38px; }
-        .hero-main p { margin:0; line-height:1.7; color:rgba(255,255,255,.88); }
-        .stats { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-        .item { border: 1px solid #e2e8f0; border-radius: 14px; padding: 16px; background: #fbfdff; margin-bottom: 12px; display: flex; gap: 16px; align-items: flex-start; }
-        .item-banner { flex: 0 0 120px; width: 120px; height: 80px; border-radius: 10px; object-fit: cover; background: #f1f5f9; border: 1px solid #e2e8f0; }
-        .item-content { flex: 1; }
-        .item-top { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center; }
-        .section,.form-card { padding:22px; }
-        .section-head,.item-top,.actions-inline,.button-row,.task-row { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
-        .section-head { margin-bottom:16px; }
-        .section-title { margin:0; font-size:28px; }
-        .section-note,.meta,.empty { color:var(--muted); line-height:1.7; }
-        .stat { border:1px solid #dce5f2; border-radius:18px; padding:16px; background:#fff; }
-        .stat strong { display:block; font-size:30px; margin-bottom:6px; }
-        .grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
-        .item { border:1px solid #dce5f2; border-radius:18px; padding:16px; background:linear-gradient(180deg,#fbfdff,#f8fbff); }
-        .name { font-weight:800; }
-        .badge { display:inline-flex; align-items:center; padding:5px 10px; border-radius:999px; font-size:12px; font-weight:700; }
-        .approved { background:#dcfce7; color:#166534; } .pending { background:#fef3c7; color:#92400e; } .rejected { background:#fee2e2; color:#991b1b; }
-        .draft { background:#e5e7eb; color:#374151; } .registration { background:#dbeafe; color:#1d4ed8; } .running { background:#dcfce7; color:#166534; } .finished { background:#fee2e2; color:#991b1b; } .scheduled { background:#ede9fe; color:#6d28d9; }
-        .participant { background:#dbeafe; color:#1d4ed8; } .jury { background:#fef3c7; color:#92400e; } .organizer { background:#e0f2fe; color:#075985; } .admin { background:#ede9fe; color:#6d28d9; }
-        .fields { display:grid; grid-template-columns:1fr 1fr; gap:14px 16px; }
-        .span2 { grid-column:1 / -1; }
-        label { display:block; margin-bottom:7px; font-weight:700; }
-        input,textarea,select { width:100%; padding:12px 14px; border:1px solid #cbd5e1; border-radius:12px; background:#fff; font:inherit; }
-        textarea { min-height:120px; resize:vertical; }
-        .err { color:#b00020; font-size:14px; margin-top:6px; }
-        .builder { border:1px solid #dbe3ee; background:#f8fbff; border-radius:18px; padding:16px; }
-        .builder-row { border:1px solid #dbe3ee; background:#fff; border-radius:14px; padding:14px; margin-bottom:12px; }
-        .builder-grid { display:grid; grid-template-columns:1.8fr 1fr auto auto; gap:10px; align-items:center; }
-        .schedule-grid { display:grid; grid-template-columns:1.1fr 1.2fr 1.6fr auto; gap:10px; align-items:center; }
-        .builder-check { display:flex; align-items:center; gap:8px; font-weight:700; color:#334155; }
-        .builder-check input { width:auto; margin:0; }
-        .task-list { display:grid; gap:10px; margin-top:14px; padding-top:14px; border-top:1px solid #dde5ef; }
-        .task-row { align-items:flex-start; padding:12px 0; border-bottom:1px solid #e7edf6; }
-        .task-row:last-child { border-bottom:none; }
-        .links a { color:var(--primary); word-break:break-all; }
-        .hidden { display:none; }
-        @media (max-width:1180px){ .layout{grid-template-columns:1fr;} .sidebar{position:static;} .hero{grid-template-columns:1fr;} }
-        @media (max-width:900px){ .grid,.stats,.fields,.builder-grid{grid-template-columns:1fr;} }
+        .admin-hero {
+            padding: 28px;
+            border-radius: var(--radius-xl);
+            color: #fff;
+            background: linear-gradient(135deg, var(--primary-strong), var(--primary));
+            display: grid;
+            grid-template-columns: 1.4fr 0.6fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        @media (max-width: 920px) {
+            .admin-hero { grid-template-columns: 1fr; }
+        }
+        .builder-row {
+            padding: 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            background: var(--surface-strong);
+            margin-bottom: 12px;
+        }
+        .builder-grid {
+            display: grid;
+            grid-template-columns: 1fr 0.8fr auto auto;
+            gap: 10px;
+            align-items: center;
+        }
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: auto 1fr 1fr auto;
+            gap: 10px;
+            align-items: center;
+        }
+        .item-banner-preview {
+            width: 80px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
     </style>
-</head>
-<body>
-<div class="page">
-    <div class="layout">
-        <aside class="sidebar">
-            <div class="brand">
-                <h1 data-i18n="admin.sidebar.title">Адмінка</h1>
-                <p data-i18n="admin.sidebar.subtitle">Користувачі, турніри, команди, заявки та роботи в одному робочому просторі.</p>
-            </div>
-            <nav class="nav">
-                {% for item in admin_nav_items %}
-                    <a href="{{ item.url }}"{% if request.get_full_path == item.url or request.path == item.url %} class="active"{% endif %}><span>{{ item.label }}</span><small>&rarr;</small></a>
-                {% endfor %}
-            </nav>
-            <div class="sidebar-actions">
-                <a class="btn" href="{% url 'admin_active_tournaments' %}?action=create-tournament" data-i18n="admin.sidebar.create_tournament">Створити турнір</a>
-                <a class="btn-sec" href="{% url 'admin_users' %}?action=create-user" data-i18n="admin.sidebar.create_user">Створити користувача</a>
-                <a class="btn-ghost" href="{% url 'home' %}" data-i18n="admin.sidebar.home">На головну</a>
-                <a class="btn-danger" href="{% url 'logout' %}" data-i18n="admin.sidebar.logout">Вийти</a>
-            </div>
-        </aside>
+{% endblock %}
 
-        <main class="main">
-            <section class="hero">
-                <div class="hero-main">
-                    <h2 data-i18n="admin.hero.{{ current_section }}.title">{% if current_section == 'users' %}Користувачі та ролі{% elif current_section == 'active_tournaments' %}Активні турніри{% elif current_section == 'inactive_tournaments' %}Неактивні турніри{% elif current_section == 'teams' %}Команди{% elif current_section == 'registrations' %}Заявки на турніри{% else %}Надіслані роботи{% endif %}</h2>
-                    <p data-i18n="admin.hero.{{ current_section }}.subtitle">{% if current_section == 'users' %}Підтвердження нових людей, зміна ролей та ручне створення акаунтів без зайвих переходів.{% elif current_section == 'active_tournaments' %}Тут редагуються поточні турніри, додаються завдання та відкривається форма створення нового турніру.{% elif current_section == 'inactive_tournaments' %}Архів завершених або закритих турнірів.{% elif current_section == 'teams' %}Повний список команд із швидким переходом до складу.{% elif current_section == 'registrations' %}Підтвердження або відхилення заявок на участь.{% else %}Усі надіслані матеріали команд на одному екрані.{% endif %}</p>
-                </div>
-                <div class="stats">
-                    <div class="stat"><strong>{{ tournaments|length }}</strong><span data-i18n="admin.stat.tournaments">Турніри</span></div>
-                    <div class="stat"><strong>{{ teams|length }}</strong><span data-i18n="admin.stat.teams">Команди</span></div>
-                    <div class="stat"><strong>{{ registrations|length }}</strong><span data-i18n="admin.stat.registrations">Заявки</span></div>
-                    <div class="stat"><strong>{{ submissions|length }}</strong><span data-i18n="admin.stat.submissions">Роботи</span></div>
-                </div>
-            </section>
-
-            {% if current_section == 'users' and current_action == 'create-user' %}
-            <section class="form-card">
-                <div class="section-head"><div><h3 class="section-title" style="font-size:26px" data-i18n="admin.users.create.title">Створити користувача</h3><div class="section-note" data-i18n="admin.users.create.note">Форма відкривається прямо в розділі користувачів.</div></div><a class="btn-ghost" href="{% url 'admin_users' %}" data-i18n="admin.users.create.hide">Сховати форму</a></div>
-                {% if admin_create_user_form.non_field_errors %}<div class="err">{{ admin_create_user_form.non_field_errors }}</div>{% endif %}
-                <form method="post" action="{% url 'create_user_by_admin' %}">
-                    {% csrf_token %}<input type="hidden" name="next" value="{% url 'admin_users' %}">
-                    <div class="fields">
-                        <div><label for="{{ admin_create_user_form.username.id_for_label }}" data-i18n="login.username">Логін</label>{{ admin_create_user_form.username }}{% if admin_create_user_form.username.errors %}<div class="err" data-i18n-message>{{ admin_create_user_form.username.errors }}</div>{% endif %}</div>
-                        <div><label for="{{ admin_create_user_form.email.id_for_label }}" data-i18n="register.email">Електронна пошта</label>{{ admin_create_user_form.email }}{% if admin_create_user_form.email.errors %}<div class="err" data-i18n-message>{{ admin_create_user_form.email.errors }}</div>{% endif %}</div>
-                        <div><label for="{{ admin_create_user_form.role.id_for_label }}" data-i18n="profile.info.role">Роль</label>{{ admin_create_user_form.role }}{% if admin_create_user_form.role.errors %}<div class="err" data-i18n-message>{{ admin_create_user_form.role.errors }}</div>{% endif %}</div>
-                        <div><label for="{{ admin_create_user_form.password1.id_for_label }}" data-i18n="login.password">Пароль</label>{{ admin_create_user_form.password1 }}{% if admin_create_user_form.password1.errors %}<div class="err" data-i18n-message>{{ admin_create_user_form.password1.errors }}</div>{% endif %}</div>
-                        <div class="span2"><label for="{{ admin_create_user_form.password2.id_for_label }}" data-i18n="register.password_confirm">Підтвердження пароля</label>{{ admin_create_user_form.password2 }}{% if admin_create_user_form.password2.errors %}<div class="err" data-i18n-message>{{ admin_create_user_form.password2.errors }}</div>{% endif %}</div>
-                    </div>
-                    <div class="button-row"><button class="btn" type="submit" data-i18n="admin.sidebar.create_user">Створити користувача</button></div>
-                </form>
-            </section>
-            {% endif %}
-
-            {% if current_section == 'active_tournaments' and current_action == 'create-tournament' %}
-            <section class="form-card">
-                <div class="section-head"><div><h3 class="section-title" style="font-size:26px" data-i18n="create_tournament.title_create">Створити турнір</h3><div class="section-note" data-i18n="create_tournament.subtitle">Форма вбудована прямо в розділ активних турнірів.</div></div><a class="btn-ghost" href="{% url 'admin_active_tournaments' %}" data-i18n="create_tournament.back_to_dashboard">Сховати форму</a></div>
-                {% if tournament_form.non_field_errors %}<div class="err">{{ tournament_form.non_field_errors }}</div>{% endif %}
-                <form method="post" action="{% url 'create_tournament' %}" id="inline-tournament-form" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    <div class="fields">
-                        <div class="span2"><label data-i18n="create_tournament.label.name">Назва</label>{{ tournament_form.name }}{% if tournament_form.name.errors %}<div class="err" data-i18n-message>{{ tournament_form.name.errors }}</div>{% endif %}</div>
-                        <div class="span2"><label data-i18n="create_tournament.label.description">Опис</label>{{ tournament_form.description }}{% if tournament_form.description.errors %}<div class="err" data-i18n-message>{{ tournament_form.description.errors }}</div>{% endif %}</div>
-                        <div class="span2"><label data-i18n="create_tournament.label.reg_form_description">Опис форми реєстрації команди</label>{{ tournament_form.registration_form_description }}{% if tournament_form.registration_form_description.errors %}<div class="err" data-i18n-message>{{ tournament_form.registration_form_description.errors }}</div>{% endif %}</div>
-                        <div class="span2"><label data-i18n="create_tournament.label.banner">Банер турніру</label>
-                            {% if tournament_form.instance.banner_image %}
-                                <div style="margin-bottom:12px;">
-                                    <img src="{{ tournament_form.instance.banner_image.url }}" alt="Поточний банер" style="max-width:200px; border-radius:10px; display:block;">
-                                    <small style="color:var(--muted);" data-i18n="create_tournament.label.banner_current">Поточний банер</small>
-                                </div>
-                            {% endif %}
-                            {{ tournament_form.banner_image }}{% if tournament_form.banner_image.errors %}<div class="err" data-i18n-message>{{ tournament_form.banner_image.errors }}</div>{% endif %}
-                        </div>
-                        <div class="span2"><label data-i18n="create_tournament.label.jury">Журі турніру</label>{{ tournament_form.jury_users }}{% if tournament_form.jury_users.errors %}<div class="err" data-i18n-message>{{ tournament_form.jury_users.errors }}</div>{% endif %}</div>
-                        <div class="span2"><label data-i18n="create_tournament.label.allowed_contacts">Доступні месенджери для команди</label>{{ tournament_form.allowed_contact_methods }}{% if tournament_form.allowed_contact_methods.errors %}<div class="err" data-i18n-message>{{ tournament_form.allowed_contact_methods.errors }}</div>{% endif %}</div>
-                    </div>
-                    <div class="section-head" style="margin-top:18px"><div><h3 style="margin:0;font-size:24px" data-i18n="create_tournament.section.fields.title">Поля анкети</h3><div class="section-note" data-i18n="create_tournament.section.fields.note">Організатор може зібрати форму реєстрації без окремої сторінки.</div></div><button type="button" class="btn-sec" id="add-field" data-i18n="create_tournament.section.fields.add">Додати поле</button></div>
-                    <div class="builder"><div id="registration-fields-builder"></div><div id="builder-empty" class="empty" data-i18n="builder.empty">Поки що додаткових полів немає.</div></div>
-                    <div class="hidden">{{ tournament_form.registration_fields_definition }}</div>{% if tournament_form.registration_fields_definition.errors %}<div class="err">{{ tournament_form.registration_fields_definition.errors }}</div>{% endif %}
-                    <div class="section-head" style="margin-top:18px"><div><h3 style="margin:0;font-size:24px" data-i18n="create_tournament.section.schedule.title">Розклад турніру</h3><div class="section-note" data-i18n="create_tournament.section.schedule.note">Додайте етапи, консультації, дедлайни та інші події, які бачитимуть учасники та журі.</div></div><button type="button" class="btn-sec" id="add-schedule-item" data-i18n="create_tournament.section.schedule.add">Додати подію</button></div>
-                    <div class="builder"><div id="schedule-builder"></div><div id="schedule-builder-empty" class="empty" data-i18n="schedule.empty">Поки що подій розкладу немає.</div></div>
-                    <div class="hidden">{{ tournament_form.schedule_definition }}</div>{% if tournament_form.schedule_definition.errors %}<div class="err">{{ tournament_form.schedule_definition.errors }}</div>{% endif %}
-                    <div class="fields" style="margin-top:18px">
-                        <div><label data-i18n="create_tournament.label.start_date">Дата початку</label>{{ tournament_form.start_date }}{% if tournament_form.start_date.errors %}<div class="err" data-i18n-message>{{ tournament_form.start_date.errors }}</div>{% endif %}</div>
-                        <div><label data-i18n="create_tournament.label.end_date">Дата завершення</label>{{ tournament_form.end_date }}{% if tournament_form.end_date.errors %}<div class="err" data-i18n-message>{{ tournament_form.end_date.errors }}</div>{% endif %}</div>
-                        <div><label data-i18n="create_tournament.label.reg_start">Початок реєстрації</label>{{ tournament_form.registration_start }}{% if tournament_form.registration_start.errors %}<div class="err" data-i18n-message>{{ tournament_form.registration_start.errors }}</div>{% endif %}</div>
-                        <div><label data-i18n="create_tournament.label.reg_end">Завершення реєстрації</label>{{ tournament_form.registration_end }}{% if tournament_form.registration_end.errors %}<div class="err" data-i18n-message>{{ tournament_form.registration_end.errors }}</div>{% endif %}</div>
-                        <div><label data-i18n="create_tournament.label.min_members">Мінімум людей у команді</label>{{ tournament_form.min_team_members }}{% if tournament_form.min_team_members.errors %}<div class="err" data-i18n-message>{{ tournament_form.min_team_members.errors }}</div>{% endif %}</div>
-                        <div><label data-i18n="create_tournament.label.max_members">Максимум людей у команді</label>{{ tournament_form.max_team_members }}{% if tournament_form.max_team_members.errors %}<div class="err" data-i18n-message>{{ tournament_form.max_team_members.errors }}</div>{% endif %}</div>
-                        <div><label data-i18n="create_tournament.label.max_teams">Максимум команд</label>{{ tournament_form.max_teams }}{% if tournament_form.max_teams.errors %}<div class="err" data-i18n-message>{{ tournament_form.max_teams.errors }}</div>{% endif %}</div>
-                        <div><label data-i18n="create_tournament.label.status">Стан</label><div class="builder-check" style="margin-top:10px">{{ tournament_form.is_draft }}<span data-i18n="create_tournament.label.is_draft">Чернетка</span></div></div>
-                    </div>
-                    <div class="button-row"><button class="btn" type="submit" data-i18n="create_tournament.submit_create">Створити турнір</button></div>
-                </form>
-            </section>
-            {% endif %}
-
-            {% if current_section == 'users' %}
-            <section class="grid">
-                <div class="section"><h3 data-i18n="admin.users.pending.title">Очікують схвалення</h3><div class="stack">{% for user in pending_users %}<div class="item"><div class="item-top"><div class="name">{{ user.username }}</div><span class="badge {{ user.role }}" data-i18n="role.{{ user.role }}">{{ user.get_role_display }}</span></div><div class="meta"><span data-i18n="login.email">Електронна пошта</span>: {{ user.email|default:"-" }}</div><div class="actions-inline"><form method="post" action="{% url 'approve_user' user.id %}">{% csrf_token %}<input type="hidden" name="next" value="{% url 'admin_users' %}"><button class="btn" type="submit" data-i18n="admin.users.approve">Схвалити</button></form></div></div>{% empty %}<div class="empty" data-i18n="admin.users.pending.empty">Немає заявок на підтвердження.</div>{% endfor %}</div></div>
-                <div class="section"><div class="section-head"><div><h3 style="margin:0" data-i18n="admin.users.all.title">Усі користувачі</h3><div class="section-note" data-i18n="admin.users.all.subtitle">Повний список із ролями та статусом.</div></div><a class="btn-sec" href="{% url 'admin_users' %}?action=create-user" data-i18n="admin.sidebar.create_user">Створити користувача</a></div><div class="stack">{% for user in all_users %}<div class="item"><div class="item-top"><div class="name">{{ user.username }}</div><div class="button-row"><span class="badge {{ user.role }}" data-i18n="role.{{ user.role }}">{{ user.get_role_display }}</span>{% if user.is_approved %}<span class="badge approved" data-i18n="admin.users.status_approved">схвалено</span>{% else %}<span class="badge pending" data-i18n="admin.users.status_pending">очікує</span>{% endif %}</div></div><div class="meta"><span data-i18n="login.email">Електронна пошта</span>: {{ user.email|default:"-" }}<br>{% if user.is_superuser %}<span data-i18n="admin.users.superuser">Суперкористувач</span>{% else %}<span data-i18n="admin.users.regular">Звичайний користувач</span>{% endif %}</div><div class="actions-inline">{% if user.id != request.user.id %}<form method="post" action="{% url 'update_user_role' user.id %}">{% csrf_token %}<input type="hidden" name="next" value="{% url 'admin_users' %}"><div class="button-row"><select name="role">{% for value, label in role_choices %}<option value="{{ value }}"{% if user.role == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select><button class="btn" type="submit" data-i18n="admin.users.save_role">Зберегти роль</button></div></form>{% endif %}{% if user.id != request.user.id %}<form method="post" action="{% url 'delete_user' user.id %}">{% csrf_token %}<input type="hidden" name="next" value="{% url 'admin_users' %}"><button class="btn-danger" type="submit" data-i18n="admin.users.delete">Видалити</button></form>{% endif %}</div></div>{% empty %}<div class="empty" data-i18n="admin.users.all.empty">Користувачів поки немає.</div>{% endfor %}</div></div>
-            </section>
-            {% elif current_section == 'active_tournaments' %}
-            <section class="section"><div class="section-head"><div><h3 class="section-title" data-i18n="admin.tournaments.active.title">Активні турніри</h3><div class="section-note" data-i18n="admin.tournaments.active.subtitle">Поточні та майбутні турніри, які ще можна редагувати.</div></div><a class="btn" href="{% url 'admin_active_tournaments' %}?action=create-tournament" data-i18n="admin.sidebar.create_tournament">Створити турнір</a></div><div class="stack">{% for tournament in active_tournaments %}<div class="item">
-    <img src="{% if tournament.banner_image %}{{ tournament.banner_image.url }}{% else %}https://placehold.co/600x400?text=No+Banner{% endif %}" class="item-banner" alt="{{ tournament.name }}">
-    <div class="item-content">
-        <div class="item-top"><div class="name">{{ tournament.name }}</div><span class="badge {{ tournament.lifecycle_status }}" data-i18n="status.{{ tournament.lifecycle_status }}">{{ tournament.lifecycle_status_label }}</span></div><div class="meta"><span data-i18n="admin.tournaments.is_draft">Чернетка</span>: {{ tournament.is_draft|yesno:"так,ні" }}<br><span data-i18n="home.tournaments.start">Початок</span>: {{ tournament.start_date|default:"-" }}<br><span data-i18n="home.tournaments.finish">Завершення</span>: {{ tournament.end_date|default:"-" }}<br><span data-i18n="home.tournaments.reg_range">Реєстрація</span>: {{ tournament.registration_start|default:"-" }} - {{ tournament.registration_end|default:"-" }}<br><span data-i18n="create_tournament.label.max_teams">Макс. команд</span>: {{ tournament.max_teams|default:"без ліміту" }}<br><span data-i18n="admin.tournaments.created_by">Створив</span>: {{ tournament.created_by.username }}<br><span data-i18n="admin.tournaments.created_at">Створено</span>: {{ tournament.created_at|date:"d.m.Y H:i" }}<br><span data-i18n="admin.tournaments.tasks_count">Завдань</span>: {{ tournament.tasks.count }}</div><div class="actions-inline">{% if tournament.is_draft or not tournament.registration_end or tournament.registration_end > now or request.user.is_superuser %}
-<a class="btn" href="{% url 'edit_tournament' tournament.id %}" data-i18n="admin.tournaments.edit">Редагувати</a>
-<a class="btn-sec" href="{% url 'create_tournament_task' tournament.id %}" data-i18n="admin.tournaments.add_task">Додати завдання</a>
-{% else %}
-<span class="btn disabled" data-i18n="admin.tournaments.edit">Редагувати</span><span class="btn-sec disabled" data-i18n="admin.tournaments.add_task">Додати завдання</span>{% endif %}<form method="post" action="{% url 'delete_tournament' tournament.id %}">{% csrf_token %}<input type="hidden" name="next" value="{% url 'admin_active_tournaments' %}"><button class="btn-danger" type="submit" data-i18n="admin.tournaments.delete">Видалити турнір</button></form></div><div class="task-list">{% for task in tournament.tasks.all %}<div class="task-row"><div><strong>{{ task.title }}</strong><div class="meta">{% if task.is_draft %}<span class="badge draft" data-i18n="create_tournament.task.draft">чернетка</span>{% else %}<span data-i18n="create_tournament.task.published">Опубліковане завдання</span>{% endif %}</div></div><div class="actions-inline">{% if tournament.is_draft or not tournament.registration_end or tournament.registration_end > now or request.user.is_superuser %}
-<a class="btn" href="{% url 'edit_task' task.id %}" data-i18n="admin.tournaments.edit">Редагувати</a>
-{% else %}
-<span class="btn disabled" data-i18n="admin.tournaments.edit">Редагувати</span>{% endif %}<form method="post" action="{% url 'delete_task' task.id %}">{% csrf_token %}<input type="hidden" name="next" value="{% url 'admin_active_tournaments' %}"><button class="btn-danger" type="submit" data-i18n="admin.users.delete">Видалити</button></form></div></div>{% empty %}<div class="empty" data-i18n="builder.empty">Поки що завдань немає.</div>{% endfor %}</div></div></div>{% empty %}<div class="empty" data-i18n="admin.tournaments.active.empty">Активних турнірів поки немає.</div>{% endfor %}</div></section>
-            {% elif current_section == 'inactive_tournaments' %}
-            <section class="section"><div class="section-head"><div><h3 class="section-title" data-i18n="admin.tournaments.inactive.title">Неактивні турніри</h3><div class="section-note" data-i18n="admin.tournaments.inactive.subtitle">Архів завершених і закритих турнірів.</div></div></div><div class="stack">{% for tournament in inactive_tournaments %}<div class="item">
-    <img src="{% if tournament.banner_image %}{{ tournament.banner_image.url }}{% else %}https://placehold.co/600x400?text=No+Banner{% endif %}" class="item-banner" alt="{{ tournament.name }}">
-    <div class="item-content">
-        <div class="item-top"><div class="name">{{ tournament.name }}</div><span class="badge {{ tournament.lifecycle_status }}" data-i18n="status.{{ tournament.lifecycle_status }}">{{ tournament.lifecycle_status_label }}</span></div><div class="meta"><span data-i18n="home.tournaments.start">Початок</span>: {{ tournament.start_date|default:"-" }}<br><span data-i18n="home.tournaments.finish">Завершення</span>: {{ tournament.end_date|default:"-" }}<br><span data-i18n="home.tournaments.reg_range">Реєстрація</span>: {{ tournament.registration_start|default:"-" }} - {{ tournament.registration_end|default:"-" }}<br><span data-i18n="admin.tournaments.created_by">Створив</span>: {{ tournament.created_by.username }}</div><div class="actions-inline">
-{% if request.user.is_superuser %}
-<a class="btn" href="{% url 'edit_tournament' tournament.id %}" data-i18n="admin.tournaments.edit">Редагувати</a>
-<a class="btn-sec" href="{% url 'create_tournament_task' tournament.id %}" data-i18n="admin.tournaments.add_task">Додати завдання</a>
-{% else %}
-<span class="btn disabled" data-i18n="admin.tournaments.edit">Редагувати</span>
-<span class="btn-sec disabled" data-i18n="admin.tournaments.add_task">Додати завдання</span>
-{% endif %}
-<form method="post" action="{% url 'delete_tournament' tournament.id %}">{% csrf_token %}<input type="hidden" name="next" value="{% url 'admin_inactive_tournaments' %}"><button class="btn-danger" type="submit" data-i18n="admin.tournaments.delete">Видалити турнір</button></form></div></div></div>{% empty %}<div class="empty" data-i18n="admin.tournaments.inactive.empty">Неактивних турнірів поки немає.</div>{% endfor %}</div></section>
-            {% elif current_section == 'teams' %}
-            <section class="section"><div class="section-head"><div><h3 class="section-title" data-i18n="admin.teams.title">Команди</h3><div class="section-note" data-i18n="admin.teams.subtitle">Швидкий доступ до складу команд та їхніх профілів.</div></div></div><div class="stack">{% for team in teams %}<div class="item"><div class="item-top"><div class="name">{{ team.name }}</div></div><div class="meta"><span data-i18n="home.team_block.captain">Контактна особа (капітан)</span>: {{ team.captain_name }} *<br><span data-i18n="register.email">Електронна пошта</span>: {{ team.captain_email }}<br><span data-i18n="admin.teams.captain_user">Прив'язаний користувач</span>: {% if team.captain_user %}{{ team.captain_user.username }}{% else %}-{% endif %}<br><span data-i18n="common.school">Школа</span>: {{ team.school|default:"-" }}<br><span data-i18n="common.contact_value">Зв'язок</span>: {% if team.effective_contact_value %}{{ team.effective_contact_label }} — {{ team.effective_contact_value }}{% else %}-{% endif %}</div><div class="actions-inline"><a class="btn" href="{% url 'team_detail' team.id %}" data-i18n="admin.teams.open">Відкрити команду</a><a class="btn-sec" href="{% url 'team_participants' team.id %}" data-i18n="admin.teams.members">Учасники</a></div></div>{% empty %}<div class="empty" data-i18n="admin.teams.empty">Команд поки немає.</div>{% endfor %}</div></section>
-            {% elif current_section == 'registrations' %}
-            <section class="section"><div class="section-head"><div><h3 class="section-title" data-i18n="admin.registrations.title">Заявки</h3><div class="section-note" data-i18n="admin.registrations.subtitle">Підтвердження або відхилення заявок на участь у турнірах.</div></div></div><div class="stack">{% for reg in registrations %}<div class="item"><div class="item-top"><div class="name">{{ reg.team.name }} → {{ reg.tournament.name }}</div><span class="badge {{ reg.status }}" data-i18n="status.{{ reg.status }}">{{ reg.get_status_display }}</span></div><div class="meta"><span data-i18n="home.team_block.captain">Контактна особа (капітан)</span>: {{ reg.team.captain_name }} *<br><span data-i18n="register.email">Електронна пошта</span>: {{ reg.team.captain_email }}<br><span data-i18n="common.contact_value">Зв'язок</span>: {% if reg.team.effective_contact_value %}{{ reg.team.effective_contact_label }} — {{ reg.team.effective_contact_value }}{% else %}-{% endif %}<br><span data-i18n="admin.tournaments.created_by">Подав</span>: {{ reg.registered_by.username }}<br><span data-i18n="profile.announcements.date">Дата</span>: {{ reg.created_at }}</div>{% if reg.display_form_answers %}<details class="meta" style="margin-top:10px"><summary data-i18n="admin.registrations.form_answers">Анкета команди</summary><div style="margin-top:8px">{% for item in reg.display_form_answers %}{{ item.label }}: {{ item.value|default:"-" }}<br>{% endfor %}</div></details>{% endif %}{% if reg.status == 'pending' %}<div class="actions-inline"><form method="post" action="{% url 'approve_registration' reg.id %}">{% csrf_token %}<input type="hidden" name="next" value="{% url 'admin_registrations' %}"><button class="btn" type="submit" data-i18n="admin.registrations.approve">Схвалити</button></form><form method="post" action="{% url 'reject_registration' reg.id %}">{% csrf_token %}<input type="hidden" name="next" value="{% url 'admin_registrations' %}"><button class="btn-danger" type="submit" data-i18n="admin.registrations.reject">Відхилити</button></form></div>{% endif %}</div>{% empty %}<div class="empty" data-i18n="admin.registrations.empty">Заявок поки немає.</div>{% endfor %}</div></section>
-            {% else %}
-            <section class="section"><div class="section-head"><div><h3 class="section-title" data-i18n="admin.submissions.title">Роботи</h3><div class="section-note" data-i18n="admin.submissions.subtitle">Матеріали, які команди відправили на оцінювання.</div></div></div><div class="stack">{% for submission in submissions %}<div class="item"><div class="item-top"><div class="name">{{ submission.team.name }} — {{ submission.task.title }}</div></div><div class="meta links">GitHub: {% if submission.github_link %}<a href="{{ submission.github_link }}">{{ submission.github_link }}</a>{% else %}-{% endif %}<br><span data-i18n="submit_solution.video">Відео</span>: {% if submission.video_link %}<a href="{{ submission.video_link }}">{{ submission.video_link }}</a>{% else %}-{% endif %}<br><span data-i18n="submit_solution.demo">Демо</span>: {% if submission.live_demo %}<a href="{{ submission.live_demo }}">{{ submission.live_demo }}</a>{% else %}-{% endif %}<br><span data-i18n="admin.submissions.final">Фінальна версія</span>: {{ submission.is_final|yesno:"так,ні" }}<br><span data-i18n="admin.submissions.submitted_at">Подано</span>: {{ submission.submitted_at }}</div></div>{% empty %}<div class="empty" data-i18n="admin.submissions.empty">Робіт поки немає.</div>{% endfor %}</div></section>
-            {% endif %}
-        </main>
+{% block content %}
+    <div class="admin-hero">
+        <div>
+            <div class="hero-kicker" data-i18n="admin.sidebar.title">Адмінка</div>
+            <h2 data-i18n="admin.hero.{{ current_section }}.title" style="margin: 10px 0;">
+                {% if current_section == 'users' %}Користувачі та ролі
+                {% elif current_section == 'active_tournaments' %}Активні турніри
+                {% elif current_section == 'inactive_tournaments' %}Неактивні турніри
+                {% elif current_section == 'teams' %}Команди
+                {% elif current_section == 'registrations' %}Заявки на турніри
+                {% else %}Надіслані роботи{% endif %}
+            </h2>
+            <p data-i18n="admin.hero.{{ current_section }}.subtitle">
+                {% if current_section == 'users' %}Підтвердження нових людей, зміна ролей та ручне створення акаунтів без зайвих переходів.
+                {% elif current_section == 'active_tournaments' %}Тут редагуються поточні турніри, додаються завдання та відкривається форма створення нового турніру.
+                {% elif current_section == 'inactive_tournaments' %}Архів завершених або закритих турнірів.
+                {% elif current_section == 'teams' %}Повний список команд із швидким переходом до складу.
+                {% elif current_section == 'registrations' %}Підтвердження або відхилення заявок на участь.
+                {% else %}Усі надіслані матеріали команд на одному екрані.{% endif %}
+            </p>
+        </div>
+        <div class="stat-group">
+            <div class="stat-item"><strong>{{ tournaments|length }}</strong><span data-i18n="admin.stat.tournaments">Турніри</span></div>
+            <div class="stat-item"><strong>{{ registrations|length }}</strong><span data-i18n="admin.stat.registrations">Заявки</span></div>
+        </div>
     </div>
-</div>
 
-<template id="registration-field-template"><div class="builder-row"><div class="builder-grid"><input type="text" class="builder-label" data-i18n-placeholder="builder.label_placeholder" placeholder="Назва поля"><select class="builder-type"><option value="text" data-i18n="builder.type.text">Короткий текст</option><option value="textarea" data-i18n="builder.type.textarea">Великий текст</option><option value="email" data-i18n="builder.type.email">Електронна пошта</option><option value="number" data-i18n="builder.type.number">Число</option><option value="url" data-i18n="builder.type.url">Посилання</option><option value="participants" data-i18n="builder.type.participants">Учасники</option></select><label class="builder-check"><input type="checkbox" class="builder-required" checked><span data-i18n="builder.required">Обов'язкове</span></label><button type="button" class="btn-danger builder-remove" data-i18n="builder.remove">Видалити</button></div></div></template>
-<template id="schedule-item-template"><div class="builder-row"><div class="schedule-grid"><input type="datetime-local" class="schedule-starts-at"><input type="text" class="schedule-title" data-i18n-placeholder="schedule.title_placeholder" placeholder="Назва події"><input type="text" class="schedule-description" data-i18n-placeholder="schedule.description_placeholder" placeholder="Короткий опис"><button type="button" class="btn-danger schedule-remove" data-i18n="builder.remove">Видалити</button></div></div></template>
-<script>
-(function () {
-    const hiddenField = document.getElementById('id_registration_fields_definition');
-    const builder = document.getElementById('registration-fields-builder');
-    const emptyState = document.getElementById('builder-empty');
-    const template = document.getElementById('registration-field-template');
-    const scheduleHiddenField = document.getElementById('id_schedule_definition');
-    const scheduleBuilder = document.getElementById('schedule-builder');
-    const scheduleEmptyState = document.getElementById('schedule-builder-empty');
-    const scheduleTemplate = document.getElementById('schedule-item-template');
-    const form = document.getElementById('inline-tournament-form');
-    const addButton = document.getElementById('add-field');
-    const addScheduleButton = document.getElementById('add-schedule-item');
-    if (!hiddenField || !builder || !emptyState || !template || !form || !addButton) { return; }
-    function updateEmptyState() { emptyState.style.display = builder.children.length ? 'none' : 'block'; }
-    function updateScheduleEmptyState() {
-        if (!scheduleEmptyState || !scheduleBuilder) { return; }
-        scheduleEmptyState.style.display = scheduleBuilder.children.length ? 'none' : 'block';
-    }
-    function syncHiddenField() {
-        const rows = builder.querySelectorAll('.builder-row');
-        const lines = Array.from(rows).map(function (row) {
-            const label = row.querySelector('.builder-label').value.trim();
-            const type = row.querySelector('.builder-type').value;
-            const required = row.querySelector('.builder-required').checked ? 'required' : 'optional';
-            if (!label) { return ''; }
-            return label + '|' + label + '|' + type + '|' + required;
-        }).filter(Boolean);
-        hiddenField.value = lines.join('\n');
-        updateEmptyState();
-    }
-    function syncScheduleField() {
-        if (!scheduleHiddenField || !scheduleBuilder) { return; }
-        const rows = scheduleBuilder.querySelectorAll('.builder-row');
-        const lines = Array.from(rows).map(function (row) {
-            const startsAt = row.querySelector('.schedule-starts-at').value.trim();
-            const title = row.querySelector('.schedule-title').value.trim();
-            const description = row.querySelector('.schedule-description').value.trim();
-            if (!startsAt && !title && !description) { return ''; }
-            return startsAt + '|' + title + '|' + description;
-        }).filter(Boolean);
-        scheduleHiddenField.value = lines.join('\n');
-        updateScheduleEmptyState();
-    }
-    function addRow(data) {
-        const safeData = data || {};
-        const fragment = template.content.cloneNode(true);
-        const row = fragment.querySelector('.builder-row');
-        const labelInput = row.querySelector('.builder-label');
-        const typeSelect = row.querySelector('.builder-type');
-        const requiredInput = row.querySelector('.builder-required');
-        const removeButton = row.querySelector('.builder-remove');
-        labelInput.value = safeData.label || '';
-        typeSelect.value = safeData.type || 'text';
-        requiredInput.checked = safeData.required !== false;
-        labelInput.addEventListener('input', syncHiddenField);
-        typeSelect.addEventListener('change', syncHiddenField);
-        requiredInput.addEventListener('change', syncHiddenField);
-        removeButton.addEventListener('click', function () { row.remove(); syncHiddenField(); });
-        builder.appendChild(row);
-        syncHiddenField();
-    }
-    function addScheduleRow(data) {
-        if (!scheduleTemplate || !scheduleBuilder) { return; }
-        const safeData = data || {};
-        const fragment = scheduleTemplate.content.cloneNode(true);
-        const row = fragment.querySelector('.builder-row');
-        const startsAtInput = row.querySelector('.schedule-starts-at');
-        const titleInput = row.querySelector('.schedule-title');
-        const descriptionInput = row.querySelector('.schedule-description');
-        const removeButton = row.querySelector('.schedule-remove');
-        startsAtInput.value = safeData.starts_at || '';
-        titleInput.value = safeData.title || '';
-        descriptionInput.value = safeData.description || '';
-        startsAtInput.addEventListener('input', syncScheduleField);
-        titleInput.addEventListener('input', syncScheduleField);
-        descriptionInput.addEventListener('input', syncScheduleField);
-        removeButton.addEventListener('click', function () { row.remove(); syncScheduleField(); });
-        scheduleBuilder.appendChild(row);
-        syncScheduleField();
-    }
-    function parseExistingDefinition() {
-        const raw = hiddenField.value.trim();
-        if (!raw) { updateEmptyState(); return; }
-        raw.split('\n').forEach(function (line) {
-            const trimmed = line.trim();
-            if (!trimmed) { return; }
-            const parts = trimmed.split('|');
-            addRow({ label: parts[1] || '', type: parts[2] || 'text', required: parts[3] !== 'optional' });
-        });
-    }
-    function parseExistingSchedule() {
-        if (!scheduleHiddenField || !scheduleBuilder) { return; }
-        const raw = scheduleHiddenField.value.trim();
-        if (!raw) { updateScheduleEmptyState(); return; }
-        raw.split('\n').forEach(function (line) {
-            const trimmed = line.trim();
-            if (!trimmed) { return; }
-            const parts = trimmed.split('|');
-            addScheduleRow({
-                starts_at: parts[0] || '',
-                title: parts[1] || '',
-                description: parts[2] || '',
-            });
-        });
-    }
-    addButton.addEventListener('click', function () { addRow({ type: 'text', required: true }); });
-    if (addScheduleButton) {
-        addScheduleButton.addEventListener('click', function () {
-            addScheduleRow({ starts_at: '', title: '', description: '' });
-        });
-    }
-    form.addEventListener('submit', function () {
-        syncHiddenField();
-        syncScheduleField();
-    });
-    parseExistingDefinition();
-    parseExistingSchedule();
-    updateEmptyState();
-    updateScheduleEmptyState();
-})();
-</script>
-</body>
-</html>
+    {% if current_section == 'users' and current_action == 'create-user' %}
+        <section class="section">
+            <div class="section-head">
+                <h2 class="section-title" data-i18n="admin.users.create.title">Створити користувача</h2>
+                <a class="button-secondary" href="{% url 'admin_users' %}" data-i18n="admin.users.create.hide">Сховати</a>
+            </div>
+            <form method="post" action="{% url 'create_user_by_admin' %}" class="spacer-top">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{% url 'admin_users' %}">
+                <div class="form-grid form-grid-2">
+                    <div class="field-group">
+                        <label for="{{ admin_create_user_form.username.id_for_label }}" data-i18n="login.username">Логін</label>
+                        {{ admin_create_user_form.username }}
+                        {% if admin_create_user_form.username.errors %}<div class="field-errors">{{ admin_create_user_form.username.errors|join:", " }}</div>{% endif %}
+                    </div>
+                    <div class="field-group">
+                        <label for="{{ admin_create_user_form.email.id_for_label }}" data-i18n="register.email">Email</label>
+                        {{ admin_create_user_form.email }}
+                        {% if admin_create_user_form.email.errors %}<div class="field-errors">{{ admin_create_user_form.email.errors|join:", " }}</div>{% endif %}
+                    </div>
+                    <div class="field-group">
+                        <label for="{{ admin_create_user_form.role.id_for_label }}" data-i18n="profile.info.role">Роль</label>
+                        {{ admin_create_user_form.role }}
+                    </div>
+                    <div class="field-group">
+                        <label for="{{ admin_create_user_form.password1.id_for_label }}" data-i18n="login.password">Пароль</label>
+                        {{ admin_create_user_form.password1 }}
+                    </div>
+                </div>
+                <div class="toolbar spacer-top">
+                    <button class="button" type="submit" data-i18n="admin.sidebar.create_user">Створити</button>
+                </div>
+            </form>
+        </section>
+    {% endif %}
+
+    {% if current_section == 'active_tournaments' and current_action == 'create-tournament' %}
+        <section class="section">
+            <div class="section-head">
+                <h2 class="section-title" data-i18n="create_tournament.title_create">Створити турнір</h2>
+                <a class="button-secondary" href="{% url 'admin_active_tournaments' %}" data-i18n="create_tournament.back_to_dashboard">Сховати</a>
+            </div>
+            <form method="post" action="{% url 'create_tournament' %}" id="inline-tournament-form" enctype="multipart/form-data" class="spacer-top">
+                {% csrf_token %}
+                <div class="form-grid">
+                    <div class="field-group">
+                        <label data-i18n="create_tournament.label.name">Назва</label>
+                        {{ tournament_form.name }}
+                    </div>
+                    <div class="field-group">
+                        <label data-i18n="create_tournament.label.description">Опис</label>
+                        {{ tournament_form.description }}
+                    </div>
+                    <div class="field-group">
+                        <label data-i18n="create_tournament.label.reg_form_description">Опис форми реєстрації</label>
+                        {{ tournament_form.registration_form_description }}
+                    </div>
+                    <div class="field-group">
+                        <label data-i18n="create_tournament.label.banner">Банер</label>
+                        {{ tournament_form.banner_image }}
+                    </div>
+                    <div class="grid-2">
+                        <div class="field-group">
+                            <label data-i18n="create_tournament.label.jury">Журі</label>
+                            {{ tournament_form.jury_users }}
+                        </div>
+                        <div class="field-group">
+                            <label data-i18n="create_tournament.label.allowed_contacts">Месенджери</label>
+                            {{ tournament_form.allowed_contact_methods }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card spacer-top">
+                    <div class="section-head">
+                        <h3 data-i18n="create_tournament.section.fields.title">Поля анкети</h3>
+                        <button type="button" class="button-secondary" id="add-field" data-i18n="create_tournament.section.fields.add">+ Додати поле</button>
+                    </div>
+                    <div id="registration-fields-builder" class="spacer-top"></div>
+                    <div id="builder-empty" class="empty" data-i18n="builder.empty">Поля не додані.</div>
+                    <div style="display:none;">{{ tournament_form.registration_fields_definition }}</div>
+                </div>
+
+                <div class="card spacer-top">
+                    <div class="section-head">
+                        <h3 data-i18n="create_tournament.section.schedule.title">Розклад</h3>
+                        <button type="button" class="button-secondary" id="add-schedule-item" data-i18n="create_tournament.section.schedule.add">+ Додати подію</button>
+                    </div>
+                    <div id="schedule-builder" class="spacer-top"></div>
+                    <div id="schedule-builder-empty" class="empty" data-i18n="schedule.empty">Розклад порожній.</div>
+                    <div style="display:none;">{{ tournament_form.schedule_definition }}</div>
+                </div>
+
+                <div class="form-grid spacer-top">
+                    <div class="grid-2">
+                        <div class="field-group"><label data-i18n="create_tournament.label.start_date">Старт</label>{{ tournament_form.start_date }}</div>
+                        <div class="field-group"><label data-i18n="create_tournament.label.end_date">Фініш</label>{{ tournament_form.end_date }}</div>
+                    </div>
+                    <div class="grid-2">
+                        <div class="field-group"><label data-i18n="create_tournament.label.reg_start">Реєстрація з</label>{{ tournament_form.registration_start }}</div>
+                        <div class="field-group"><label data-i18n="create_tournament.label.reg_end">Реєстрація до</label>{{ tournament_form.registration_end }}</div>
+                    </div>
+                    <div class="grid-3">
+                        <div class="field-group"><label data-i18n="create_tournament.label.min_members">Мін. учасників</label>{{ tournament_form.min_team_members }}</div>
+                        <div class="field-group"><label data-i18n="create_tournament.label.max_members">Макс. учасників</label>{{ tournament_form.max_team_members }}</div>
+                        <div class="field-group"><label data-i18n="create_tournament.label.max_teams">Макс. команд</label>{{ tournament_form.max_teams }}</div>
+                    </div>
+                </div>
+
+                <div class="toolbar spacer-top">
+                    <button class="button" type="submit" data-i18n="create_tournament.submit_create">Створити турнір</button>
+                </div>
+            </form>
+        </section>
+    {% endif %}
+
+    {% if current_section == 'users' %}
+        <div class="dashboard-grid">
+            <section class="section">
+                <h2 class="section-title" data-i18n="admin.users.pending.title">Очікують схвалення</h2>
+                <div class="list spacer-top">
+                    {% for user in pending_users %}
+                        <div class="item-card">
+                            <div class="section-head">
+                                <h3>{{ user.username }}</h3>
+                                <span class="status-badge status-pending" data-i18n="role.{{ user.role }}">{{ user.get_role_display }}</span>
+                            </div>
+                            <div class="section-note">{{ user.email|default:"-" }}</div>
+                            <form method="post" action="{% url 'approve_user' user.id %}" class="spacer-top">
+                                {% csrf_token %}
+                                <input type="hidden" name="next" value="{% url 'admin_users' %}">
+                                <button class="button" type="submit" data-i18n="admin.users.approve">Схвалити</button>
+                            </form>
+                        </div>
+                    {% empty %}
+                        <p class="empty" data-i18n="admin.users.pending.empty">Нових заявок немає.</p>
+                    {% endfor %}
+                </div>
+            </section>
+            <section class="section">
+                <div class="section-head">
+                    <h2 class="section-title" data-i18n="admin.users.all.title">Усі користувачі</h2>
+                    <a class="button-secondary" href="{% url 'admin_users' %}?action=create-user" data-i18n="admin.sidebar.create_user">+ Створити</a>
+                </div>
+                <div class="list spacer-top">
+                    {% for user in all_users %}
+                        <div class="item-card">
+                            <div class="section-head">
+                                <h3>{{ user.username }}</h3>
+                                <div class="toolbar">
+                                    <span class="status-badge status-registration" data-i18n="role.{{ user.role }}">{{ user.get_role_display }}</span>
+                                    {% if not user.is_approved %}<span class="status-badge status-pending" data-i18n="admin.users.status_pending">очікує</span>{% endif %}
+                                </div>
+                            </div>
+                            <div class="section-note">{{ user.email|default:"-" }}</div>
+                            <div class="toolbar spacer-top">
+                                {% if user.id != request.user.id %}
+                                    <form method="post" action="{% url 'update_user_role' user.id %}" style="display:flex; gap:8px;">
+                                        {% csrf_token %}
+                                        <select name="role" class="button-compact" style="font-size:12px;">
+                                            {% for value, label in role_choices %}
+                                                <option value="{{ value }}"{% if user.role == value %} selected{% endif %}>{{ label }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <button class="button" type="submit" data-i18n="admin.users.save_role">ОК</button>
+                                    </form>
+                                    <form method="post" action="{% url 'delete_user' user.id %}">
+                                        {% csrf_token %}
+                                        <button class="button-danger" type="submit" data-i18n="admin.users.delete">×</button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+        </div>
+    {% elif current_section == 'active_tournaments' %}
+        <section class="section">
+            <div class="section-head">
+                <h2 class="section-title" data-i18n="admin.tournaments.active.title">Активні турнири</h2>
+                <a class="button" href="{% url 'admin_active_tournaments' %}?action=create-tournament" data-i18n="admin.sidebar.create_tournament">+ Створити турнир</a>
+            </div>
+            <div class="list spacer-top">
+                {% for tournament in active_tournaments %}
+                    <div class="item-card">
+                        <div class="section-head">
+                            <div style="display:flex; gap:16px; align-items:center;">
+                                <img src="{% if tournament.banner_image %}{{ tournament.banner_image.url }}{% else %}https://placehold.co/100x60?text=No+Banner{% endif %}" class="item-banner-preview" alt="">
+                                <h3>{{ tournament.name }}</h3>
+                            </div>
+                            <span class="status-badge status-{{ tournament.lifecycle_status }}" data-i18n="status.{{ tournament.lifecycle_status }}">{{ tournament.lifecycle_status_label }}</span>
+                        </div>
+                        <div class="section-note spacer-top">
+                            <span data-i18n="home.tournaments.start">Старт</span>: {{ tournament.start_date|default:"-" }} | <span data-i18n="home.tournaments.reg_range">Реєстрація</span>: {{ tournament.registration_start|default:"-" }} - {{ tournament.registration_end|default:"-" }}
+                        </div>
+                        <div class="toolbar spacer-top">
+                            <a class="button" href="{% url 'edit_tournament' tournament.id %}" data-i18n="admin.tournaments.edit">Редагувати</a>
+                            <a class="button-secondary" href="{% url 'create_tournament_task' tournament.id %}" data-i18n="admin.tournaments.add_task">Завдання ({{ tournament.tasks.count }})</a>
+                            <form method="post" action="{% url 'delete_tournament' tournament.id %}">
+                                {% csrf_token %}
+                                <button class="button-danger" type="submit" data-i18n="admin.tournaments.delete">Видалити</button>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+    {% elif current_section == 'teams' %}
+        <section class="section">
+            <h2 class="section-title" data-i18n="admin.teams.title">Команди</h2>
+            <div class="list spacer-top">
+                {% for team in teams %}
+                    <div class="item-card">
+                        <div class="section-head">
+                            <h3>{{ team.name }}</h3>
+                            <div class="section-note">{{ team.captain_name }} ({{ team.captain_email }})</div>
+                        </div>
+                        <div class="toolbar spacer-top">
+                            <a class="button" href="{% url 'team_detail' team.id %}" data-i18n="admin.teams.open">Профіль команди</a>
+                            <a class="button-secondary" href="{% url 'team_participants' team.id %}" data-i18n="admin.teams.members">Склад</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+    {% elif current_section == 'registrations' %}
+        <section class="section">
+            <h2 class="section-title" data-i18n="admin.registrations.title">Заявки</h2>
+            <div class="list spacer-top">
+                {% for reg in registrations %}
+                    <div class="item-card">
+                        <div class="section-head">
+                            <h3>{{ reg.team.name }} → {{ reg.tournament.name }}</h3>
+                            <span class="status-badge status-{{ reg.status }}" data-i18n="status.{{ reg.status }}">{{ reg.get_status_display }}</span>
+                        </div>
+                        {% if reg.status == 'pending' %}
+                            <div class="toolbar spacer-top">
+                                <form method="post" action="{% url 'approve_registration' reg.id %}">
+                                    {% csrf_token %}
+                                    <button class="button" type="submit" data-i18n="admin.registrations.approve">Схвалити</button>
+                                </form>
+                                <form method="post" action="{% url 'reject_registration' reg.id %}">
+                                    {% csrf_token %}
+                                    <button class="button-danger" type="submit" data-i18n="admin.registrations.reject">Відхилити</button>
+                                </form>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+    {% elif current_section == 'submissions' %}
+        <section class="section">
+            <h2 class="section-title" data-i18n="admin.submissions.title">Роботи</h2>
+            <div class="list spacer-top">
+                {% for submission in submissions %}
+                    <div class="item-card">
+                        <div class="section-head">
+                            <h3>{{ submission.team.name }} — {{ submission.task.title }}</h3>
+                            <div class="section-note">{{ submission.submitted_at|date:"d.m.Y H:i" }}</div>
+                        </div>
+                        <div class="card-text spacer-top">
+                            {% if submission.github_link %}<a href="{{ submission.github_link }}" class="btn-text">GitHub</a>{% endif %}
+                            {% if submission.video_link %}<a href="{{ submission.video_link }}" class="btn-text">Video</a>{% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+
+    <template id="registration-field-template">
+        <div class="builder-row">
+            <div class="builder-grid">
+                <input type="text" class="builder-label" placeholder="Назва поля">
+                <select class="builder-type">
+                    <option value="text">Текст</option>
+                    <option value="textarea">Абзац</option>
+                    <option value="email">Email</option>
+                    <option value="participants">Учасники</option>
+                </select>
+                <label class="builder-check"><input type="checkbox" class="builder-required" checked> <span data-i18n="builder.required">Обов'язкове</span></label>
+                <button type="button" class="button-danger builder-remove">×</button>
+            </div>
+        </div>
+    </template>
+    <template id="schedule-item-template">
+        <div class="builder-row">
+            <div class="schedule-grid">
+                <input type="datetime-local" class="schedule-starts-at">
+                <input type="text" class="schedule-title" placeholder="Подія">
+                <input type="text" class="schedule-description" placeholder="Опис">
+                <button type="button" class="button-danger schedule-remove">×</button>
+            </div>
+        </div>
+    </template>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script>
+        (function () {
+            const hiddenField = document.getElementById('id_registration_fields_definition');
+            const builder = document.getElementById('registration-fields-builder');
+            const emptyState = document.getElementById('builder-empty');
+            const template = document.getElementById('registration-field-template');
+            const schHidden = document.getElementById('id_schedule_definition');
+            const schBuilder = document.getElementById('schedule-builder');
+            const schEmpty = document.getElementById('schedule-builder-empty');
+            const schTemplate = document.getElementById('schedule-item-template');
+            const form = document.querySelector('form[method="post"]');
+            
+            if (!hiddenField || !builder || !template) return;
+
+            function sync() {
+                const rows = builder.querySelectorAll('.builder-row');
+                const lines = Array.from(rows).map(row => {
+                    const l = row.querySelector('.builder-label').value.trim();
+                    const t = row.querySelector('.builder-type').value;
+                    const r = row.querySelector('.builder-required').checked ? 'required' : 'optional';
+                    return l ? `${l}|${l}|${t}|${r}` : '';
+                }).filter(Boolean);
+                hiddenField.value = lines.join('\n');
+                emptyState.style.display = rows.length ? 'none' : 'block';
+            }
+
+            function syncSch() {
+                if (!schHidden || !schBuilder) return;
+                const rows = schBuilder.querySelectorAll('.builder-row');
+                const lines = Array.from(rows).map(row => {
+                    const s = row.querySelector('.schedule-starts-at').value;
+                    const t = row.querySelector('.schedule-title').value.trim();
+                    const d = row.querySelector('.schedule-description').value.trim();
+                    return (s || t) ? `${s}|${t}|${d}` : '';
+                }).filter(Boolean);
+                schHidden.value = lines.join('\n');
+                schEmpty.style.display = rows.length ? 'none' : 'block';
+            }
+
+            function addRow(data = {}) {
+                const fragment = template.content.cloneNode(true);
+                const row = fragment.querySelector('.builder-row');
+                row.querySelector('.builder-label').value = data.label || '';
+                row.querySelector('.builder-type').value = data.type || 'text';
+                row.querySelector('.builder-required').checked = data.required !== false;
+                row.querySelector('.builder-remove').addEventListener('click', () => { row.remove(); sync(); });
+                builder.appendChild(row);
+                sync();
+            }
+
+            function addSchRow(data = {}) {
+                if (!schTemplate || !schBuilder) return;
+                const fragment = schTemplate.content.cloneNode(true);
+                const row = fragment.querySelector('.builder-row');
+                row.querySelector('.schedule-starts-at').value = data.s || '';
+                row.querySelector('.schedule-title').value = data.t || '';
+                row.querySelector('.schedule-description').value = data.d || '';
+                row.querySelector('.schedule-remove').addEventListener('click', () => { row.remove(); syncSch(); });
+                schBuilder.appendChild(row);
+                syncSch();
+            }
+
+            document.getElementById('add-field').addEventListener('click', () => addRow());
+            document.getElementById('add-schedule-item').addEventListener('click', () => addSchRow());
+            
+            if (hiddenField.value) {
+                hiddenField.value.split('\n').filter(Boolean).forEach(line => {
+                    const p = line.split('|');
+                    addRow({ label: p[1], type: p[2], required: p[3] !== 'optional' });
+                });
+            }
+            if (schHidden && schHidden.value) {
+                schHidden.value.split('\n').filter(Boolean).forEach(line => {
+                    const p = line.split('|');
+                    addSchRow({ s: p[0], t: p[1], d: p[2] });
+                });
+            }
+        })();
+    </script>
+{% endblock %}

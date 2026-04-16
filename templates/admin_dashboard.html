@@ -1,628 +1,202 @@
-<!DOCTYPE html>
-<html lang="uk">
-<head>
-    <meta charset="UTF-8">
-    <title>Адмін-панель</title>
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Адмін-панель{% endblock %}
+
+{% block extra_head %}
     <style>
-        * { box-sizing: border-box; }
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: linear-gradient(180deg, #eef2ff 0%, #e5ecf6 100%);
-            color: #1f2937;
-        }
-        .wrap {
-            max-width: 1320px;
-            margin: 0 auto;
-            padding: 28px 20px 40px;
-        }
-        .topbar, .top-actions, .stats, .grid, .actions, .inline-form, .task-row, .task-actions, .team-links {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        .topbar {
-            justify-content: space-between;
+        .admin-hero {
+            padding: 28px;
+            border-radius: var(--radius-xl);
+            color: #fff;
+            background: linear-gradient(135deg, var(--primary-strong), var(--primary));
+            display: grid;
+            grid-template-columns: 1.4fr 0.6fr;
+            gap: 24px;
             margin-bottom: 24px;
         }
-        .title {
-            font-size: 32px;
-            font-weight: 800;
+        @media (max-width: 920px) {
+            .admin-hero { grid-template-columns: 1fr; }
         }
-        .subtitle {
-            color: #64748b;
-            margin-top: 4px;
-        }
-        .top-actions {
-            justify-content: flex-end;
-        }
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            margin-bottom: 28px;
-        }
-        .stat,
-        .card {
-            background: #ffffff;
-            border: 1px solid #d6dfeb;
-            border-radius: 20px;
-            box-shadow: 0 16px 34px rgba(31, 41, 55, 0.08);
-        }
-        .stat {
-            padding: 18px;
-        }
-        .stat-number {
-            font-size: 28px;
-            font-weight: 800;
-        }
-        .stat-label {
-            color: #64748b;
-            margin-top: 4px;
-        }
-        .section {
-            margin-top: 30px;
-            scroll-margin-top: 24px;
-        }
-        .section-head {
-            display: flex;
-            justify-content: space-between;
-            gap: 12px;
-            align-items: center;
-            margin-bottom: 14px;
-            flex-wrap: wrap;
-        }
-        .section-title {
-            margin: 0;
-            font-size: 28px;
-            font-weight: 800;
-        }
-        .section-note {
-            color: #64748b;
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        .card {
-            padding: 20px;
-        }
-        .card h3 {
-            margin: 0 0 14px;
-            font-size: 22px;
-        }
-        .item {
-            background: #f8fbff;
-            border: 1px solid #dde7f2;
-            border-radius: 16px;
-            padding: 14px;
+        .builder-row {
+            padding: 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            background: var(--surface-strong);
             margin-bottom: 12px;
-            display: flex;
-            gap: 16px;
-            align-items: flex-start;
         }
-        .item-banner {
-            flex: 0 0 120px;
-            width: 120px;
-            height: 80px;
-            border-radius: 10px;
-            object-fit: cover;
-            background: #f1f5f9;
-            border: 1px solid #e2e8f0;
-        }
-        .item-content {
-            flex: 1;
-        }
-        .item:last-child {
-            margin-bottom: 0;
-        }
-        .name {
-            font-weight: 700;
-            margin-bottom: 6px;
-        }
-        .meta {
-            color: #475569;
-            line-height: 1.6;
-            font-size: 14px;
-        }
-        .empty {
-            color: #64748b;
-        }
-        .actions,
-        .inline-form,
-        .task-actions,
-        .team-links {
-            margin-top: 10px;
-        }
-        .inline-form {
-            margin-top: 0;
-        }
-        a,
-        button {
-            font: inherit;
-        }
-        .button,
-        .button-secondary,
-        .button-danger,
-        .button-muted {
-            display: inline-flex;
+        .builder-grid {
+            display: grid;
+            grid-template-columns: 1fr 0.8fr auto auto;
+            gap: 10px;
             align-items: center;
-            justify-content: center;
-            min-height: 38px;
-            padding: 8px 14px;
-            border-radius: 10px;
-            border: none;
-            cursor: pointer;
-            text-decoration: none;
-            font-weight: 700;
         }
-        .button {
-            background: #2563eb;
-            color: white;
-        }
-        .button-secondary {
-            background: #0f766e;
-            color: white;
-        }
-        .button-danger {
-            background: #dc2626;
-            color: white;
-        }
-        .button-muted {
-            background: #ffffff;
-            color: #2563eb;
-            border: 1px solid #cbd5e1;
-        }
-        .button-disabled {
-            opacity: 0.6;
-            pointer-events: none;
-        }
-        .role-badge,
-        .status-badge {
-            display: inline-flex;
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: auto 1fr 1fr auto;
+            gap: 10px;
             align-items: center;
-            padding: 4px 9px;
-            border-radius: 999px;
-            font-size: 12px;
-            font-weight: 700;
-            margin-left: 8px;
-        }
-        .role-participant { background: #dbeafe; color: #1d4ed8; }
-        .role-captain { background: #dcfce7; color: #166534; }
-        .role-jury { background: #fef3c7; color: #92400e; }
-        .role-organizer { background: #e0f2fe; color: #075985; }
-        .role-admin { background: #ede9fe; color: #6d28d9; }
-        .status-approved { background: #dcfce7; color: #166534; }
-        .status-pending { background: #fef3c7; color: #92400e; }
-        .status-rejected { background: #fee2e2; color: #991b1b; }
-        .status-draft { background: #e5e7eb; color: #374151; }
-        .status-registration { background: #dbeafe; color: #1d4ed8; }
-        .status-running { background: #dcfce7; color: #166534; }
-        .status-finished { background: #fee2e2; color: #991b1b; }
-        .status-scheduled { background: #ede9fe; color: #6d28d9; }
-        .task-list {
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid #d9e2ef;
-        }
-        .task-row {
-            justify-content: space-between;
-            align-items: flex-start;
-            padding: 10px 0;
-            border-bottom: 1px solid #e5edf6;
-        }
-        .task-row:last-child {
-            border-bottom: none;
-        }
-        .links a {
-            color: #2563eb;
-            word-break: break-all;
-        }
-        select {
-            min-width: 150px;
-            min-height: 38px;
-            padding: 8px 10px;
-            border: 1px solid #cbd5e1;
-            border-radius: 10px;
-            background: white;
-        }
-        details summary {
-            cursor: pointer;
-            list-style: none;
-            font-weight: 700;
-        }
-        details summary::-webkit-details-marker {
-            display: none;
-        }
-        @media (max-width: 1100px) {
-            .stats {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            .grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        @media (max-width: 640px) {
-            .stats {
-                grid-template-columns: 1fr;
-            }
         }
     </style>
-</head>
-<body>
-    <div class="wrap">
-        <div class="topbar">
-            <div>
-                <div class="title">Адмін-панель</div>
-                <div class="subtitle">Вітаю, {{ request.user.username }}</div>
-            </div>
-            <div class="top-actions">
-                <a class="button-muted" href="{% url 'home' %}">На головну</a>
-                <a class="button" href="{% url 'create_tournament' %}">Створити турнір</a>
-                <a class="button-secondary" href="{% url 'create_user_by_admin' %}">Створити користувача</a>
-                <a class="button-danger" href="{% url 'logout' %}">Вийти</a>
-            </div>
-        </div>
+{% endblock %}
 
-        <div class="stats">
-            <div class="stat">
-                <div class="stat-number">{{ tournaments|length }}</div>
-                <div class="stat-label">Турніри</div>
-            </div>
-            <div class="stat">
-                <div class="stat-number">{{ teams|length }}</div>
-                <div class="stat-label">Команди</div>
-            </div>
-            <div class="stat">
-                <div class="stat-number">{{ registrations|length }}</div>
-                <div class="stat-label">Заявки</div>
-            </div>
-            <div class="stat">
-                <div class="stat-number">{{ submissions|length }}</div>
-                <div class="stat-label">Роботи</div>
-            </div>
+{% block content %}
+    <div class="admin-hero">
+        <div>
+            <div class="hero-kicker" data-i18n="admin.sidebar.title">Адмінка</div>
+            <h2 style="margin: 10px 0;">Управління платформою</h2>
+            <p>Вітаю, {{ request.user.username }}. Тут ви можете керувати користувачами, турнірами та заявками.</p>
         </div>
+        <div class="stat-group">
+            <div class="stat-item"><strong>{{ tournaments|length }}</strong><span data-i18n="admin.stat.tournaments">Турніри</span></div>
+            <div class="stat-item"><strong>{{ registrations|length }}</strong><span data-i18n="admin.stat.registrations">Заявки</span></div>
+        </div>
+    </div>
 
-        <section id="users" class="section">
+    <div class="dashboard-grid">
+        <section class="section" id="users">
             <div class="section-head">
                 <h2 class="section-title">Користувачі</h2>
-                <div class="section-note">Підтвердження, ролі та ручне керування користувачами.</div>
+                <a class="button-secondary" href="{% url 'create_user_by_admin' %}">+ Створити</a>
             </div>
-            <div class="grid">
-                <div class="card">
-                    <h3>Очікують схвалення</h3>
-                    {% for user in pending_users %}
-                        <div class="item">
-                            <div class="name">
-                                {{ user.username }}
-                                <span class="role-badge role-{{ user.role }}">{{ user.role }}</span>
+            
+            <div class="list spacer-top">
+                <h3>Очікують схвалення</h3>
+                {% for user in pending_users %}
+                    <div class="item-card">
+                        <div class="section-head">
+                            <h3>{{ user.username }}</h3>
+                            <span class="status-badge status-pending">{{ user.role }}</span>
+                        </div>
+                        <div class="section-note">{{ user.email|default:"-" }}</div>
+                        <form method="post" action="{% url 'approve_user' user.id %}" class="spacer-top">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{% url 'admin_dashboard' %}#users">
+                            <button class="button" type="submit">Схвалити</button>
+                        </form>
+                    </div>
+                {% empty %}
+                    <p class="empty">Немає нових заявок.</p>
+                {% endfor %}
+
+                <h3 class="spacer-top">Усі користувачі</h3>
+                {% for user in all_users %}
+                    <div class="item-card">
+                        <div class="section-head">
+                            <h3>{{ user.username }}</h3>
+                            <div class="toolbar">
+                                <span class="status-badge status-registration">{{ user.role }}</span>
+                                {% if not user.is_approved %}<span class="status-badge status-pending">очікує</span>{% endif %}
                             </div>
-                            <div class="meta">Електронна пошта: {{ user.email|default:"-" }}</div>
-                            <div class="actions">
-                                <form class="inline-form" method="post" action="{% url 'approve_user' user.id %}">
+                        </div>
+                        <div class="section-note">{{ user.email|default:"-" }}</div>
+                        <div class="toolbar spacer-top">
+                            {% if not user.is_superuser %}
+                                <form method="post" action="{% url 'update_user_role' user.id %}" style="display:flex; gap:8px;">
                                     {% csrf_token %}
                                     <input type="hidden" name="next" value="{% url 'admin_dashboard' %}#users">
-                                    <button class="button" type="submit">Схвалити</button>
+                                    <select name="role" class="button-compact">
+                                        {% for value, label in role_choices %}
+                                            <option value="{{ value }}"{% if user.role == value %} selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <button class="button" type="submit">ОК</button>
                                 </form>
-                            </div>
+                            {% endif %}
+                            {% if user.id != request.user.id and not user.is_superuser %}
+                                <form method="post" action="{% url 'delete_user' user.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="next" value="{% url 'admin_dashboard' %}#users">
+                                    <button class="button-danger" type="submit">×</button>
+                                </form>
+                            {% endif %}
                         </div>
-                    {% empty %}
-                        <div class="empty">Немає заявок.</div>
-                    {% endfor %}
-                </div>
-
-                <div class="card">
-                    <div class="section-head" style="margin-bottom: 14px;">
-                        <h3 style="margin: 0;">Усі користувачі</h3>
-                        <a class="button-secondary" href="{% url 'create_user_by_admin' %}">Створити користувача</a>
                     </div>
-                    {% for user in all_users %}
-                        <div class="item">
-                            <div class="name">
-                                {{ user.username }}
-                                <span class="role-badge role-{{ user.role }}">{{ user.role }}</span>
-                                {% if user.is_approved %}
-                                    <span class="status-badge status-approved">схвалено</span>
-                                {% else %}
-                                    <span class="status-badge status-pending">очікує</span>
-                                {% endif %}
-                            </div>
-                            <div class="meta">
-                                Електронна пошта: {{ user.email|default:"-" }}<br>
-                                {% if user.is_superuser %}Суперкористувач{% else %}Звичайний користувач{% endif %}
-                            </div>
-                            <div class="actions">
-                                {% if not user.is_superuser %}
-                                    <form class="inline-form" method="post" action="{% url 'update_user_role' user.id %}">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="next" value="{% url 'admin_dashboard' %}#users">
-                                        <select name="role">
-                                            {% for value, label in role_choices %}
-                                                <option value="{{ value }}"{% if user.role == value %} selected{% endif %}>{{ label }}</option>
-                                            {% endfor %}
-                                        </select>
-                                        <button class="button" type="submit">Зберегти роль</button>
-                                    </form>
-                                {% endif %}
-                                {% if user.id != request.user.id and not user.is_superuser %}
-                                    <form class="inline-form" method="post" action="{% url 'delete_user' user.id %}">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="next" value="{% url 'admin_dashboard' %}#users">
-                                        <button class="button-danger" type="submit">Видалити</button>
-                                    </form>
-                                {% endif %}
-                            </div>
-                        </div>
-                    {% empty %}
-                        <div class="empty">Користувачів немає.</div>
-                    {% endfor %}
-                </div>
+                {% endfor %}
             </div>
         </section>
 
-        <section id="active-tournaments" class="section">
+        <section class="section" id="active-tournaments">
             <div class="section-head">
                 <h2 class="section-title">Активні турніри</h2>
-                <div class="section-note">Чернетки, майбутні та поточні турніри.</div>
+                <a class="button" href="{% url 'create_tournament' %}">+ Створити</a>
             </div>
-            <div class="card">
-                <div class="actions" style="margin-top: 0; margin-bottom: 14px;">
-                    <a class="button" href="{% url 'create_tournament' %}">Створити турнір</a>
-                </div>
+            <div class="list spacer-top">
                 {% for tournament in active_tournaments %}
-                    <div class="item">
-                        <img src="{% if tournament.banner_image %}{{ tournament.banner_image.url }}{% else %}https://placehold.co/600x400?text=No+Banner{% endif %}" class="item-banner" alt="{{ tournament.name }}">
-                        <div class="item-content">
-                            <div class="name">
-                                {{ tournament.name }}
-                                <span class="status-badge status-{{ tournament.lifecycle_status }}">{{ tournament.lifecycle_status_label }}</span>
+                    <div class="item-card">
+                        <div class="section-head">
+                            <div style="display:flex; gap:16px; align-items:center;">
+                                <img src="{% if tournament.banner_image %}{{ tournament.banner_image.url }}{% else %}https://placehold.co/100x60?text=No+Banner{% endif %}" style="width:80px; height:50px; object-fit:cover; border-radius:8px;" alt="">
+                                <h3>{{ tournament.name }}</h3>
                             </div>
-                            <div class="meta">
-                                Чернетка: {{ tournament.is_draft|yesno:"так,ні" }}<br>
-                                Початок: {{ tournament.start_date|default:"-" }}<br>
-                                Завершення: {{ tournament.end_date|default:"-" }}<br>
-                                Реєстрація: {{ tournament.registration_start|default:"-" }} - {{ tournament.registration_end|default:"-" }}<br>
-                                Макс. команд: {{ tournament.max_teams|default:"без ліміту" }}<br>
-                                Створив: {{ tournament.created_by }}<br>
-                                Завдань: {{ tournament.tasks.count }}<br>
-                                Полів анкети: {{ tournament.registration_fields_config|length }}
-                            </div>
-                            {% if tournament.registration_fields_config %}
-                                <details class="meta" style="margin-top: 8px;">
-                                    <summary>Поля анкети</summary>
-                                    <div style="margin-top: 8px;">
-                                        {% for field in tournament.registration_fields_config %}
-                                            {{ field.label }}: {{ field.type }}{% if field.required %} (обов'язкове){% else %} (необов'язкове){% endif %}<br>
-                                        {% endfor %}
-                                    </div>
-                                </details>
-                            {% endif %}
-                            <div class="actions">
-                                {% if tournament.is_draft or not tournament.registration_end or tournament.registration_end > now %}
-                                    <a class="button" href="{% url 'edit_tournament' tournament.id %}">Редагувати</a>
-                                    <a class="button-secondary" href="{% url 'create_tournament_task' tournament.id %}">Додати завдання</a>
-                                {% else %}
-                                    <span class="button button-disabled">Редагувати</span>
-                                    <span class="button-secondary button-disabled">Додати завдання</span>
-                                {% endif %}
-                                <form class="inline-form" method="post" action="{% url 'delete_tournament' tournament.id %}">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="next" value="{% url 'admin_dashboard' %}#active-tournaments">
-                                    <button class="button-danger" type="submit">Видалити турнір</button>
-                                </form>
-                            </div>
-                            <div class="task-list">
-                                {% for task in tournament.tasks.all %}
-                                    <div class="task-row">
-                                        <div>
-                                            <strong>{{ task.title }}</strong>
-                                            {% if task.is_draft %}
-                                                <span class="status-badge status-draft">чернетка</span>
-                                            {% endif %}
-                                        </div>
-                                        <div class="task-actions">
-                                            {% if tournament.is_draft or not tournament.registration_end or tournament.registration_end > now %}
-                                                <a class="button" href="{% url 'edit_task' task.id %}">Редагувати</a>
-                                            {% else %}
-                                                <span class="button button-disabled">Редагувати</span>
-                                            {% endif %}
-                                            <form class="inline-form" method="post" action="{% url 'delete_task' task.id %}">
-                                                {% csrf_token %}
-                                                <input type="hidden" name="next" value="{% url 'admin_dashboard' %}#active-tournaments">
-                                                <button class="button-danger" type="submit">Видалити</button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                {% empty %}
-                                    <div class="empty">Поки немає завдань.</div>
-                                {% endfor %}
-                            </div>
+                            <span class="status-badge status-{{ tournament.lifecycle_status }}">{{ tournament.lifecycle_status_label }}</span>
+                        </div>
+                        <div class="section-note spacer-top">
+                            Реєстрація до: {{ tournament.registration_end|default:"-" }}
+                        </div>
+                        <div class="toolbar spacer-top">
+                            <a class="button" href="{% url 'edit_tournament' tournament.id %}">Редагувати</a>
+                            <a class="button-secondary" href="{% url 'create_tournament_task' tournament.id %}">Завдання</a>
+                            <form method="post" action="{% url 'delete_tournament' tournament.id %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="next" value="{% url 'admin_dashboard' %}#active-tournaments">
+                                <button class="button-danger" type="submit">Видалити</button>
+                            </form>
                         </div>
                     </div>
-                {% empty %}
-                    <div class="empty">Активних турнірів поки немає.</div>
-                {% endfor %}
-            </div>
-        </section>
-
-        <section id="inactive-tournaments" class="section">
-            <div class="section-head">
-                <h2 class="section-title">Неактивні турніри</h2>
-                <div class="section-note">Завершені турніри та архів.</div>
-            </div>
-            <div class="card">
-                {% for tournament in inactive_tournaments %}
-                    <div class="item">
-                        <img src="{% if tournament.banner_image %}{{ tournament.banner_image.url }}{% else %}https://placehold.co/600x400?text=No+Banner{% endif %}" class="item-banner" alt="{{ tournament.name }}">
-                        <div class="item-content">
-                            <div class="name">
-                                {{ tournament.name }}
-                                <span class="status-badge status-{{ tournament.lifecycle_status }}">{{ tournament.lifecycle_status_label }}</span>
-                            </div>
-                            <div class="meta">
-                                Чернетка: {{ tournament.is_draft|yesno:"так,ні" }}<br>
-                                Початок: {{ tournament.start_date|default:"-" }}<br>
-                                Завершення: {{ tournament.end_date|default:"-" }}<br>
-                                Реєстрація: {{ tournament.registration_start|default:"-" }} - {{ tournament.registration_end|default:"-" }}<br>
-                                Макс. команд: {{ tournament.max_teams|default:"без ліміту" }}<br>
-                                Створив: {{ tournament.created_by }}<br>
-                                Завдань: {{ tournament.tasks.count }}
-                            </div>
-                            <div class="actions">
-                                <span class="button button-disabled">Редагувати</span>
-                                <span class="button-secondary button-disabled">Додати завдання</span>
-                                <form class="inline-form" method="post" action="{% url 'delete_tournament' tournament.id %}">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="next" value="{% url 'admin_dashboard' %}#inactive-tournaments">
-                                    <button class="button-danger" type="submit">Видалити турнір</button>
-                                </form>
-                            </div>
-                            <div class="task-list">
-                                {% for task in tournament.tasks.all %}
-                                    <div class="task-row">
-                                        <div>
-                                            <strong>{{ task.title }}</strong>
-                                            {% if task.is_draft %}
-                                                <span class="status-badge status-draft">чернетка</span>
-                                            {% endif %}
-                                        </div>
-                                        <div class="task-actions">
-                                            <span class="button button-disabled">Редагувати</span>
-                                            <form class="inline-form" method="post" action="{% url 'delete_task' task.id %}">
-                                                {% csrf_token %}
-                                                <input type="hidden" name="next" value="{% url 'admin_dashboard' %}#inactive-tournaments">
-                                                <button class="button-danger" type="submit">Видалити</button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                {% empty %}
-                                    <div class="empty">Поки немає завдань.</div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                {% empty %}
-                    <div class="empty">Неактивних турнірів поки немає.</div>
-                {% endfor %}
-            </div>
-        </section>
-
-        <section id="teams" class="section">
-            <div class="section-head">
-                <h2 class="section-title">Команди</h2>
-                <div class="section-note">Швидкий доступ до складу команд.</div>
-            </div>
-            <div class="card">
-                {% for team in teams %}
-                    <div class="item">
-                        <div class="name">{{ team.name }}</div>
-                        <div class="meta">
-                            Контактна особа: {{ team.captain_name }}<br>
-                            Електронна пошта: {{ team.captain_email }}<br>
-                            Прив'язаний користувач: {% if team.captain_user %}{{ team.captain_user.username }}{% else %}-{% endif %}<br>
-                            Школа: {{ team.school|default:"-" }}<br>
-                            Телеграм: {{ team.telegram|default:"-" }}
-                        </div>
-                        <div class="team-links">
-                            <a class="button" href="{% url 'team_detail' team.id %}">Відкрити команду</a>
-                            <a class="button-secondary" href="{% url 'team_participants' team.id %}">Учасники</a>
-                        </div>
-                    </div>
-                {% empty %}
-                    <div class="empty">Команд поки немає.</div>
-                {% endfor %}
-            </div>
-        </section>
-
-        <section id="registrations" class="section">
-            <div class="section-head">
-                <h2 class="section-title">Заявки</h2>
-                <div class="section-note">Підтвердження доступу команд до турнірів.</div>
-            </div>
-            <div class="card">
-                {% for reg in registrations %}
-                    <div class="item">
-                        <div class="name">{{ reg.team.name }} -> {{ reg.tournament.name }}</div>
-                        <div class="meta">
-                            Контактна особа: {{ reg.team.captain_name }}<br>
-                            Зареєстрував: {{ reg.registered_by.username }}<br>
-                            Статус:
-                            <span class="status-badge status-{{ reg.status }}">{{ reg.get_status_display }}</span><br>
-                            Дата: {{ reg.created_at }}
-                        </div>
-                        {% if reg.display_form_answers %}
-                            <details class="meta" style="margin-top: 8px;">
-                                <summary>Анкета</summary>
-                                <div style="margin-top: 8px;">
-                                    {% for item in reg.display_form_answers %}
-                                        {{ item.label }}: {{ item.value|default:"-" }}<br>
-                                    {% endfor %}
-                                </div>
-                            </details>
-                        {% endif %}
-                        {% if reg.status == "pending" %}
-                            <div class="actions">
-                                <form class="inline-form" method="post" action="{% url 'approve_registration' reg.id %}">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="next" value="{% url 'admin_dashboard' %}#registrations">
-                                    <button class="button" type="submit">Схвалити</button>
-                                </form>
-                                <form class="inline-form" method="post" action="{% url 'reject_registration' reg.id %}">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="next" value="{% url 'admin_dashboard' %}#registrations">
-                                    <button class="button-danger" type="submit">Відхилити</button>
-                                </form>
-                            </div>
-                        {% endif %}
-                    </div>
-                {% empty %}
-                    <div class="empty">Реєстрацій поки немає.</div>
-                {% endfor %}
-            </div>
-        </section>
-
-        <section id="submissions" class="section">
-            <div class="section-head">
-                <h2 class="section-title">Роботи</h2>
-                <div class="section-note">Надіслані матеріали команд.</div>
-            </div>
-            <div class="card">
-                {% for submission in submissions %}
-                    <div class="item">
-                        <div class="name">{{ submission.team.name }} - {{ submission.task.title }}</div>
-                        <div class="meta links">
-                            GitHub:
-                            {% if submission.github_link %}
-                                <a href="{{ submission.github_link }}">{{ submission.github_link }}</a>
-                            {% else %}
-                                -
-                            {% endif %}
-                            <br>
-                            Відео:
-                            {% if submission.video_link %}
-                                <a href="{{ submission.video_link }}">{{ submission.video_link }}</a>
-                            {% else %}
-                                -
-                            {% endif %}
-                            <br>
-                            Демо:
-                            {% if submission.live_demo %}
-                                <a href="{{ submission.live_demo }}">{{ submission.live_demo }}</a>
-                            {% else %}
-                                -
-                            {% endif %}
-                            <br>
-                            Фінальна версія: {{ submission.is_final|yesno:"так,ні" }}<br>
-                            Подано: {{ submission.submitted_at }}
-                        </div>
-                    </div>
-                {% empty %}
-                    <div class="empty">Робіт поки немає.</div>
                 {% endfor %}
             </div>
         </section>
     </div>
-</body>
-</html>
+
+    <section class="section" id="registrations">
+        <h2 class="section-title">Заявки та Роботи</h2>
+        <div class="dashboard-grid spacer-top">
+            <div class="card">
+                <h3>Заявки на участь</h3>
+                <div class="list">
+                    {% for reg in registrations %}
+                        <div class="item-card">
+                            <div class="section-head">
+                                <h3>{{ reg.team.name }} → {{ reg.tournament.name }}</h3>
+                                <span class="status-badge status-{{ reg.status }}">{{ reg.get_status_display }}</span>
+                            </div>
+                            {% if reg.status == "pending" %}
+                                <div class="toolbar spacer-top">
+                                    <form method="post" action="{% url 'approve_registration' reg.id %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="next" value="{% url 'admin_dashboard' %}#registrations">
+                                        <button class="button" type="submit">Схвалити</button>
+                                    </form>
+                                    <form method="post" action="{% url 'reject_registration' reg.id %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="next" value="{% url 'admin_dashboard' %}#registrations">
+                                        <button class="button-danger" type="submit">Відхилити</button>
+                                    </form>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% empty %}
+                        <p class="empty">Заявок немає.</p>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="card">
+                <h3>Надіслані роботи</h3>
+                <div class="list">
+                    {% for submission in submissions %}
+                        <div class="item-card">
+                            <h3>{{ submission.team.name }}</h3>
+                            <div class="section-note">{{ submission.task.title }}</div>
+                            <div class="toolbar spacer-top">
+                                {% if submission.github_link %}<a href="{{ submission.github_link }}" class="btn-text">GitHub</a>{% endif %}
+                            </div>
+                        </div>
+                    {% empty %}
+                        <p class="empty">Робіт немає.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

@@ -1,87 +1,26 @@
-<!DOCTYPE html>
-<html lang="uk">
-<head>
-<meta charset="UTF-8">
-<title data-i18n="team.delete.confirm_title">Підтвердження видалення</title>
-<script>
-    (function () {
-        try {
-            const savedTheme = localStorage.getItem("tp-theme") || "light";
-            const savedLanguage = localStorage.getItem("tp-language") || "uk";
-            document.documentElement.dataset.theme = savedTheme;
-            document.documentElement.lang = savedLanguage;
-        } catch (error) {
-            document.documentElement.dataset.theme = "light";
-            document.documentElement.lang = "uk";
-        }
-    }());
-</script>
-<style>
-body{
-margin:0;
-font-family:Arial,sans-serif;
-background:#f4f6fb;
-padding:30px 20px;
-}
-
-.wrap{
-max-width:640px;
-margin:0 auto;
-}
-
-.card{
-background:white;
-padding:24px;
-border-radius:16px;
-box-shadow:0 10px 24px rgba(0,0,0,.06);
-}
-
-.actions{
-display:flex;
-gap:12px;
-margin-top:20px;
-align-items:center;
-}
-
-.btn{
-display:inline-block;
-padding:10px 16px;
-border-radius:10px;
-text-decoration:none;
-border:none;
-cursor:pointer;
-}
-
-.btn-red{
-background:#dc2626;
-color:white;
-}
-
-.btn-light{
-background:#e5e7eb;
-color:#111827;
-}
-</style>
-</head>
-<body>
-<div class="wrap">
-<div class="card">
-<h1><span data-i18n="team.delete.confirm_title">Видалити команду</span> "{{ team.name }}"?</h1>
-<p data-i18n="team.delete.confirm_text">Ця дія видалить команду разом з учасниками, реєстраціями та надісланими роботами.</p>
-<div class="actions">
-<form method="post">
-{% csrf_token %}
-<button class="btn btn-red" type="submit" data-i18n="team.delete.confirm_btn">Видалити</button>
-</form>
-<a class="btn btn-light" href="{% url 'team_detail' team.id %}" data-i18n="common.cancel">Скасувати</a>
-</div>
-</div>
-</div>
+{% extends "base.html" %}
 {% load static %}
-<script src="{% static 'js/ui_preferences.js' %}"></script>
-</body>
-</html>
 
+{% block title %}Підтвердження видалення команди{% endblock %}
 
+{% block content %}
+    <div class="hero">
+        <div class="hero-content">
+            <div class="hero-kicker" data-i18n="team.delete.confirm_title">Видалення команди</div>
+            <h1 data-i18n-message><span data-i18n="team.delete.confirm_title">Видалити команду</span> "{{ team.name }}"?</h1>
+            <p data-i18n="team.delete.confirm_text">Ця дія видалить команду разом з учасниками, реєстраціями та надісланими роботами. Це неможливо буде скасувати.</p>
+        </div>
+    </div>
 
-
+    <section class="section spacer-top">
+        <div class="item-card">
+            <div class="toolbar">
+                <form method="post">
+                    {% csrf_token %}
+                    <button class="button" style="background: var(--error);" type="submit" data-i18n="team.delete.confirm_btn">Видалити назавжди</button>
+                </form>
+                <a class="button-secondary" href="{% url 'team_detail' team.id %}" data-i18n="common.cancel">Скасувати</a>
+            </div>
+        </div>
+    </section>
+{% endblock %}

@@ -1,299 +1,161 @@
-<!DOCTYPE html>
-<html lang="uk">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% if mode == 'edit' %}Редагувати завдання{% else %}Створити завдання{% endif %}</title>
-    <style>
-        * { box-sizing: border-box; }
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f4f6fb;
-            min-height: 100vh;
-            padding: 30px 20px;
-            color: #172033;
-        }
-        .wrap { max-width: 980px; margin: 0 auto; }
-        .card {
-            background: white;
-            padding: 28px;
-            border-radius: 18px;
-            box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
-        }
-        h1 { margin: 0 0 10px; font-size: 32px; }
-        .subtitle, .hint, .field-help { color: #516074; line-height: 1.7; }
-        .subtitle { margin-bottom: 12px; }
-        .hint {
-            margin-bottom: 22px;
-            padding: 14px 16px;
-            border-radius: 14px;
-            background: #eef4ff;
-            border: 1px solid #d8e5ff;
-        }
-        .section {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #e5edf8;
-        }
-        .section h2 {
-            margin: 0 0 10px;
-            font-size: 22px;
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-        }
-        .span2 { grid-column: 1 / -1; }
-        label { display: block; margin-bottom: 7px; font-weight: 700; }
-        input, textarea, select, .form-input {
-            width: 100%;
-            padding: 12px 14px;
-            border: 1px solid #d0d7e2;
-            border-radius: 12px;
-            font-size: 15px;
-            background: #fff;
-        }
-        textarea { min-height: 120px; resize: vertical; }
-        .field { margin-bottom: 4px; }
-        .field-errors { color: #b00020; font-size: 14px; margin-top: 6px; }
-        .error-box {
-            background: #fee2e2;
-            color: #991b1b;
-            padding: 12px 14px;
-            border-radius: 12px;
-            margin-bottom: 18px;
-        }
-        .checkbox-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin: 18px 0 22px;
-        }
-        .checkbox-row input { width: auto; margin: 0; }
-        .actions, .row-actions {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        .actions { margin-top: 10px; }
-        .btn, .back, .ghost-btn, .danger-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 44px;
-            padding: 0 18px;
-            border-radius: 12px;
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 15px;
-            cursor: pointer;
-        }
-        .btn { border: none; background: #2563eb; color: #fff; }
-        .back { background: #eef4ff; color: #2563eb; }
-        .ghost-btn {
-            border: 1px solid #c9d8ef;
-            background: #fff;
-            color: #2563eb;
-        }
-        .danger-btn {
-            border: 1px solid #fecaca;
-            background: #fff5f5;
-            color: #b91c1c;
-            min-height: 40px;
-        }
-        .format-builder {
-            margin-top: 16px;
-            border: 1px solid #dbe5f3;
-            border-radius: 16px;
-            padding: 18px;
-            background: #f8fbff;
-        }
-        .builder-header, .builder-row {
-            display: grid;
-            grid-template-columns: minmax(0, 1.6fr) minmax(180px, 0.8fr) auto;
-            gap: 12px;
-            align-items: center;
-        }
-        .builder-header {
-            font-size: 14px;
-            font-weight: 700;
-            color: #516074;
-            margin-bottom: 10px;
-            padding: 0 2px;
-        }
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{% if mode == 'edit' %}Редагувати завдання{% else %}Створити завдання{% endif %}{% endblock %}
+
+{% block extra_head %}
+<style>
+    .format-builder {
+        margin-top: 16px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 20px;
+        background: var(--bg-soft);
+    }
+    .builder-header, .builder-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1.6fr) minmax(180px, 0.8fr) auto;
+        gap: 12px;
+        align-items: center;
+    }
+    .builder-header {
+        font-size: 12px;
+        font-weight: 800;
+        color: var(--muted);
+        text-transform: uppercase;
+        margin-bottom: 12px;
+    }
+    .builder-row { margin-bottom: 12px; }
+    .builder-empty {
+        padding: 20px;
+        border-radius: var(--radius-md);
+        background: var(--surface);
+        border: 1px dashed var(--border);
+        color: var(--muted);
+        text-align: center;
+    }
+    .hidden-config { display: none; }
+    @media (max-width: 760px) {
+        .builder-header { display: none; }
         .builder-row {
-            margin-bottom: 10px;
+            grid-template-columns: 1fr;
+            padding: 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
         }
-        .builder-row input,
-        .builder-row select {
-            margin: 0;
-        }
-        .builder-empty {
-            display: none;
-            padding: 14px;
-            border-radius: 12px;
-            background: #fff;
-            border: 1px dashed #c9d8ef;
-            color: #516074;
-        }
-        .hidden-config {
-            display: none;
-        }
-        @media (max-width: 760px) {
-            .grid { grid-template-columns: 1fr; }
-            .builder-header {
-                display: none;
-            }
-            .builder-row {
-                grid-template-columns: 1fr;
-                gap: 10px;
-                padding: 14px;
-                border-radius: 14px;
-                background: #fff;
-                border: 1px solid #dbe5f3;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="wrap">
-        <div style="margin-bottom: 14px;">
-            <a class="back" href="{% url 'home' %}">На головну</a>
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <div class="hero">
+        <div class="hero-content">
+            <div class="hero-kicker" data-i18n="admin.tasks.create_title">Управління завданнями</div>
+            <h1 data-i18n="admin.tasks.headline">{% if mode == 'edit' %}Редагування{% else %}Створення{% endif %} завдання</h1>
+            <p data-i18n="admin.tasks.subtitle">Визначте вимоги, дедлайни та формат відповіді для учасників.</p>
         </div>
-        <div class="card">
-            <h1>{% if mode == 'edit' %}Редагувати завдання{% else %}Створити завдання{% endif %}</h1>
+    </div>
 
-            <div class="subtitle">
-                {% if tournament %}
-                    Турнір: <strong>{{ tournament.name }}</strong>
-                {% else %}
-                    Завдання можна прив'язати до будь-якого турніру.
-                {% endif %}
-            </div>
-
-            <div class="hint">
-                Для опублікованого завдання потрібно вказати окремі дату старту та дедлайн. Нижче ви також можете
-                обрати готовий шаблон формату відповіді й відредагувати його під себе.
-            </div>
-
+    <section class="section spacer-top">
+        <div class="item-card">
             {% if form.non_field_errors %}
-                <div class="error-box">{{ form.non_field_errors }}</div>
+                <div class="message-box error spacer-bottom">{{ form.non_field_errors }}</div>
             {% endif %}
 
             <form method="post">
                 {% csrf_token %}
+                <div class="hidden-config">{{ form.submission_fields_definition }}</div>
 
-                <div class="hidden-config">
-                    {{ form.submission_fields_definition }}
-                </div>
-
-                {% if form.tournament.is_hidden %}
-                    {{ form.tournament }}
-                {% else %}
-                    <div class="field span2">
-                        <label for="{{ form.tournament.id_for_label }}">Турнір</label>
+                <div class="form-grid">
+                    {% if not form.tournament.is_hidden %}
+                        <div class="field-group span-2">
+                            <label for="{{ form.tournament.id_for_label }}" data-i18n="admin.tasks.label_tournament">Турнір</label>
+                            {{ form.tournament }}
+                            {% if form.tournament.errors %}<div class="field-errors">{{ form.tournament.errors }}</div>{% endif %}
+                        </div>
+                    {% else %}
                         {{ form.tournament }}
-                        {% if form.tournament.errors %}<div class="field-errors">{{ form.tournament.errors }}</div>{% endif %}
-                    </div>
-                {% endif %}
+                    {% endif %}
 
-                <div class="grid">
-                    <div class="field span2">
-                        <label for="{{ form.title.id_for_label }}">Назва завдання</label>
+                    <div class="field-group span-2">
+                        <label for="{{ form.title.id_for_label }}" data-i18n="admin.tasks.label_title">Назва завдання</label>
                         {{ form.title }}
                         {% if form.title.errors %}<div class="field-errors">{{ form.title.errors }}</div>{% endif %}
                     </div>
 
-                    <div class="field">
-                        <label for="{{ form.start_at.id_for_label }}">Початок завдання</label>
+                    <div class="field-group">
+                        <label for="{{ form.start_at.id_for_label }}" data-i18n="admin.tasks.label_start">Початок завдання</label>
                         {{ form.start_at }}
                         {% if form.start_at.errors %}<div class="field-errors">{{ form.start_at.errors }}</div>{% endif %}
                     </div>
 
-                    <div class="field">
-                        <label for="{{ form.deadline.id_for_label }}">Дедлайн здачі</label>
+                    <div class="field-group">
+                        <label for="{{ form.deadline.id_for_label }}" data-i18n="admin.tasks.label_deadline">Дедлайн здачі</label>
                         {{ form.deadline }}
                         {% if form.deadline.errors %}<div class="field-errors">{{ form.deadline.errors }}</div>{% endif %}
                     </div>
 
-                    <div class="field span2">
-                        <label for="{{ form.description.id_for_label }}">Опис завдання</label>
+                    <div class="field-group span-2">
+                        <label for="{{ form.description.id_for_label }}" data-i18n="admin.tasks.label_description">Опис завдання</label>
                         {{ form.description }}
                         {% if form.description.errors %}<div class="field-errors">{{ form.description.errors }}</div>{% endif %}
                     </div>
 
-                    <div class="field span2">
-                        <label for="{{ form.requirements.id_for_label }}">Вимоги до виконання</label>
+                    <div class="field-group span-2">
+                        <label for="{{ form.requirements.id_for_label }}" data-i18n="admin.tasks.label_requirements">Вимоги та обов'язкові параметри</label>
                         {{ form.requirements }}
                         {% if form.requirements.errors %}<div class="field-errors">{{ form.requirements.errors }}</div>{% endif %}
                     </div>
-
-                    <div class="field span2">
-                        <label for="{{ form.must_have.id_for_label }}">Обов'язково має бути</label>
-                        {{ form.must_have }}
-                        {% if form.must_have.errors %}<div class="field-errors">{{ form.must_have.errors }}</div>{% endif %}
-                    </div>
                 </div>
 
-                <div class="section">
-                    <h2>Формат відповіді</h2>
-                    <div class="field-help">
-                        Оберіть заготовку або складіть свій формат. У кожному рядку є лише назва поля й тип.
-                        Має залишитися хоча б одне поле.
-                    </div>
-
-                    <div class="grid" style="margin-top: 14px;">
-                        <div class="field span2">
-                            <label for="{{ form.submission_preset.id_for_label }}">Шаблон формату відповіді</label>
+                <div class="section spacer-top">
+                    <h2 class="section-title" data-i18n="admin.tasks.format_title">Формат відповіді</h2>
+                    <p class="section-note" data-i18n="admin.tasks.format_note">Оберіть шаблон або складіть свій список полів, які учасники мають заповнити при здачі роботи.</p>
+                    
+                    <div class="form-grid spacer-top">
+                        <div class="field-group span-2">
+                            <label for="{{ form.submission_preset.id_for_label }}" data-i18n="admin.tasks.label_preset">Шаблон формату</label>
                             {{ form.submission_preset }}
-                            {% if form.submission_preset.errors %}<div class="field-errors">{{ form.submission_preset.errors }}</div>{% endif %}
                         </div>
                     </div>
 
                     <div class="format-builder">
                         <div class="builder-header">
-                            <div>Назва поля</div>
-                            <div>Тип</div>
+                            <div data-i18n="admin.tasks.col_name">Назва поля</div>
+                            <div data-i18n="admin.tasks.col_type">Тип</div>
                             <div></div>
                         </div>
                         <div id="submission-fields-rows"></div>
-                        <div id="submission-fields-empty" class="builder-empty">
-                            Поки що немає полів. Додайте хоча б одне поле формату відповіді.
+                        <div id="submission-fields-empty" class="builder-empty" data-i18n="admin.tasks.empty_fields">
+                            Поки що немає полів. Додайте хоча б одне.
                         </div>
-                        <div class="row-actions" style="margin-top: 14px;">
-                            <button type="button" class="ghost-btn" id="add-submission-field">Додати поле</button>
+                        <div class="toolbar spacer-top">
+                            <button type="button" class="button-secondary" id="add-submission-field" data-i18n="admin.tasks.btn_add_field">+ Додати поле</button>
                         </div>
                     </div>
-
-                    {% if form.submission_fields_definition.errors %}
-                        <div class="field-errors">{{ form.submission_fields_definition.errors }}</div>
-                    {% endif %}
                 </div>
 
-                <div class="section">
-                    <h2>Розбір після завершення</h2>
-                    <div class="field span2">
-                        <label for="{{ form.official_solution.id_for_label }}">Офіційна відповідь / розбір</label>
+                <div class="section spacer-top">
+                    <h2 class="section-title" data-i18n="admin.tasks.official_title">Розбір після завершення</h2>
+                    <div class="field-group span-2 spacer-top">
+                        <label for="{{ form.official_solution.id_for_label }}" data-i18n="admin.tasks.label_official">Офіційна відповідь / розбір</label>
                         {{ form.official_solution }}
-                        {% if form.official_solution.errors %}<div class="field-errors">{{ form.official_solution.errors }}</div>{% endif %}
                     </div>
                 </div>
 
-                <div class="checkbox-row">
+                <div style="display: flex; align-items: center; gap: 10px; margin: 24px 0;">
                     {{ form.is_draft }}
-                    <label for="{{ form.is_draft.id_for_label }}" style="margin:0;">Зберегти як чернетку</label>
+                    <label for="{{ form.is_draft.id_for_label }}" style="margin:0; font-weight: 700;" data-i18n="admin.tasks.label_draft">Зберегти як чернетку</label>
                 </div>
-                {% if form.is_draft.errors %}<div class="field-errors">{{ form.is_draft.errors }}</div>{% endif %}
 
-                <div class="actions">
-                    <button class="btn" type="submit">{% if mode == 'edit' %}Зберегти зміни{% else %}Створити завдання{% endif %}</button>
-                    <a class="back" href="{{ back_url|default:'/dashboard/tournaments/active/' }}">Назад</a>
+                <div class="toolbar">
+                    <button class="button" type="submit">{% if mode == 'edit' %}Зберегти зміни{% else %}Створити завдання{% endif %}</button>
+                    <a class="button-secondary" href="{% if tournament %}{% url 'tournament_tasks' tournament.id %}{% else %}/{% endif %}" data-i18n="admin.tasks.btn_cancel">Скасувати</a>
                 </div>
             </form>
         </div>
-    </div>
+    </section>
 
     {{ task_submission_presets|json_script:"task-submission-presets" }}
     {{ task_submission_field_types|json_script:"task-submission-field-types" }}
@@ -310,20 +172,14 @@
             let lastPresetKey = presetSelect ? presetSelect.value : "generic";
 
             function escapeHtml(value) {
-                return (value || "")
-                    .replace(/&/g, "&amp;")
-                    .replace(/</g, "&lt;")
-                    .replace(/>/g, "&gt;")
-                    .replace(/"/g, "&quot;");
+                return (value || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
             }
 
             function serializeRows() {
-                const serialized = rows
-                    .filter(row => (row.label || "").trim() && (row.type || "").trim())
-                    .map(row => {
-                        const required = row.required === false ? "optional" : "required";
-                        return `${row.key}|${(row.label || "").trim()}|${row.type}|${required}`;
-                    });
+                const serialized = rows.filter(row => (row.label || "").trim() && (row.type || "").trim()).map(row => {
+                    const required = row.required === false ? "optional" : "required";
+                    return `${row.key}|${(row.label || "").trim()}|${row.type}|${required}`;
+                });
                 hiddenDefinitionField.value = serialized.join("\n");
             }
 
@@ -343,149 +199,78 @@
                         <div class="builder-row" data-index="${index}">
                             <input type="text" value="${escapeHtml(row.label)}" placeholder="Назва поля" data-role="label">
                             <select data-role="type">${options}</select>
-                            <button type="button" class="danger-btn" data-role="remove">Видалити</button>
+                            <button type="button" class="button" style="background:var(--error); min-height:42px;" data-role="remove">×</button>
                         </div>
                     `;
                 }).join("");
-
                 updateEmptyState();
                 serializeRows();
             }
 
             function addRow(row) {
-                rows.push({
-                    key: row.key,
-                    label: row.label || "",
-                    type: row.type || "text",
-                    required: row.required !== false,
-                    builtin: !!row.builtin,
-                });
+                rows.push({ key: row.key, label: row.label || "", type: row.type || "text", required: row.required !== false, builtin: !!row.builtin });
                 renderRows();
             }
 
             function buildNewCustomRow() {
                 const nextIndex = rows.filter(row => !row.builtin).length + 1;
-                return {
-                    key: `custom_field_${nextIndex}`,
-                    label: "",
-                    type: "text",
-                    required: true,
-                    builtin: false,
-                };
+                return { key: `custom_field_${nextIndex}`, label: "", type: "text", required: true, builtin: false };
             }
 
             function parseDefinition(rawValue) {
-                return (rawValue || "")
-                    .split("\n")
-                    .map(line => line.trim())
-                    .filter(Boolean)
-                    .map((line, index) => {
-                        const parts = line.split("|");
-                        const key = (parts[0] || "").trim() || `custom_field_${index + 1}`;
-                        const label = (parts[1] || "").trim();
-                        const type = (parts[2] || "text").trim();
-                        const required = ((parts[3] || "required").trim() !== "optional");
-                        const presetBuiltin = Object.values(presets)
-                            .flatMap(preset => preset.fields || [])
-                            .find(item => item.key === key);
-                        return {
-                            key: key,
-                            label: label,
-                            type: type,
-                            required: required,
-                            builtin: !!(presetBuiltin && presetBuiltin.builtin),
-                        };
-                    });
+                return (rawValue || "").split("\n").map(line => line.trim()).filter(Boolean).map((line, index) => {
+                    const parts = line.split("|");
+                    const key = (parts[0] || "").trim() || `custom_field_${index + 1}`;
+                    const label = (parts[1] || "").trim();
+                    const type = (parts[2] || "text").trim();
+                    const required = ((parts[3] || "required").trim() !== "optional");
+                    const presetBuiltin = Object.values(presets).flatMap(preset => preset.fields || []).find(item => item.key === key);
+                    return { key: key, label: label, type: type, required: required, builtin: !!(presetBuiltin && presetBuiltin.builtin) };
+                });
             }
 
             function loadPreset(presetKey, forceReplace) {
                 const preset = presets[presetKey];
-                if (!preset) {
-                    return;
-                }
-                if (!forceReplace && rows.length) {
-                    return;
-                }
-                rows = (preset.fields || []).map(item => ({
-                    key: item.key,
-                    label: item.label,
-                    type: item.type,
-                    required: item.required !== false,
-                    builtin: !!item.builtin,
-                }));
+                if (!preset || (!forceReplace && rows.length)) return;
+                rows = (preset.fields || []).map(item => ({ key: item.key, label: item.label, type: item.type, required: item.required !== false, builtin: !!item.builtin }));
                 lastPresetKey = presetKey;
                 renderRows();
             }
 
             rowsContainer.addEventListener("input", function (event) {
                 const rowElement = event.target.closest(".builder-row");
-                if (!rowElement) {
-                    return;
-                }
+                if (!rowElement) return;
                 const index = Number(rowElement.dataset.index);
-                if (Number.isNaN(index) || !rows[index]) {
-                    return;
-                }
-                if (event.target.dataset.role === "label") {
-                    rows[index].label = event.target.value;
-                }
+                if (event.target.dataset.role === "label") rows[index].label = event.target.value;
                 serializeRows();
             });
 
             rowsContainer.addEventListener("change", function (event) {
                 const rowElement = event.target.closest(".builder-row");
-                if (!rowElement) {
-                    return;
-                }
+                if (!rowElement) return;
                 const index = Number(rowElement.dataset.index);
-                if (Number.isNaN(index) || !rows[index]) {
-                    return;
-                }
-                if (event.target.dataset.role === "type" && !rows[index].builtin) {
-                    rows[index].type = event.target.value;
-                } else if (event.target.dataset.role === "type") {
-                    event.target.value = rows[index].type;
-                }
+                if (event.target.dataset.role === "type" && !rows[index].builtin) rows[index].type = event.target.value;
+                else if (event.target.dataset.role === "type") event.target.value = rows[index].type;
                 serializeRows();
             });
 
             rowsContainer.addEventListener("click", function (event) {
                 const button = event.target.closest("[data-role='remove']");
-                if (!button) {
-                    return;
-                }
-                const rowElement = button.closest(".builder-row");
-                const index = Number(rowElement.dataset.index);
-                if (Number.isNaN(index)) {
-                    return;
-                }
+                if (!button) return;
+                const index = Number(button.closest(".builder-row").dataset.index);
                 rows.splice(index, 1);
                 renderRows();
             });
 
-            addButton.addEventListener("click", function () {
-                addRow(buildNewCustomRow());
+            addButton.addEventListener("click", () => addRow(buildNewCustomRow()));
+            if (presetSelect) presetSelect.addEventListener("change", () => {
+                if (confirm("Замінити поточний формат на вибраний шаблон?")) loadPreset(presetSelect.value, true);
+                else presetSelect.value = lastPresetKey;
             });
 
-            if (presetSelect) {
-                presetSelect.addEventListener("change", function () {
-                    const shouldReplace = !rows.length || confirm("Замінити поточний формат відповіді на вибраний шаблон?");
-                    if (!shouldReplace) {
-                        presetSelect.value = lastPresetKey;
-                        return;
-                    }
-                    loadPreset(presetSelect.value, true);
-                });
-            }
-
             const initialRows = parseDefinition(hiddenDefinitionField.value);
-            if (initialRows.length) {
-                rows = initialRows;
-                renderRows();
-            } else {
-                loadPreset(lastPresetKey || "generic", true);
-            }
+            if (initialRows.length) { rows = initialRows; renderRows(); }
+            else loadPreset(lastPresetKey || "generic", true);
         }());
     </script>
-</body>
-</html>
+{% endblock %}

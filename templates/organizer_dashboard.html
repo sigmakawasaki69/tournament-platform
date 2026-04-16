@@ -1,209 +1,79 @@
-<!DOCTYPE html>
-<html lang="uk">
-<head>
-    <meta charset="UTF-8">
-    <title data-i18n="organizer.title">Кабінет організатора</title>
-    <style>
-        :root {
-            --bg: #eef4ff;
-            --bg-soft: #f8fafc;
-            --panel: rgba(255, 255, 255, 0.94);
-            --border: #d8e2ef;
-            --text: #172033;
-            --muted: #607287;
-            --primary: #2457d8;
-            --primary-dark: #173b77;
-            --danger: #dc2626;
-            --shadow: 0 18px 40px rgba(18, 34, 68, 0.10);
-        }
-        * { box-sizing: border-box; }
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            color: var(--text);
-            background:
-                radial-gradient(circle at left top, rgba(36, 87, 216, 0.10), transparent 30%),
-                radial-gradient(circle at right top, rgba(15, 118, 110, 0.10), transparent 26%),
-                linear-gradient(180deg, var(--bg) 0%, var(--bg-soft) 42%, #ffffff 100%);
-        }
-        .wrap { max-width: 1220px; margin: 0 auto; padding: 26px 20px 42px; }
-        .topbar, .hero, .section-head, .actions { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
-        .topbar { padding: 16px 18px; border-radius: 22px; background: rgba(255,255,255,0.82); border: 1px solid var(--border); box-shadow: var(--shadow); backdrop-filter: blur(14px); }
-        .title { font-size: 32px; font-weight: 800; letter-spacing: -0.03em; }
-        .meta { color: var(--muted); line-height: 1.65; }
-        .button, .button-secondary, .button-danger {
-            display: inline-flex; align-items: center; justify-content: center; min-height: 42px; padding: 11px 16px; border-radius: 12px;
-            border: 1px solid transparent; text-decoration: none; font-weight: 700; cursor: pointer;
-        }
-        .nav-badge { position: relative; }
-        .notify-dot {
-            position: absolute; top: 4px; right: 4px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px;
-            background: #dc2626; color: white; font-size: 11px; display: inline-flex; align-items: center; justify-content: center; font-weight: 800;
-        }
-        .button { background: var(--primary); color: white; }
-        .button-secondary { background: white; color: var(--primary); border-color: #cbd5e1; }
-        .button-danger { background: var(--danger); color: white; }
-        .hero { margin: 24px 0 28px; gap: 18px; align-items: stretch; }
-        .hero-main, .hero-side, .card { background: var(--panel); border: 1px solid var(--border); border-radius: 26px; box-shadow: var(--shadow); backdrop-filter: blur(10px); }
-        .hero-main { flex: 1.2; padding: 28px; color: white; background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 62%, #1d4ed8 100%); }
-        .hero-kicker { display: inline-flex; padding: 7px 11px; border-radius: 999px; background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.16); font-size: 12px; font-weight: 700; text-transform: uppercase; margin-bottom: 14px; }
-        .hero-main h1 { margin: 0 0 10px; font-size: 40px; line-height: 1.08; letter-spacing: -0.03em; }
-        .hero-main p { margin: 0; max-width: 650px; line-height: 1.75; color: rgba(255,255,255,0.88); }
-        .hero-side { flex: 0.8; padding: 24px; display: grid; gap: 12px; }
-        .stat { border: 1px solid #dce6f2; border-radius: 18px; padding: 16px; background: white; }
-        .stat strong { display: block; font-size: 28px; margin-bottom: 6px; }
-        .section { margin-top: 32px; }
-        .section-head { margin-bottom: 16px; }
-        .section-title { margin: 0; font-size: 30px; letter-spacing: -0.03em; }
-        .section-note { color: var(--muted); }
-        .card { padding: 22px; }
-        .stack { display: grid; gap: 12px; }
-        .item { border: 1px solid #e2e8f0; border-radius: 18px; padding: 16px; background: linear-gradient(180deg, #fbfdff 0%, #f7fbff 100%); display: flex; gap: 16px; align-items: flex-start; }
-        .item-banner { flex: 0 0 140px; width: 140px; height: 90px; border-radius: 12px; object-fit: cover; background: #f1f5f9; border: 1px solid #e2e8f0; }
-        .item-content { flex: 1; }
-        .item-title { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 8px; }
-        .status-badge { display: inline-flex; align-items: center; padding: 5px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
-        .status-approved { background: #dcfce7; color: #166534; }
-        .status-pending { background: #fef3c7; color: #92400e; }
-        .status-rejected { background: #fee2e2; color: #991b1b; }
-        .status-running { background: #dcfce7; color: #166534; }
-        .status-registration { background: #dbeafe; color: #1d4ed8; }
-        .status-finished { background: #fee2e2; color: #991b1b; }
-        .status-scheduled { background: #ede9fe; color: #6d28d9; }
-        .status-draft { background: #e5e7eb; color: #374151; }
-        .actions-inline { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
-        .actions-inline form { margin: 0; }
-        @media (max-width: 980px) { .hero { flex-direction: column; } .title { font-size: 28px; } .hero-main h1 { font-size: 34px; } }
-    </style>
-</head>
-<body>
-    <div class="wrap">
-        <div class="topbar">
-            <div>
-                <div class="title" data-i18n="organizer.title">Кабінет організатора</div>
-                <div class="meta"><span data-i18n="organizer.welcome">Вітаю</span>, {{ request.user.username }}</div>
-            </div>
-            <div class="actions">
-                <a class="button-secondary" href="{% url 'home' %}" data-i18n="nav.home">Головна</a>
-                <a class="button-secondary nav-badge" href="{% url 'messages' %}" data-i18n="nav.messages">Повідомлення{% if has_unread_announcements %}<span class="notify-dot">{{ unread_announcements_count }}</span>{% endif %}</a>
-                <a class="button-secondary nav-badge" href="{% url 'certificates' %}" data-i18n="nav.certificates">Сертифікати{% if has_unread_certificates %}<span class="notify-dot">{{ unread_certificates_count }}</span>{% endif %}</a>
-                <a class="button" href="{% url 'create_tournament' %}" data-i18n="nav.create_tournament">Створити турнір</a>
-                <a class="button-danger" href="{% url 'logout' %}" data-i18n="nav.logout">Вийти</a>
-            </div>
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Кабінет організатора{% endblock %}
+
+{% block content %}
+    <div class="hero">
+        <div class="hero-content">
+            <div class="hero-kicker" data-i18n="organizer.hero.kicker">Робочий кабінет</div>
+            <h1 data-i18n="organizer.hero.title">Організатори, вітаємо!</h1>
+            <p data-i18n="organizer.hero.text">Тут ви можете створювати та редагувати свої турніри, перевіряти заявки команд і керувати процесом оцінювання.</p>
         </div>
-
-        <div class="hero">
-            <div class="hero-main">
-                <div class="hero-kicker" data-i18n="organizer.hero.kicker">Робочий кабінет</div>
-                <h1 data-i18n="organizer.hero.title">Керуйте турнірами, заявками, завданнями та дедлайнами</h1>
-                <p data-i18n="organizer.hero.text">Тут можна створювати та редагувати свої турніри, перевіряти заявки команд і швидко переходити до завдань та експорту результатів.</p>
-            </div>
-            <div class="hero-side">
-                <div class="stat"><strong>{{ tournaments|length }}</strong><span data-i18n="organizer.stat.my_tournaments">Мої турніри</span></div>
-                <div class="stat"><strong>{{ registrations|length }}</strong><span data-i18n="organizer.stat.total_registrations">Усього заявок</span></div>
-            </div>
+        <div class="hero-side">
+            <div class="hero-stat"><strong>{{ tournaments|length }}</strong><span data-i18n="organizer.stat.my_tournaments">Мої турніри</span></div>
+            <div class="hero-stat"><strong>{{ registrations|length }}</strong><span data-i18n="organizer.stat.total_registrations">Усього заявок</span></div>
         </div>
-
-        <section class="section">
-            <div class="section-head">
-                <div>
-                    <h2 class="section-title" data-i18n="organizer.section.tournaments.title">Мої турніри</h2>
-                    <div class="section-note" data-i18n="organizer.section.tournaments.note">Усі ваші активні, майбутні та завершені турніри в одному списку.</div>
-                </div>
-            </div>
-            <div class="card">
-                <div class="stack">
-                    {% for tournament in tournaments %}
-                        <div class="item">
-                            <img src="{% if tournament.banner_image %}{{ tournament.banner_image.url }}{% else %}https://placehold.co/600x400?text=No+Banner{% endif %}" class="item-banner" alt="{{ tournament.name }}">
-                            <div class="item-content">
-                                <div class="item-title">
-                                <strong>{{ tournament.name }}</strong>
-                                <span class="status-badge status-{{ tournament.lifecycle_status }}" data-i18n-message>{{ tournament.lifecycle_status_label }}</span>
-                            </div>
-                            <div class="meta">
-                                <span data-i18n="organizer.label.registration">Реєстрація</span>: {{ tournament.registration_start|default:"-" }} - {{ tournament.registration_end|default:"-" }}<br>
-                                <span data-i18n="organizer.label.tournament">Турнір</span>: {{ tournament.start_date|default:"-" }} - {{ tournament.end_date|default:"-" }}<br>
-                                <span data-i18n="organizer.tournament.evaluation_status">Статус оцінювання</span>: <span data-i18n-message>{{ tournament.evaluation_status_label }}</span><br>
-                                <span data-i18n="organizer.tournament.jury">Журі</span>:
-                                {% for jury in tournament.jury_users.all %}
-                                    {{ jury.username }}{% if not forloop.last %}, {% endif %}
-                                {% empty %}
-                                    <span data-i18n="organizer.tournament.jury_none">не призначено</span>
-                                {% endfor %}
-                            </div>
-                            <div class="actions-inline">
-                                <a class="button-secondary" href="{% url 'edit_tournament' tournament.id %}" data-i18n="organizer.action.edit">Редагувати</a>
-                                <a class="button" href="{% url 'create_tournament_task' tournament.id %}" data-i18n="organizer.action.add_task">Додати завдання</a>
-                                {% if tournament.evaluation_results_ready %}
-                                    <a class="button-secondary" href="{% url 'export_tournament_results_csv' tournament.id %}" data-i18n="organizer.action.export_csv">Експорт результатів CSV</a>
-                                {% endif %}
-                                {% if tournament.lifecycle_status != 'running' and tournament.lifecycle_status != 'finished' %}
-                                    <form method="post" action="{% url 'start_tournament_now' tournament.id %}">
-                                        {% csrf_token %}
-                                        <button class="button-secondary" type="submit" data-i18n="organizer.action.start_now">Розпочати зараз</button>
-                                    </form>
-                                {% endif %}
-                                {% if tournament.lifecycle_status != 'finished' %}
-                                    <form method="post" action="{% url 'finish_tournament_now' tournament.id %}">
-                                        {% csrf_token %}
-                                        <button class="button-danger" type="submit" data-i18n="organizer.action.finish_now">Завершити зараз</button>
-                                    </form>
-                                {% endif %}
-                                {% if tournament.is_finished and not tournament.evaluation_results_ready %}
-                                    <form method="post" action="{% url 'finish_evaluation_now' tournament.id %}">
-                                        {% csrf_token %}
-                                        <button class="button-secondary" type="submit" data-i18n="organizer.action.finish_evaluation">Завершити оцінювання</button>
-                                    </form>
-                                {% endif %}
-                            </div>
-                        </div>
-                    {% empty %}
-                        <div class="meta" data-i18n="organizer.tournaments.empty">У вас ще немає турнірів.</div>
-                    {% endfor %}
-                </div>
-            </div>
-        </section>
-
-        <section class="section">
-            <div class="section-head">
-                <div>
-                    <h2 class="section-title" data-i18n="organizer.section.registrations.title">Заявки на мої турніри</h2>
-                    <div class="section-note" data-i18n="organizer.section.registrations.note">Тут видно команди, їхні контактні дані та поточний статус заявки.</div>
-                </div>
-            </div>
-            <div class="card">
-                <div class="stack">
-                    {% for reg in registrations %}
-                        <div class="item">
-                            <div class="item-title">
-                                <strong>{{ reg.team.name }} → {{ reg.tournament.name }}</strong>
-                                <span class="status-badge status-{{ reg.status }}" data-i18n-message>{{ reg.get_status_display }}</span>
-                            </div>
-                            <div class="meta">
-                                <span data-i18n="organizer.label.contact_person">Контактна особа (капітан)</span>: {{ reg.team.captain_name }} * ({{ reg.team.captain_email }})<br>
-                                <span data-i18n="organizer.label.contact">Зв'язок</span>: {% if reg.team.effective_contact_value %}<span data-i18n-message>{{ reg.team.effective_contact_label }}</span> — {{ reg.team.effective_contact_value }}{% else %}-{% endif %}<br>
-                                <span data-i18n="organizer.label.submitted_by">Подав</span>: {{ reg.registered_by.username }}
-                            </div>
-                            {% if reg.status == "pending" %}
-                                <div class="actions-inline">
-                                    <form method="post" action="{% url 'approve_registration' reg.id %}">
-                                        {% csrf_token %}
-                                        <button class="button" type="submit" data-i18n="organizer.action.approve">Схвалити</button>
-                                    </form>
-                                    <form method="post" action="{% url 'reject_registration' reg.id %}">
-                                        {% csrf_token %}
-                                        <button class="button-secondary" type="submit" data-i18n="organizer.action.reject">Відхилити</button>
-                                    </form>
-                                </div>
-                            {% endif %}
-                        </div>
-                    {% empty %}
-                        <div class="meta" data-i18n="organizer.registrations.empty">Заявок поки немає.</div>
-                    {% endfor %}
-                </div>
-            </div>
-        </section>
     </div>
-</body>
-</html>
+
+    <section class="section spacer-top">
+        <div class="section-head">
+            <h2 class="section-title" data-i18n="organizer.section.tournaments.title">Мої турніри</h2>
+            <a class="button" href="{% url 'create_tournament' %}" data-i18n="nav.create_tournament">+ Створити турнір</a>
+        </div>
+        <div class="list spacer-top">
+            {% for tournament in tournaments %}
+                <div class="item-card">
+                    <div class="section-head">
+                        <div style="display:flex; gap:16px; align-items:center;">
+                            <img src="{% if tournament.banner_image %}{{ tournament.banner_image.url }}{% else %}https://placehold.co/100x60?text=No+Banner{% endif %}" style="width:80px; height:50px; object-fit:cover; border-radius:8px;" alt="">
+                            <h3>{{ tournament.name }}</h3>
+                        </div>
+                        <span class="status-badge status-{{ tournament.lifecycle_status }}" data-i18n-message>{{ tournament.lifecycle_status_label }}</span>
+                    </div>
+                    <div class="section-note spacer-top">
+                        <span data-i18n="organizer.label.registration">Реєстрація</span>: {{ tournament.registration_start|default:"-" }} - {{ tournament.registration_end|default:"-" }} | <span data-i18n="organizer.label.tournament">Турнір</span>: {{ tournament.start_date|default:"-" }} - {{ tournament.end_date|default:"-" }}
+                    </div>
+                    <div class="toolbar spacer-top">
+                        <a class="button" href="{% url 'edit_tournament' tournament.id %}" data-i18n="organizer.action.edit">Редагувати</a>
+                        <a class="button-secondary" href="{% url 'create_tournament_task' tournament.id %}" data-i18n="organizer.action.add_task">Додати завдання</a>
+                        {% if tournament.evaluation_results_ready %}
+                            <a class="button-secondary" href="{% url 'export_tournament_results_csv' tournament.id %}" data-i18n="organizer.action.export_csv">Експорт CSV</a>
+                        {% endif %}
+                        {% if tournament.lifecycle_status != 'running' and tournament.lifecycle_status != 'finished' %}
+                            <form method="post" action="{% url 'start_tournament_now' tournament.id %}">{% csrf_token %}<button class="button-secondary" type="submit" data-i18n="organizer.action.start_now">Розпочати зараз</button></form>
+                        {% endif %}
+                        {% if tournament.lifecycle_status != 'finished' %}
+                            <form method="post" action="{% url 'finish_tournament_now' tournament.id %}">{% csrf_token %}<button class="button-danger" type="submit" data-i18n="organizer.action.finish_now">Завершити зараз</button></form>
+                        {% endif %}
+                    </div>
+                </div>
+            {% empty %}
+                <p class="empty" data-i18n="organizer.tournaments.empty">У вас ще немає турнірів.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="section spacer-top">
+        <h2 class="section-title" data-i18n="organizer.section.registrations.title">Заявки на мої турніри</h2>
+        <div class="list spacer-top">
+            {% for reg in registrations %}
+                <div class="item-card">
+                    <div class="section-head">
+                        <h3>{{ reg.team.name }} → {{ reg.tournament.name }}</h3>
+                        <span class="status-badge status-{{ reg.status }}" data-i18n-message>{{ reg.get_status_display }}</span>
+                    </div>
+                    <div class="section-note spacer-top">{{ reg.team.captain_name }} ({{ reg.team.captain_email }})</div>
+                    {% if reg.status == "pending" %}
+                        <div class="toolbar spacer-top">
+                            <form method="post" action="{% url 'approve_registration' reg.id %}">{% csrf_token %}<button class="button" type="submit" data-i18n="organizer.action.approve">Схвалити</button></form>
+                            <form method="post" action="{% url 'reject_registration' reg.id %}">{% csrf_token %}<button class="button-secondary" type="submit" data-i18n="organizer.action.reject">Відхилити</button></form>
+                        </div>
+                    {% endif %}
+                </div>
+            {% empty %}
+                <p class="empty" data-i18n="organizer.registrations.empty">Заявок поки немає.</p>
+            {% endfor %}
+        </div>
+    </section>
+{% endblock %}

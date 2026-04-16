@@ -1,61 +1,19 @@
-<!DOCTYPE html>
-<html lang="uk">
-<head>
-    <meta charset="UTF-8">
-    <title>Сертифікати</title>
-    <style>
-        body { margin: 0; font-family: Arial, sans-serif; background: #eef4ff; color: #172033; padding: 30px 20px; }
-        .wrap { max-width: 1160px; margin: 0 auto; }
-        .card { background: white; border: 1px solid #dbe3ee; border-radius: 18px; box-shadow: 0 14px 32px rgba(17,24,39,.08); padding: 24px; margin-bottom: 20px; }
-        .topbar, .actions, .item-top, .grid { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center; }
-        .grid { align-items: stretch; }
-        .col { flex: 1 1 360px; }
-        .meta { color: #64748b; line-height: 1.6; }
-        .btn, .btn-secondary, .btn-danger {
-            display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 10px 14px;
-            border-radius: 10px; text-decoration: none; border: none; font-weight: 700; cursor: pointer;
-        }
-        .btn { background: #2563eb; color: white; }
-        .btn-secondary { background: white; color: #2563eb; border: 1px solid #cbd5e1; }
-        .btn-danger { background: #dc2626; color: white; }
-        .item { border: 1px solid #e2e8f0; border-radius: 14px; padding: 16px; background: #fbfdff; margin-bottom: 12px; }
-        .badge { display: inline-flex; padding: 5px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
-        .participant { background: #dbeafe; color: #1d4ed8; }
-        .winner { background: #fef3c7; color: #92400e; }
-        .field { display: grid; gap: 6px; margin-bottom: 14px; }
-        .field label { font-weight: 700; }
-        .form-input { width: 100%; min-height: 42px; padding: 10px 12px; border-radius: 10px; border: 1px solid #cbd5e1; font: inherit; }
-        .template-box { border: 1px dashed #bfdbfe; background: #f8fbff; }
-        .help-box, .message-box {
-            border-radius: 14px;
-            padding: 14px 16px;
-            margin-top: 12px;
-            line-height: 1.6;
-        }
-        .help-box { background: #eef4ff; border: 1px solid #dbeafe; color: #1e3a8a; }
-        .message-box.success { background: #ecfdf5; color: #166534; border: 1px solid #bbf7d0; }
-        .message-box.error { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
-        .message-box.warning, .message-box.info { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
-    </style>
-</head>
-<body>
-<div class="wrap">
-    <div class="card topbar">
-        <div>
-            <h1 style="margin:0 0 6px;">Сертифікати</h1>
-            <div class="meta">
-                Тут адміністратор завантажує шаблон сертифіката, створює сертифікати учасників або переможців
-                і завантажує готові PDF.
-            </div>
-        </div>
-        <div class="actions">
-            <a class="btn-secondary" href="{% url 'home' %}">Головна</a>
-            <a class="btn-secondary" href="{% url 'admin_users' %}">Адмін-панель</a>
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Сертифікати{% endblock %}
+
+{% block content %}
+    <div class="hero">
+        <div class="hero-content">
+            <div class="hero-kicker" data-i18n="admin.certificates.title">Сертифікати</div>
+            <h1 data-i18n="admin.certificates.headline">Управління нагородами</h1>
+            <p data-i18n="admin.certificates.subtitle">Завантажуйте шаблони, генеруйте сертифікати учасників та переможців у форматі PDF.</p>
         </div>
     </div>
 
     {% if messages %}
-        <div class="card">
+        <div class="section spacer-top">
             {% for message in messages %}
                 <div class="message-box {% if message.tags == 'error' %}error{% elif message.tags == 'success' %}success{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}">
                     {{ message }}
@@ -64,107 +22,116 @@
         </div>
     {% endif %}
 
-    <div class="grid">
-        <div class="card col template-box">
-            <h2 style="margin-top:0;">Завантажити шаблон</h2>
-            <div class="help-box">
-                Що треба завантажити:
-                <br>1. Зображення сертифіката у форматі <strong>PNG</strong>, <strong>JPG</strong> або <strong>JPEG</strong>.
-                <br>2. На макеті має бути вільне місце для імені учасника, назви турніру та дати.
-                <br>3. Можна завантажити окремий шаблон для конкретного турніру або глобальний шаблон для всіх.
-            </div>
-            <form method="post" enctype="multipart/form-data" style="margin-top:16px;">
-                {% csrf_token %}
-                <div class="field">
-                    <label for="{{ template_form.tournament.id_for_label }}">Турнір</label>
-                    {{ template_form.tournament }}
+    <div class="dashboard-grid spacer-top">
+        <section class="section">
+            <h2 class="section-title" data-i18n="admin.certificates.upload_title">Завантажити шаблон</h2>
+            <div class="item-card spacer-top">
+                <div class="section-note spacer-bottom">
+                    <span data-i18n="admin.certificates.instructions">Інструкції:</span><br>
+                    • <span data-i18n="admin.certificates.instr_1">Формат зображення: PNG, JPG</span><br>
+                    • <span data-i18n="admin.certificates.instr_2">Залиште місце для тексту</span><br>
+                    • <span data-i18n="admin.certificates.instr_3">Можна створити глобальний або локальний шаблон</span>
                 </div>
-                <div class="field">
-                    <label for="{{ template_form.certificate_type.id_for_label }}">Тип сертифіката</label>
-                    {{ template_form.certificate_type }}
-                </div>
-                <div class="field">
-                    <label for="{{ template_form.background_image.id_for_label }}">Макет сертифіката</label>
-                    {{ template_form.background_image }}
-                </div>
-                {% if template_form.errors %}
-                    <div class="message-box error">{{ template_form.errors }}</div>
-                {% endif %}
-                <button class="btn" type="submit">Завантажити шаблон</button>
-            </form>
-        </div>
-
-        <div class="card col">
-            <h2 style="margin-top:0;">Доступні шаблони</h2>
-            {% for template in certificate_templates %}
-                <div class="item">
-                    <div class="item-top">
-                        <strong>{% if template.tournament %}{{ template.tournament.name }}{% else %}Глобальний шаблон{% endif %}</strong>
-                        <span class="badge {{ template.certificate_type }}">{{ template.get_certificate_type_display }}</span>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-grid">
+                        <div class="field-group span-2">
+                            <label data-i18n="admin.certificates.label_tournament">Турнір</label>
+                            {{ template_form.tournament }}
+                        </div>
+                        <div class="field-group span-2">
+                            <label data-i18n="admin.certificates.label_type">Тип сертифіката</label>
+                            {{ template_form.certificate_type }}
+                        </div>
+                        <div class="field-group span-2">
+                            <label data-i18n="admin.certificates.label_file">Макет (PNG/JPG)</label>
+                            {{ template_form.background_image }}
+                        </div>
                     </div>
-                    <div class="meta">
-                        Завантажив: {{ template.uploaded_by.username }}<br>
-                        Дата: {{ template.created_at }}<br>
-                        Файл: <a href="{% url 'preview_certificate_template' template.id %}">переглянути макет</a>
+                    {% if template_form.errors %}
+                        <div class="field-errors spacer-top">{{ template_form.errors }}</div>
+                    {% endif %}
+                    <div class="toolbar spacer-top">
+                        <button class="button" type="submit" data-i18n="admin.certificates.btn_upload">Завантажити</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title" data-i18n="admin.certificates.templates_title">Доступні шаблони</h2>
+            <div class="list spacer-top">
+                {% for template in certificate_templates %}
+                    <div class="item-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <strong data-i18n-message>{% if template.tournament %}{{ template.tournament.name }}{% else %}Глобальний шаблон{% endif %}</strong>
+                            <span class="status-badge status-registration">{{ template.get_certificate_type_display }}</span>
+                        </div>
+                        <div class="section-note spacer-top">
+                            <span data-i18n="admin.certificates.uploaded_by">Завантажив</span>: {{ template.uploaded_by.username }} · {{ template.created_at|date:"d.m.Y" }}
+                        </div>
+                        <div class="toolbar spacer-top">
+                            <a class="button-secondary" href="{% url 'preview_certificate_template' template.id %}" data-i18n="admin.certificates.btn_preview">Переглянути макет</a>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="empty" data-i18n="admin.certificates.empty_templates">Шаблонів поки немає.</p>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+
+    <section class="section spacer-top">
+        <h2 class="section-title" data-i18n="admin.certificates.finished_tournaments_title">Завершені турніри</h2>
+        <div class="list spacer-top">
+            {% for tournament in finished_tournaments %}
+                <div class="item-card">
+                    <div class="section-head">
+                        <div>
+                            <h3 data-i18n-message>{{ tournament.name }}</h3>
+                            <div class="section-note">
+                                <span data-i18n="admin.certificates.ended">Завершено</span>: {{ tournament.end_date|date:"d.m.Y" }} · 
+                                <span data-i18n="admin.certificates.registrations">Учасників</span>: {{ tournament.registrations.count }}
+                            </div>
+                        </div>
+                        <div class="toolbar">
+                            <a class="button-secondary" href="{% url 'export_tournament_results_csv' tournament.id %}" data-i18n="admin.certificates.btn_export">Експорт CSV</a>
+                            <form method="post" action="{% url 'issue_participant_certificates' tournament.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button class="button" type="submit" data-i18n="admin.certificates.btn_gen_part">Сертифікати членів</button>
+                            </form>
+                            <form method="post" action="{% url 'issue_winner_certificates' tournament.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button class="button" style="background: var(--error);" type="submit" data-i18n="admin.certificates.btn_gen_win">Сертифікати переможців</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             {% empty %}
-                <div class="meta">Шаблонів поки немає.</div>
+                <p class="empty" data-i18n="admin.certificates.empty_finished">Завершених турнірів поки немає.</p>
             {% endfor %}
         </div>
-    </div>
+    </section>
 
-    <div class="card">
-        <h2 style="margin-top:0;">Завершені турніри</h2>
-        {% for tournament in finished_tournaments %}
-            <div class="item">
-                <div class="item-top">
-                    <strong>{{ tournament.name }}</strong>
-                    <div class="actions">
-                        <a class="btn-secondary" href="{% url 'export_tournament_results_csv' tournament.id %}">Експорт CSV результатів</a>
-                        <form method="post" action="{% url 'issue_participant_certificates' tournament.id %}">
-                            {% csrf_token %}
-                            <button class="btn" type="submit">Згенерувати сертифікати учасників</button>
-                        </form>
-                        <form method="post" action="{% url 'issue_winner_certificates' tournament.id %}">
-                            {% csrf_token %}
-                            <button class="btn-danger" type="submit">Згенерувати сертифікати переможців</button>
-                        </form>
+    <section class="section spacer-top">
+        <h2 class="section-title" data-i18n="admin.certificates.issued_title">Видані сертифікати</h2>
+        <div class="grid-3 spacer-top">
+            {% for certificate in certificates %}
+                <div class="item-card">
+                    <strong data-i18n-message>{{ certificate.recipient_name }}</strong>
+                    <div class="section-note">
+                        <span data-i18n="admin.certificates.email">Емейл</span>: {{ certificate.recipient_email }}<br>
+                        <span data-i18n="admin.certificates.tournament">Турнір</span>: {{ certificate.tournament.name }}<br>
+                        {% if certificate.team %}<span data-i18n="admin.certificates.team">Команда</span>: {{ certificate.team.name }}<br>{% endif %}
+                    </div>
+                    <div class="toolbar spacer-top" style="justify-content: space-between;">
+                        <span class="status-badge status-running">{{ certificate.get_certificate_type_display }}</span>
+                        <a class="button" href="{% url 'download_certificate_pdf' certificate.id %}" data-i18n="admin.certificates.btn_download">Download PDF</a>
                     </div>
                 </div>
-                <div class="meta">
-                    Завершено: {{ tournament.end_date }}<br>
-                    Схвалених заявок: {{ tournament.registrations.count }}
-                </div>
-            </div>
-        {% empty %}
-            <div class="meta">Завершених турнірів поки немає.</div>
-        {% endfor %}
-    </div>
-
-    <div class="card">
-        <h2 style="margin-top:0;">Видані сертифікати</h2>
-        {% for certificate in certificates %}
-            <div class="item">
-                <div class="item-top">
-                    <strong>{{ certificate.recipient_name }}</strong>
-                    <div class="actions">
-                        <span class="badge {{ certificate.certificate_type }}">{{ certificate.get_certificate_type_display }}</span>
-                        <a class="btn-secondary" href="{% url 'download_certificate_pdf' certificate.id %}">Завантажити PDF</a>
-                    </div>
-                </div>
-                <div class="meta">
-                    Турнір: {{ certificate.tournament.name }}<br>
-                    Електронна пошта: {{ certificate.recipient_email }}<br>
-                    {% if certificate.team %}Команда: {{ certificate.team.name }}<br>{% endif %}
-                    Видав: {{ certificate.issued_by.username }}<br>
-                    Дата: {{ certificate.issued_at }}
-                </div>
-            </div>
-        {% empty %}
-            <div class="meta">Сертифікатів поки немає.</div>
-        {% endfor %}
-    </div>
-</div>
-</body>
-</html>
+            {% empty %}
+                <p class="empty" data-i18n="admin.certificates.empty_issued">Сертифікатів поки немає.</p>
+            {% endfor %}
+        </div>
+    </section>
+{% endblock %}
