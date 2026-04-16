@@ -202,7 +202,9 @@
                             <button type="submit" class="button-secondary" style="border-color: var(--primary); color: var(--primary);" data-i18n="admin.tournaments.btn_finish_eval">Завершити оцінювання</button>
                         </form>
                     {% endif %}
-                    <button type="submit" class="button" data-i18n="admin.tournaments.btn_save">{% if mode == 'edit' %}Зберегти{% else %}Створити{% endif %}</button>
+                    
+                    <button type="submit" class="button" id="submit-publish">{% if mode == 'edit' %}Оновити{% else %}Створити та опублікувати{% endif %}</button>
+                    <button type="button" class="button-secondary" id="submit-draft" style="border-color: var(--muted); color: var(--muted);" data-i18n="admin.tournaments.btn_save_draft">Зберегти як чернетку</button>
                     <a class="button-secondary" href="{% url 'home' %}" data-i18n="admin.tournaments.btn_cancel">Скасувати</a>
                 </div>
             </div>
@@ -318,6 +320,37 @@
             document.getElementById("add-schedule-item").addEventListener("click", () => addRow());
             if (hiddenField.value.trim()) hiddenField.value.trim().split("\n").forEach(line => {
                 const p = line.split("|"); addRow({ startsAt: p[0], title: p[1], description: p.slice(2).join("|") });
+            });
+        })();
+
+        // Form Logic
+        (function() {
+            const form = document.getElementById('tournament-form');
+            const draftBtn = document.getElementById('submit-draft');
+            const publishBtn = document.getElementById('submit-publish');
+            const draftCheckbox = document.getElementById('{{ form.is_draft.id_for_label }}');
+
+            if (draftBtn && draftCheckbox) {
+                draftBtn.addEventListener('click', () => {
+                    draftCheckbox.checked = true;
+                    form.submit();
+                });
+            }
+
+            if (publishBtn && draftCheckbox) {
+                publishBtn.addEventListener('click', (e) => {
+                    draftCheckbox.checked = false;
+                    // Button is type="submit", will naturally submit
+                });
+            }
+
+            form.addEventListener('submit', (e) => {
+                console.log('Form submission started...');
+                const invalidFields = form.querySelectorAll(':invalid');
+                if (invalidFields.length > 0) {
+                    console.warn('Form group has invalid fields:', invalidFields);
+                    // Let browser show validation tooltips
+                }
             });
         })();
     </script>

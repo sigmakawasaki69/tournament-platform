@@ -60,6 +60,7 @@
                     <a href="{% url 'admin_submissions' %}" class="drawer-link" data-i18n="nav.submissions">Роботи</a>
                     <a href="{% url 'admin_announcements' %}" class="drawer-link" data-i18n="nav.announcements">Оголошення</a>
                     <a href="{% url 'admin_certificates' %}" class="drawer-link" data-i18n="nav.admin_certificates">Сертифікати</a>
+                    <a href="{% url 'create_tournament' %}" class="drawer-link" style="color: var(--primary);" data-i18n="nav.create_tournament">Створити турнір</a>
                 {% elif request.user.role == 'participant' %}
                     <a href="{% url 'my_team' %}" class="drawer-link" data-i18n="nav.my_team">Моя команда</a>
                 {% elif request.user.role == 'jury' %}
