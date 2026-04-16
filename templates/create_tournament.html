@@ -155,12 +155,9 @@
                             <label data-i18n="admin.tournaments.label_max_teams">Макс. команд</label>
                             {{ form.max_teams }}
                         </div>
-                        <div class="field-group">
-                            <label data-i18n="admin.tournaments.label_state">Стан</label>
-                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 10px;">
-                                {{ form.is_draft }}
-                                <label for="{{ form.is_draft.id_for_label }}" style="margin:0; font-weight: 700;" data-i18n="admin.tournaments.label_draft">Чернетка</label>
-                            </div>
+                        <div class="field-group checkbox-row">
+                            {{ form.is_draft }}
+                            <label for="{{ form.is_draft.id_for_label }}" style="margin:0; font-weight: 700;" data-i18n="admin.tournaments.label_draft">Чернетка</label>
                         </div>
                     </div>
                 </div>
@@ -203,9 +200,11 @@
                         </form>
                     {% endif %}
                     
-                    <button type="submit" class="button" id="submit-publish">{% if mode == 'edit' %}Оновити{% else %}Створити та опублікувати{% endif %}</button>
-                    <button type="button" class="button-secondary" id="submit-draft" style="border-color: var(--muted); color: var(--muted);" data-i18n="admin.tournaments.btn_save_draft">Зберегти як чернетку</button>
+                <div class="toolbar spacer-top" style="justify-content: flex-end; gap: 16px; border-top: 1px solid var(--border); padding-top: 24px;">
                     <a class="button-secondary" href="{% url 'home' %}" data-i18n="admin.tournaments.btn_cancel">Скасувати</a>
+                    <button type="button" class="button-secondary" id="submit-draft" data-i18n="admin.tournaments.btn_save_draft">Зберегти як чернетку</button>
+                    <button type="submit" class="button" id="submit-publish" style="min-width: 200px;">{% if mode == 'edit' %}Оновити{% else %}Створити та опублікувати{% endif %}</button>
+                </div>
                 </div>
             </div>
         </form>

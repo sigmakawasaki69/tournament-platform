@@ -5,19 +5,6 @@
 
 {% block extra_head %}
     <style>
-        .admin-hero {
-            padding: 28px;
-            border-radius: var(--radius-xl);
-            color: #fff;
-            background: linear-gradient(135deg, var(--primary-strong), var(--primary));
-            display: grid;
-            grid-template-columns: 1.4fr 0.6fr;
-            gap: 24px;
-            margin-bottom: 24px;
-        }
-        @media (max-width: 920px) {
-            .admin-hero { grid-template-columns: 1fr; }
-        }
         .builder-row {
             padding: 16px;
             border: 1px solid var(--border);
@@ -48,16 +35,22 @@
             <p>Вітаю, {{ request.user.username }}. Тут ви можете керувати користувачами, турнірами та заявками.</p>
         </div>
         <div class="stat-group">
-            <div class="stat-item"><strong>{{ tournaments|length }}</strong><span data-i18n="admin.stat.tournaments">Турніри</span></div>
-            <div class="stat-item"><strong>{{ registrations|length }}</strong><span data-i18n="admin.stat.registrations">Заявки</span></div>
+            <div class="stat-item">
+                <strong>{{ tournaments|length }}</strong>
+                <span data-i18n="admin.stat.tournaments">Турніри</span>
+            </div>
+            <div class="stat-item">
+                <strong>{{ registrations|length }}</strong>
+                <span data-i18n="admin.stat.registrations">Заявки</span>
+            </div>
         </div>
     </div>
 
     <div class="dashboard-grid">
         <section class="section" id="users">
             <div class="section-head">
-                <h2 class="section-title">Користувачі</h2>
-                <a class="button-secondary" href="{% url 'create_user_by_admin' %}">+ Створити</a>
+                <h2 class="section-title" data-i18n="admin.hero.users.title">Користувачі</h2>
+                <a class="button-secondary" href="{% url 'create_user_by_admin' %}" data-i18n="admin.sidebar.create_user">+ Створити</a>
             </div>
             
             <div class="list spacer-top">
@@ -66,7 +59,7 @@
                     <div class="item-card">
                         <div class="section-head">
                             <h3>{{ user.username }}</h3>
-                            <span class="status-badge status-pending">{{ user.role }}</span>
+                            <span class="status-badge status-pending" data-i18n="role.{{ user.role }}">{{ user.get_role_display }}</span>
                         </div>
                         <div class="section-note">{{ user.email|default:"-" }}</div>
                         <form method="post" action="{% url 'approve_user' user.id %}" class="spacer-top">
@@ -85,8 +78,8 @@
                         <div class="section-head">
                             <h3>{{ user.username }}</h3>
                             <div class="toolbar">
-                                <span class="status-badge status-registration">{{ user.role }}</span>
-                                {% if not user.is_approved %}<span class="status-badge status-pending">очікує</span>{% endif %}
+                                <span class="status-badge status-registration" data-i18n="role.{{ user.role }}">{{ user.get_role_display }}</span>
+                                {% if not user.is_approved %}<span class="status-badge status-pending" data-i18n="admin.users.status_pending">очікує</span>{% endif %}
                             </div>
                         </div>
                         <div class="section-note">{{ user.email|default:"-" }}</div>
@@ -140,7 +133,7 @@
                             <form method="post" action="{% url 'delete_tournament' tournament.id %}">
                                 {% csrf_token %}
                                 <input type="hidden" name="next" value="{% url 'admin_dashboard' %}#active-tournaments">
-                                <button class="button-danger" type="submit">Видалити</button>
+                                <button class="button-danger" type="submit" data-i18n="admin.tournaments.delete">Видалити</button>
                             </form>
                         </div>
                     </div>

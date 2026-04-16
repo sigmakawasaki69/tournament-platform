@@ -597,15 +597,32 @@ a {
     display: grid;
     grid-template-columns: minmax(0, 1.4fr) minmax(240px, 320px);
     gap: 18px;
-    align-items: stretch;
-    padding: 32px;
-    border-radius: var(--radius-xl);
-    color: #fff;
-    background: linear-gradient(135deg, #020617 0%, #1e1b4b 58%, #312e81 100%);
-    box-shadow: 0 20px 40px rgba(2, 6, 23, 0.2);
-    position: relative;
-    overflow: hidden;
-}
+        .admin-hero {
+            padding: 32px;
+            border-radius: var(--radius-xl);
+            color: #fff;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            display: grid;
+            grid-template-columns: 1.4fr 0.6fr;
+            gap: 24px;
+            margin-bottom: 32px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        .admin-hero::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            background: var(--primary);
+            filter: blur(120px);
+            opacity: 0.15;
+            pointer-events: none;
+        }
 
 .hero::after {
     content: '';
@@ -814,13 +831,14 @@ a {
 .tournament-track > * {
     flex: 0 0 calc(33.333% - 13.5px);
     display: flex !important;
-    flex-direction: column !important;
     height: auto !important;
 }
-    
-.tournament-track > * > .card {
+
+.tournament-track > .card,
+.tournament-track > a.card {
     height: 100% !important;
-    flex-grow: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
 }
 
 @media (max-width: 1024px) {
@@ -1365,4 +1383,100 @@ textarea {
     font-weight: 800;
     text-transform: uppercase;
     color: var(--muted);
+}
+
+/* Admin Stats Modern Chips */
+.stat-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.stat-item {
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 6px 16px;
+    border-radius: 100px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stat-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.stat-item strong {
+    font-size: 19px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
+}
+
+.stat-item span {
+    font-size: 10px;
+    text-transform: uppercase;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: stretch !important;
+}
+
+@media (max-width: 920px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+    .stat-group {
+        justify-content: flex-start;
+    }
+}
+
+/* Button Refinement */
+.button-compact,
+select.button-compact {
+    padding: 6px 14px;
+    font-size: 13px;
+    border-radius: 8px;
+    height: 34px; /* Force consistent height */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+select.button-compact {
+    padding-right: 32px; /* Space for arrow */
+}
+
+.toolbar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* Fixed Checkbox Alignment */
+.field-group.checkbox-row {
+    flex-direction: row !important;
+    align-items: center;
+    gap: 12px;
+}
+
+.field-group.checkbox-row input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin: 0;
 }
