@@ -794,17 +794,17 @@ a {
 .grid-3,
 .grid-2,
 .list-grid,
-.stat-grid,
 .form-grid {
     display: grid;
     gap: 14px;
-    grid-auto-rows: 1fr;
 }
 
 .summary-grid,
 .quick-grid,
 .stat-grid {
+    display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
     grid-auto-rows: 1fr;
 }
 
