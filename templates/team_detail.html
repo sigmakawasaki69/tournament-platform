@@ -15,7 +15,7 @@
                 <span data-i18n="common.school">Школа</span>: {{ team.school|default:"-" }}<br>
                 <span data-i18n="common.contact_method">Зв'язок</span>:
                 {% if team.effective_contact_value %}
-                    {{ team.effective_contact_label }} — {{ team.effective_contact_value }}
+                    <span data-i18n-message>{{ team.effective_contact_label }}</span> — {{ team.effective_contact_value }}
                 {% else %}
                     -
                 {% endif %}
@@ -65,7 +65,7 @@
                 <div class="quick-card">
                     <div class="quick-kicker" data-i18n="team.detail.your_tournament">Ваш турнір</div>
                     <div class="quick-title">{{ quick_overview.tournament.name }}</div>
-                    <div class="meta-list"><span data-i18n="home.team_block.status">Статус</span>: <span data-i18n-message>{{ quick_overview.tournament.lifecycle_status_label }}</span></div>
+                    <div class="meta-list"><span data-i18n="home.team_block.status">Статус</span>: <span class="status-badge status-{{ quick_overview.tournament.lifecycle_status }}" data-i18n-message>{{ quick_overview.tournament.lifecycle_status }}</span></div>
                     <div class="quick-actions spacer-top">
                         <a class="button" href="{% url 'public_tournament_detail' quick_overview.tournament.id %}" data-i18n="profile.team.open">Відкрити</a>
                         {% if quick_overview.tournament.is_running or quick_overview.tournament.is_finished %}
@@ -93,7 +93,7 @@
                     <div class="quick-kicker" data-i18n="team.detail.last_submission">Остання робота</div>
                     {% if quick_overview.latest_submission %}
                         <div class="quick-title">{{ quick_overview.latest_submission.task.title }}</div>
-                        <div class="meta-list"><span data-i18n="admin.submissions.submitted_at">Подано</span>: {{ quick_overview.latest_submission.submitted_at }}<br><span data-i18n="home.team_block.submitted">Усього робіт</span>: {{ quick_overview.submitted_total }}</div>
+                        <div class="meta-list"><span data-i18n="admin.submissions.submitted_at">Подано</span>: {{ quick_overview.latest_submission.submitted_at|date:"d.m.Y H:i" }}<br><span data-i18n="home.team_block.submitted">Усього робіт</span>: {{ quick_overview.submitted_total }}</div>
                         <div class="quick-actions spacer-top">
                             <a class="button-secondary" href="{% url 'team_results' team.id %}" data-i18n="profile.team.results">Оцінки та результати</a>
                         </div>
@@ -195,7 +195,7 @@
                 {% for reg in team.registrations.all %}
                     <div class="item-card">
                         <h3>{{ reg.tournament.name }}</h3>
-                        <div class="meta-list"><span data-i18n="team.tournaments.status">Статус заявки</span>: <span data-i18n-message>{{ reg.get_status_display }}</span><br><span data-i18n="admin.submissions.submitted_at">Подано</span>: {{ reg.created_at }}</div>
+                        <div class="meta-list"><span data-i18n="team.tournaments.status">Статус заявки</span>: <span class="status-badge status-{{ reg.status }}" data-i18n-message>{{ reg.status }}</span><br><span data-i18n="admin.submissions.submitted_at">Подано</span>: {{ reg.created_at|date:"d.m.Y H:i" }}</div>
                     </div>
                 {% empty %}
                     <div class="empty" data-i18n="team.tournaments.empty">Команда ще не зареєстрована на турніри.</div>
@@ -214,7 +214,7 @@
                 {% for submission in submissions %}
                     <div class="item-card">
                         <h3>{{ submission.task.title }}</h3>
-                        <div class="meta-list"><span data-i18n="profile.announcements.tournament">Турнір</span>: {{ submission.task.tournament.name }}<br><span data-i18n="admin.submissions.submitted_at">Подано</span>: {{ submission.submitted_at }}</div>
+                        <div class="meta-list"><span data-i18n="profile.announcements.tournament">Турнір</span>: {{ submission.task.tournament.name }}<br><span data-i18n="admin.submissions.submitted_at">Подано</span>: {{ submission.submitted_at|date:"d.m.Y H:i" }}</div>
                         {% if submission.response_items %}
                             <div class="meta-list links spacer-top">
                                 {% for item in submission.response_items %}

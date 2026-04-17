@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}{% if mode == 'edit' %}Редагувати турнір{% else %}Створити турнір{% endif %}{% endblock %}
+{% block title %}<span data-i18n="{% if mode == 'edit' %}admin.tournaments.edit_title{% else %}admin.tournaments.create_title{% endif %}">{% if mode == 'edit' %}Редагувати турнір{% else %}Створити турнір{% endif %}</span>{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -44,7 +44,7 @@
     <div class="hero">
         <div class="hero-content">
             <div class="hero-kicker" data-i18n="admin.tournaments.title">Управління платформою</div>
-            <h1 data-i18n="admin.tournaments.headline">{% if mode == 'edit' %}Редагування{% else %}Створення{% endif %} турніру</h1>
+            <h1 data-i18n="{% if mode == 'edit' %}admin.tournaments.headline_edit{% else %}admin.tournaments.headline_create{% endif %}">{% if mode == 'edit' %}Редагування{% else %}Створення{% endif %} турніру</h1>
             <p data-i18n="admin.tournaments.subtitle">Налаштуйте опис, часові рамки, анкету реєстрації та розклад турніру.</p>
         </div>
     </div>
@@ -52,7 +52,7 @@
     <section class="section spacer-top">
         {% if form.errors %}
             <div class="message-box error spacer-bottom">
-                <strong>Помилки у формі:</strong>
+                <strong data-i18n="common.error_in_form">Помилки у формі:</strong>
                 <ul style="margin:8px 0 0; padding-left:20px;">
                 {% for field, errors in form.errors.items %}
                     {% for error in errors %}
@@ -91,7 +91,7 @@
                                     <img src="{{ form.instance.banner_image.url }}" alt="Banner" id="banner-current-preview" style="max-width:300px; border-radius:12px; display:block;">
                                     <div style="margin-top: 8px; display: flex; align-items: center; gap: 8px;">
                                         <small class="section-note" data-i18n="admin.tournaments.current_banner">Поточний банер</small>
-                                        <button type="button" class="button-secondary" id="remove-banner-btn" style="padding: 4px 8px; font-size: 12px; color: var(--error); border-color: var(--error);">Видалити банер</button>
+                                        <button type="button" class="button-secondary" id="remove-banner-btn" style="padding: 4px 8px; font-size: 12px; color: var(--error); border-color: var(--error);" data-i18n="admin.tournaments.btn_delete">Видалити банер</button>
                                     </div>
                                 </div>
                             {% endif %}
@@ -100,7 +100,7 @@
                             {% if form.banner_image.errors %}<div class="field-errors">{{ form.banner_image.errors }}</div>{% endif %}
                             <div id="banner-new-preview" style="margin-top:12px; display:none;">
                                 <img id="banner-preview-img" src="" alt="Preview" style="max-width:300px; border-radius:12px; display:block; border: 1px solid var(--border);">
-                                <small class="section-note">Попередній перегляд нового банера</small>
+                                <small class="section-note" data-i18n="create_tournament.label.banner_preview_new">Попередній перегляд нового банера</small>
                             </div>
                         </div>
                         <div class="field-group span-2">
@@ -204,7 +204,7 @@
                                     <div style="display: flex; justify-content: space-between; align-items: center;">
                                         <div>
                                             <strong data-i18n-message>{{ task.title|default:"Без назви" }}</strong>
-                                            <div class="section-note">{% if task.is_draft %}Чернетка{% else %}Опубліковано{% endif %}</div>
+                                            <div class="section-note">{% if task.is_draft %}<span data-i18n="admin.tasks.label_draft_status">Чернетка</span>{% else %}<span data-i18n="admin.tasks.label_published_status">Опубліковано</span>{% endif %}</div>
                                         </div>
                                         <div class="toolbar">
                                             <a class="button-secondary" href="{% url 'edit_task' task.id %}" data-i18n="admin.tournaments.btn_edit">Редагувати</a>
@@ -231,7 +231,7 @@
                     {% endif %}
                     <a class="button-secondary" href="{% url 'home' %}" data-i18n="admin.tournaments.btn_cancel">Скасувати</a>
                     <button type="button" class="button-secondary" id="submit-draft" data-i18n="admin.tournaments.btn_save_draft">Зберегти як чернетку</button>
-                    <button type="submit" class="button" id="submit-publish">{% if mode == 'edit' %}Оновити{% else %}Створити та опублікувати{% endif %}</button>
+                    <button type="submit" class="button" id="submit-publish" data-i18n="{% if mode == 'edit' %}admin.tournaments.btn_update{% else %}admin.tournaments.btn_create_publish{% endif %}">{% if mode == 'edit' %}Оновити{% else %}Створити та опублікувати{% endif %}</button>
                 </div>
             </div>
         </form>
@@ -240,20 +240,20 @@
     <template id="registration-field-template">
         <div class="field-builder-row">
             <div class="builder-grid">
-                <input type="text" class="builder-label" placeholder="Назва поля">
+                <input type="text" class="builder-label" placeholder="Назва поля" data-i18n-placeholder="builder.placeholder.label">
                 <select class="builder-type">
-                    <option value="text">Короткий текст</option>
-                    <option value="textarea">Великий текст</option>
-                    <option value="email">Електронна пошта</option>
-                    <option value="number">Число</option>
-                    <option value="url">Посилання</option>
-                    <option value="participants">Учасники</option>
+                    <option value="text" data-i18n="builder.type.text">Короткий текст</option>
+                    <option value="textarea" data-i18n="builder.type.textarea">Великий текст</option>
+                    <option value="email" data-i18n="builder.type.email">Електронна пошта</option>
+                    <option value="number" data-i18n="builder.type.number">Число</option>
+                    <option value="url" data-i18n="builder.type.url">Посилання</option>
+                    <option value="participants" data-i18n="builder.type.participants">Учасники</option>
                 </select>
                 <label class="builder-check">
                     <input type="checkbox" class="builder-required" checked>
-                    Обов'язкове
+                    <span data-i18n="builder.required">Обов'язкове</span>
                 </label>
-                <button type="button" class="button" style="background:var(--error);" data-role="remove">×</button>
+                <button type="button" class="button" style="background:var(--error);" data-role="remove" data-i18n="admin.tournaments.btn_delete">×</button>
             </div>
         </div>
     </template>
@@ -262,19 +262,19 @@
         <div class="field-builder-row">
             <div class="form-grid">
                 <div class="field-group">
-                    <label>Дата та час</label>
+                    <label data-i18n="schedule.starts_at">Дата та час</label>
                     <input type="datetime-local" class="schedule-datetime">
                 </div>
                 <div class="field-group">
-                    <label>Назва події</label>
-                    <input type="text" class="schedule-title" placeholder="Консультація, Дедлайн тощо">
+                    <label data-i18n="schedule.title">Назва події</label>
+                    <input type="text" class="schedule-title" placeholder="Консультація, Дедлайн тощо" data-i18n-placeholder="schedule.title_placeholder">
                 </div>
                 <div class="field-group span-2">
-                    <label>Опис</label>
-                    <textarea class="schedule-description" rows="2"></textarea>
+                    <label data-i18n="schedule.description">Опис</label>
+                    <textarea class="schedule-description" rows="2" data-i18n-placeholder="schedule.description_placeholder"></textarea>
                 </div>
                 <div class="toolbar">
-                    <button type="button" class="button" style="background:var(--error);" data-role="remove">Видалити подію</button>
+                    <button type="button" class="button" style="background:var(--error);" data-role="remove" data-i18n="schedule.btn_remove">Видалити подію</button>
                 </div>
             </div>
         </div>
@@ -406,7 +406,9 @@
                     currentWrap.style.pointerEvents = 'none';
                     bannerInput.value = ''; // Скидаємо вибраний файл
                     previewWrap.style.display = 'none';
-                    alert("Банер буде видалено після збереження форми.");
+                    const lang = document.documentElement.lang || 'uk';
+                    const msg = lang === 'en' ? 'Banner will be removed after saving the form.' : 'Банер буде видалено після збереження форми.';
+                    alert(msg);
                 });
             }
         })();

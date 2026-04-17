@@ -60,12 +60,12 @@
     </div>
 
     <section class="section spacer-top">
-        <h2 class="section-title">Неоцінені роботи</h2>
+        <h2 class="section-title" data-i18n="jury.tournament.pending_submissions">Неоцінені роботи</h2>
         <div class="list spacer-top">
             {% for row in pending_team_rows %}
                 <details class="team-folder">
                     <summary>{{ row.team.name }}</summary>
-                    <div class="section-note spacer-top">Капітан: {{ row.team.captain_name }} ({{ row.team.captain_email }})</div>
+                    <div class="section-note spacer-top"><span data-i18n="home.team_block.captain">Капітан</span>: {{ row.team.captain_name }} ({{ row.team.captain_email }})</div>
                     {% for row_submission in row.submissions %}
                         <div class="submission-item">
                             <h3>{{ row_submission.submission.task.title }}</h3>
@@ -85,41 +85,41 @@
                                 {% csrf_token %}
                                 <div class="eval-grid">
                                     <div class="field-group">
-                                        <label>Бекенд</label>
+                                        <label data-i18n="jury.label.backend">Бекенд</label>
                                         {{ row_submission.evaluation_form.score_backend }}
                                     </div>
                                     <div class="field-group">
-                                        <label>Фронтенд</label>
+                                        <label data-i18n="jury.label.frontend">Фронтенд</label>
                                         {{ row_submission.evaluation_form.score_frontend }}
                                     </div>
                                     <div class="field-group">
-                                        <label>Функціонал</label>
+                                        <label data-i18n="jury.label.functionality">Функціонал</label>
                                         {{ row_submission.evaluation_form.score_functionality }}
                                     </div>
                                     <div class="field-group">
-                                        <label>UI/UX</label>
+                                        <label data-i18n="jury.label.ux">UI/UX</label>
                                         {{ row_submission.evaluation_form.score_ux }}
                                     </div>
                                 </div>
                                 <div class="field-group spacer-top">
-                                    <label>Коментар</label>
+                                    <label data-i18n="jury.label.comment">Коментар</label>
                                     {{ row_submission.evaluation_form.comment }}
                                 </div>
                                 <div class="toolbar spacer-top">
-                                    <button class="button" type="submit">Зберегти оцінку</button>
+                                    <button class="button" type="submit" data-i18n="jury.action.save_score">Зберегти оцінку</button>
                                 </div>
                             </form>
                         </div>
                     {% endfor %}
                 </details>
             {% empty %}
-                <p class="empty">Усі роботи в цьому турнірі оцінені.</p>
+                <p class="empty" data-i18n="jury.empty_submissions">Усі роботи в цьому турнірі оцінені.</p>
             {% endfor %}
         </div>
     </section>
 
     <section class="section spacer-top">
-        <h2 class="section-title">Оцінені роботи</h2>
+        <h2 class="section-title" data-i18n="jury.evaluated_submissions">Оцінені роботи</h2>
         <div class="list spacer-top">
             {% for row in evaluated_team_rows %}
                 <details class="team-folder">
@@ -130,15 +130,15 @@
                             <form method="post" action="{% url 'submit_evaluation' row_submission.submission.id %}" class="spacer-top">
                                 {% csrf_token %}
                                 <div class="eval-grid">
-                                    <div class="field-group"><label>Бекенд</label>{{ row_submission.evaluation_form.score_backend }}</div>
-                                    <div class="field-group"><label>Фронтенд</label>{{ row_submission.evaluation_form.score_frontend }}</div>
-                                    <div class="field-group"><label>Функціонал</label>{{ row_submission.evaluation_form.score_functionality }}</div>
-                                    <div class="field-group"><label>UI/UX</label>{{ row_submission.evaluation_form.score_ux }}</div>
+                                    <div class="field-group"><label data-i18n="jury.label.backend">Бекенд</label>{{ row_submission.evaluation_form.score_backend }}</div>
+                                    <div class="field-group"><label data-i18n="jury.label.frontend">Фронтенд</label>{{ row_submission.evaluation_form.score_frontend }}</div>
+                                    <div class="field-group"><label data-i18n="jury.label.functionality">Функціонал</label>{{ row_submission.evaluation_form.score_functionality }}</div>
+                                    <div class="field-group"><label data-i18n="jury.label.ux">UI/UX</label>{{ row_submission.evaluation_form.score_ux }}</div>
                                 </div>
                                 <div class="toolbar spacer-top">
-                                    <button class="button-secondary" type="submit">Оновити оцінку</button>
+                                    <button class="button-secondary" type="submit" data-i18n="jury.action.update_score">Оновити оцінку</button>
                                     {% if row_submission.my_evaluation %}
-                                        <span class="status-badge status-approved">Оцінка: {{ row_submission.my_evaluation.total_score|floatformat:1 }}</span>
+                                        <span class="status-badge status-approved"><span data-i18n="team_results.summary">Оцінка</span>: {{ row_submission.my_evaluation.total_score|floatformat:1 }}</span>
                                     {% endif %}
                                 </div>
                             </form>

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Адмін-панель{% endblock %}
+{% block title %}<span data-i18n="admin.sidebar.title">Адмінка</span>{% endblock %}
 
 {% block extra_head %}
     <style>
@@ -31,8 +31,8 @@
     <div class="admin-hero">
         <div>
             <div class="hero-kicker" data-i18n="admin.sidebar.title">Адмінка</div>
-            <h2 style="margin: 10px 0;">Управління платформою</h2>
-            <p>Вітаю, {{ request.user.username }}. Тут ви можете керувати користувачами, турнірами та заявками.</p>
+            <h2 style="margin: 10px 0;" data-i18n="admin.tournaments.title">Управління платформою</h2>
+            <p><span data-i18n="organizer.welcome">Вітаю</span>, {{ request.user.username }}. <span data-i18n="admin.sidebar.subtitle">Тут ви можете керувати користувачами, турнірами та заявками.</span></p>
         </div>
         <div class="stat-group">
             <div class="stat-item">
@@ -54,7 +54,7 @@
             </div>
             
             <div class="list spacer-top">
-                <h3>Очікують схвалення</h3>
+                <h3 data-i18n="admin.users.pending.title">Очікують схвалення</h3>
                 {% for user in pending_users %}
                     <div class="item-card">
                         <div class="section-head">
@@ -65,14 +65,14 @@
                         <form method="post" action="{% url 'approve_user' user.id %}" class="spacer-top">
                             {% csrf_token %}
                             <input type="hidden" name="next" value="{% url 'admin_dashboard' %}#users">
-                            <button class="button" type="submit">Схвалити</button>
+                            <button class="button" type="submit" data-i18n="admin.users.approve">Схвалити</button>
                         </form>
                     </div>
                 {% empty %}
-                    <p class="empty">Немає нових заявок.</p>
+                    <p class="empty" data-i18n="admin.users.pending.empty">Немає нових заявок.</p>
                 {% endfor %}
 
-                <h3 class="spacer-top">Усі користувачі</h3>
+                <h3 class="spacer-top" data-i18n="admin.users.all.title">Усі користувачі</h3>
                 {% for user in all_users %}
                     <div class="item-card">
                         <div class="section-head">
@@ -93,7 +93,7 @@
                                             <option value="{{ value }}"{% if user.role == value %} selected{% endif %}>{{ label }}</option>
                                         {% endfor %}
                                     </select>
-                                    <button class="button" type="submit">ОК</button>
+                                    <button class="button" type="submit" data-i18n="common.save_changes">ОК</button>
                                 </form>
                             {% endif %}
                             {% if user.id != request.user.id and not user.is_superuser %}
@@ -111,8 +111,8 @@
 
         <section class="section" id="active-tournaments">
             <div class="section-head">
-                <h2 class="section-title">Активні турніри</h2>
-                <a class="button" href="{% url 'create_tournament' %}">+ Створити</a>
+                <h2 class="section-title" data-i18n="nav.active_tournaments">Активні турніри</h2>
+                <a class="button" href="{% url 'create_tournament' %}" data-i18n="nav.create_tournament">+ Створити</a>
             </div>
             <div class="list spacer-top">
                 {% for tournament in active_tournaments %}
@@ -122,14 +122,14 @@
                                 <img src="{% if tournament.banner_image %}{{ tournament.banner_image.url }}{% else %}https://placehold.co/100x60?text=No+Banner{% endif %}" style="width:80px; height:50px; object-fit:cover; border-radius:8px;" alt="">
                                 <h3>{{ tournament.name }}</h3>
                             </div>
-                            <span class="status-badge status-{{ tournament.lifecycle_status }}">{{ tournament.lifecycle_status_label }}</span>
+                            <span class="status-badge status-{{ tournament.lifecycle_status }}" data-i18n-message>{{ tournament.lifecycle_status }}</span>
                         </div>
                         <div class="section-note spacer-top">
-                            Реєстрація до: {{ tournament.registration_end|default:"-" }}
+                            <span data-i18n="profile.tournaments.reg_end">Реєстрація до</span>: {{ tournament.registration_end|date:"d.m.Y H:i"|default:"-" }}
                         </div>
                         <div class="toolbar spacer-top">
-                            <a class="button" href="{% url 'edit_tournament' tournament.id %}">Редагувати</a>
-                            <a class="button-secondary" href="{% url 'create_tournament_task' tournament.id %}">Завдання</a>
+                            <a class="button" href="{% url 'edit_tournament' tournament.id %}" data-i18n="admin.tournaments.edit">Редагувати</a>
+                            <a class="button-secondary" href="{% url 'create_tournament_task' tournament.id %}" data-i18n="admin.tournaments.add_task">Завдання</a>
                             <form method="post" action="{% url 'delete_tournament' tournament.id %}">
                                 {% csrf_token %}
                                 <input type="hidden" name="next" value="{% url 'admin_dashboard' %}#active-tournaments">
@@ -143,50 +143,50 @@
     </div>
 
     <section class="section" id="registrations">
-        <h2 class="section-title">Заявки та Роботи</h2>
+        <h2 class="section-title" data-i18n="admin.hero.registrations.title">Заявки та Роботи</h2>
         <div class="dashboard-grid spacer-top">
             <div class="card">
-                <h3>Заявки на участь</h3>
+                <h3 data-i18n="nav.registrations">Заявки на участь</h3>
                 <div class="list">
                     {% for reg in registrations %}
                         <div class="item-card">
                             <div class="section-head">
                                 <h3>{{ reg.team.name }} → {{ reg.tournament.name }}</h3>
-                                <span class="status-badge status-{{ reg.status }}">{{ reg.get_status_display }}</span>
+                                <span class="status-badge status-{{ reg.status }}" data-i18n-message>{{ reg.status }}</span>
                             </div>
                             {% if reg.status == "pending" %}
                                 <div class="toolbar spacer-top">
                                     <form method="post" action="{% url 'approve_registration' reg.id %}">
                                         {% csrf_token %}
                                         <input type="hidden" name="next" value="{% url 'admin_dashboard' %}#registrations">
-                                        <button class="button" type="submit">Схвалити</button>
+                                        <button class="button" type="submit" data-i18n="admin.registrations.approve">Схвалити</button>
                                     </form>
                                     <form method="post" action="{% url 'reject_registration' reg.id %}">
                                         {% csrf_token %}
                                         <input type="hidden" name="next" value="{% url 'admin_dashboard' %}#registrations">
-                                        <button class="button-danger" type="submit">Відхилити</button>
+                                        <button class="button-danger" type="submit" data-i18n="admin.registrations.reject">Відхилити</button>
                                     </form>
                                 </div>
                             {% endif %}
                         </div>
                     {% empty %}
-                        <p class="empty">Заявок немає.</p>
+                        <p class="empty" data-i18n="admin.registrations.empty">Заявок немає.</p>
                     {% endfor %}
                 </div>
             </div>
             <div class="card">
-                <h3>Надіслані роботи</h3>
+                <h3 data-i18n="nav.submissions">Надіслані роботи</h3>
                 <div class="list">
                     {% for submission in submissions %}
                         <div class="item-card">
                             <h3>{{ submission.team.name }}</h3>
                             <div class="section-note">{{ submission.task.title }}</div>
                             <div class="toolbar spacer-top">
-                                {% if submission.github_link %}<a href="{{ submission.github_link }}" class="btn-text">GitHub</a>{% endif %}
+                                {% if submission.github_link %}<a href="{{ submission.github_link }}" class="btn-text" target="_blank" data-i18n="builder.type.url">GitHub</a>{% endif %}
                             </div>
                         </div>
                     {% empty %}
-                        <p class="empty">Робіт немає.</p>
+                        <p class="empty" data-i18n="admin.submissions.empty">Робіт немає.</p>
                     {% endfor %}
                 </div>
             </div>

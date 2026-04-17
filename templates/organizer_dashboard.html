@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Кабінет організатора{% endblock %}
+{% block title %}<span data-i18n="organizer.hero.kicker">Кабінет організатора</span>{% endblock %}
 
 {% block content %}
     <div class="hero">
@@ -29,10 +29,10 @@
                             <img src="{% if tournament.banner_image %}{{ tournament.banner_image.url }}{% else %}https://placehold.co/100x60?text=No+Banner{% endif %}" style="width:80px; height:50px; object-fit:cover; border-radius:8px;" alt="">
                             <h3>{{ tournament.name }}</h3>
                         </div>
-                        <span class="status-badge status-{{ tournament.lifecycle_status }}" data-i18n-message>{{ tournament.lifecycle_status_label }}</span>
+                        <span class="status-badge status-{{ tournament.lifecycle_status }}" data-i18n-message>{{ tournament.lifecycle_status }}</span>
                     </div>
                     <div class="section-note spacer-top">
-                        <span data-i18n="organizer.label.registration">Реєстрація</span>: {{ tournament.registration_start|default:"-" }} - {{ tournament.registration_end|default:"-" }} | <span data-i18n="organizer.label.tournament">Турнір</span>: {{ tournament.start_date|default:"-" }} - {{ tournament.end_date|default:"-" }}
+                        <span data-i18n="organizer.label.registration">Реєстрація</span>: {{ tournament.registration_start|date:"d.m.Y H:i"|default:"-" }} - {{ tournament.registration_end|date:"d.m.Y H:i"|default:"-" }} | <span data-i18n="organizer.label.tournament">Турнір</span>: {{ tournament.start_date|date:"d.m.Y H:i"|default:"-" }} - {{ tournament.end_date|date:"d.m.Y H:i"|default:"-" }}
                     </div>
                     <div class="toolbar spacer-top">
                         <a class="button" href="{% url 'edit_tournament' tournament.id %}" data-i18n="organizer.action.edit">Редагувати</a>
@@ -61,7 +61,7 @@
                 <div class="item-card">
                     <div class="section-head">
                         <h3>{{ reg.team.name }} → {{ reg.tournament.name }}</h3>
-                        <span class="status-badge status-{{ reg.status }}" data-i18n-message>{{ reg.get_status_display }}</span>
+                        <span class="status-badge status-{{ reg.status }}" data-i18n-message>{{ reg.status }}</span>
                     </div>
                     <div class="section-note spacer-top">{{ reg.team.captain_name }} ({{ reg.team.captain_email }})</div>
                     {% if reg.status == "pending" %}

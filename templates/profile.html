@@ -55,8 +55,8 @@
     <section class="section auto-shrink">
         <div class="section-head">
             <div>
-                <h2 class="section-title">Оцінені роботи</h2>
-                <div class="section-note">Список робіт, які ви вже оцінили в рамках призначених вам завдань.</div>
+                <h2 class="section-title" data-i18n="jury.tournaments.submissions">Оцінені роботи</h2>
+                <div class="section-note" data-i18n="jury.tournaments.submissions_note">Список робіт, які ви вже оцінили в рамках призначених вам завдань.</div>
             </div>
         </div>
 
@@ -68,16 +68,16 @@
                         <span class="status-badge status-finished">Бал: {{ evaluation.total_score }}</span>
                     </div>
                     <div class="meta-list spacer-top">
-                        <span>Турнір: <strong>{{ evaluation.assignment.submission.task.tournament.name }}</strong></span><br>
-                        <span>Дата оцінювання: {{ evaluation.evaluated_at|date:"d.m.Y H:i" }}</span>
+                        <span><span data-i18n="admin.certificates.tournament">Турнір</span>: <strong>{{ evaluation.assignment.submission.task.tournament.name }}</strong></span><br>
+                        <span><span data-i18n="profile.certificates.date">Дата оцінювання</span>: {{ evaluation.evaluated_at|date:"d.m.Y H:i" }}</span>
                     </div>
                     <div class="toolbar spacer-top">
-                        <a class="button" href="{% url 'evaluate_submission' evaluation.assignment.id %}">Переглянути оцінку</a>
+                        <a class="button" href="{% url 'evaluate_submission' evaluation.assignment.id %}" data-i18n="public_reg.submit">Переглянути оцінку</a>
                     </div>
                 </div>
             {% empty %}
-                <p class="empty">Ви ще не оцінили жодної роботи.</p>
-                <a class="button spacer-top" href="{% url 'jury_dashboard' %}">Перейти до оцінювання</a>
+                <p class="empty" data-i18n="admin.submissions.empty">Ви ще не оцінили жодної роботи.</p>
+                <a class="button spacer-top" href="{% url 'jury_dashboard' %}" data-i18n="nav.jury">Перейти до оцінювання</a>
             {% endfor %}
         </div>
     </section>
@@ -100,9 +100,9 @@
                         <span class="status-badge status-{{ item.tournament.lifecycle_status }}" data-i18n="status.{{ item.tournament.lifecycle_status }}">{{ item.tournament.lifecycle_status_label }}</span>
                     </div>
                     <div class="meta-list spacer-top">
-                        <span data-i18n="profile.tournaments.start">Початок</span>: {{ item.tournament.start_date }}<br>
-                        <span data-i18n="profile.tournaments.end">Завершення</span>: {{ item.tournament.end_date }}<br>
-                        <span data-i18n="profile.tournaments.reg_end">Реєстрація до</span>: {{ item.tournament.registration_end }}
+                        <span data-i18n="profile.tournaments.start">Початок</span>: {{ item.tournament.start_date|date:"d.m.Y H:i" }}<br>
+                        <span data-i18n="profile.tournaments.end">Завершення</span>: {{ item.tournament.end_date|date:"d.m.Y H:i" }}<br>
+                        <span data-i18n="profile.tournaments.reg_end">Реєстрація до</span>: {{ item.tournament.registration_end|date:"d.m.Y H:i" }}
                         {% if request.user.role != "participant" %}<br><span data-i18n="admin.tournaments.created_at">Створено</span>: {{ item.tournament.created_at|date:"d.m.Y H:i" }}{% endif %}
                     </div>
 
@@ -146,10 +146,10 @@
                         <h3>{{ certificate.tournament.name }}</h3>
                         <div class="meta-list spacer-top">
                             <span data-i18n="profile.certificates.team">Команда</span>: {{ certificate.team.name|default:"-" }}<br>
-                            <span data-i18n="profile.certificates.date">Дата видачі</span>: {{ certificate.issued_at }}
+                            <span data-i18n="profile.certificates.date">Дата видачі</span>: {{ certificate.issued_at|date:"d.m.Y H:i" }}
                         </div>
                         <div class="toolbar spacer-top">
-                            <span class="status-badge status-upcoming" data-i18n-message>{{ certificate.get_certificate_type_display }}</span>
+                            <span class="status-badge status-upcoming" data-i18n-message>{{ certificate.certificate_type }}</span>
                             <a class="button-secondary" href="{% url 'download_certificate_pdf' certificate.id %}" data-i18n="profile.certificates.download">Завантажити PDF</a>
                         </div>
                     </div>
@@ -173,7 +173,7 @@
                         <h3>{{ announcement.title }}</h3>
                         <div class="meta-list spacer-top">
                             {% if announcement.tournament %}<span data-i18n="profile.announcements.tournament">Турнір</span>: {{ announcement.tournament.name }}<br>{% endif %}
-                            <span data-i18n="profile.announcements.date">Дата</span>: {{ announcement.created_at }}
+                            <span data-i18n="profile.announcements.date">Дата</span>: {{ announcement.created_at|date:"d.m.Y H:i" }}
                         </div>
                         <p class="card-text spacer-top" data-i18n-message>{{ announcement.message }}</p>
                     </div>

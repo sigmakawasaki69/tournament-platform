@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Кабінет учасника{% endblock %}
+{% block title %}<span data-i18n="participant.hero_kicker">Кабінет учасника</span>{% endblock %}
 
 {% block content %}
     <div class="hero">
@@ -52,11 +52,11 @@
                         <div class="section-head">
                             <h3>{{ item.tournament.name }}</h3>
                             {% if item.my_registration %}
-                                <span class="status-badge status-{{ item.my_registration.status }}" data-i18n="status.{{ item.my_registration.status }}">{{ item.my_registration.get_status_display }}</span>
+                                <span class="status-badge status-{{ item.my_registration.status }}" data-i18n-message>{{ item.my_registration.status }}</span>
                             {% endif %}
                         </div>
                         <div class="section-note spacer-top">
-                            <span data-i18n="home.tournaments.reg_range">Реєстрація до</span>: {{ item.tournament.registration_end|default:"-" }}
+                            <span data-i18n="home.tournaments.reg_range">Реєстрація до</span>: {{ item.tournament.registration_end|date:"d.m.Y H:i"|default:"-" }}
                         </div>
                         
                         {% if item.my_registration and item.my_registration.status == "pending" %}

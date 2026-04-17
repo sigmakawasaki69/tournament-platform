@@ -39,20 +39,20 @@
         <div>
             <div class="hero-kicker" data-i18n="admin.sidebar.title">Адмінка</div>
             <h2 data-i18n="admin.hero.{{ current_section }}.title" style="margin: 10px 0;">
-                {% if current_section == 'users' %}Користувачі та ролі
-                {% elif current_section == 'active_tournaments' %}Активні турніри
-                {% elif current_section == 'inactive_tournaments' %}Неактивні турніри
-                {% elif current_section == 'teams' %}Команди
-                {% elif current_section == 'registrations' %}Заявки на турніри
-                {% else %}Надіслані роботи{% endif %}
+                {% if current_section == 'users' %}<span data-i18n="admin.hero.users.title">Користувачі та ролі</span>
+                {% elif current_section == 'active_tournaments' %}<span data-i18n="admin.hero.active_tournaments.title">Активні турніри</span>
+                {% elif current_section == 'inactive_tournaments' %}<span data-i18n="admin.hero.inactive_tournaments.title">Неактивні турніри</span>
+                {% elif current_section == 'teams' %}<span data-i18n="admin.hero.teams.title">Команди</span>
+                {% elif current_section == 'registrations' %}<span data-i18n="admin.hero.registrations.title">Заявки на турніри</span>
+                {% else %}<span data-i18n="admin.hero.submissions.title">Надіслані роботи</span>{% endif %}
             </h2>
             <p data-i18n="admin.hero.{{ current_section }}.subtitle">
-                {% if current_section == 'users' %}Підтвердження нових людей, зміна ролей та ручне створення акаунтів без зайвих переходів.
-                {% elif current_section == 'active_tournaments' %}Тут редагуються поточні турніри, додаються завдання та відкривається форма створення нового турніру.
-                {% elif current_section == 'inactive_tournaments' %}Архів завершених або закритих турнірів.
-                {% elif current_section == 'teams' %}Повний список команд із швидким переходом до складу.
-                {% elif current_section == 'registrations' %}Підтвердження або відхилення заявок на участь.
-                {% else %}Усі надіслані матеріали команд на одному екрані.{% endif %}
+                {% if current_section == 'users' %}<span data-i18n="admin.hero.users.subtitle">Підтвердження нових людей, зміна ролей та ручне створення акаунтів без зайвих переходів.</span>
+                {% elif current_section == 'active_tournaments' %}<span data-i18n="admin.hero.active_tournaments.subtitle">Тут редагуються поточні турніри, додаються завдання та відкривається форма створення нового турніру.</span>
+                {% elif current_section == 'inactive_tournaments' %}<span data-i18n="admin.hero.inactive_tournaments.subtitle">Архів завершених або закритих турнірів.</span>
+                {% elif current_section == 'teams' %}<span data-i18n="admin.hero.teams.subtitle">Повний список команд із швидким переходом до складу.</span>
+                {% elif current_section == 'registrations' %}<span data-i18n="admin.hero.registrations.subtitle">Підтвердження або відхилення заявок на участь.</span>
+                {% else %}<span data-i18n="admin.hero.submissions.subtitle">Усі надіслані матеріали команд на одному екрані.</span>{% endif %}
             </p>
         </div>
         <div class="stat-group">
@@ -115,7 +115,7 @@
 
                 {% if tournament_form.errors %}
                     <div class="message-box error spacer-bottom">
-                        <strong>Помилки у формі:</strong>
+                        <strong data-i18n="common.error_in_form">Помилки у формі:</strong>
                         <ul style="margin:8px 0 0; padding-left:20px;">
                         {% for field, errors in tournament_form.errors.items %}
                             {% for error in errors %}
@@ -148,7 +148,7 @@
                         {% if tournament_form.banner_image.errors %}<div class="field-errors">{{ tournament_form.banner_image.errors }}</div>{% endif %}
                         <div id="inline-banner-preview" style="margin-top:12px; display:none;">
                             <img id="inline-banner-preview-img" src="" alt="Preview" style="max-width:300px; border-radius:12px; display:block; border: 1px solid var(--border);">
-                            <small class="section-note">Попередній перегляд банера</small>
+                            <small class="section-note" data-i18n="create_tournament.label.banner_preview">Попередній перегляд банера</small>
                         </div>
                     </div>
                     <div class="grid-2">
@@ -328,10 +328,10 @@
                                 <img src="{% if tournament.banner_image %}{{ tournament.banner_image.url }}{% else %}https://placehold.co/100x60?text=No+Banner{% endif %}" class="item-banner-preview" alt="">
                                 <h3>{{ tournament.name }}</h3>
                             </div>
-                            <span class="status-badge status-{{ tournament.lifecycle_status }}" data-i18n="status.{{ tournament.lifecycle_status }}">{{ tournament.lifecycle_status_label }}</span>
+                            <span class="status-badge status-{{ tournament.lifecycle_status }}" data-i18n-message>{{ tournament.lifecycle_status }}</span>
                         </div>
                         <div class="section-note spacer-top">
-                            <span data-i18n="home.tournaments.start">Старт</span>: {{ tournament.start_date|default:"-" }} | <span data-i18n="home.tournaments.reg_range">Реєстрація</span>: {{ tournament.registration_start|default:"-" }} - {{ tournament.registration_end|default:"-" }}
+                            <span data-i18n="home.tournaments.start">Старт</span>: {{ tournament.start_date|date:"d.m.Y H:i"|default:"-" }} | <span data-i18n="home.tournaments.reg_range">Реєстрація</span>: {{ tournament.registration_start|date:"d.m.Y H:i"|default:"-" }} - {{ tournament.registration_end|date:"d.m.Y H:i"|default:"-" }}
                         </div>
                         <div class="toolbar spacer-top">
                             <a class="button" href="{% url 'edit_tournament' tournament.id %}" data-i18n="admin.tournaments.edit">Редагувати</a>
@@ -363,10 +363,10 @@
                                 <img src="{% if tournament.banner_image %}{{ tournament.banner_image.url }}{% else %}https://placehold.co/100x60?text=No+Banner{% endif %}" class="item-banner-preview" alt="">
                                 <h3>{{ tournament.name }}</h3>
                             </div>
-                            <span class="status-badge status-{{ tournament.lifecycle_status }}" data-i18n="status.{{ tournament.lifecycle_status }}">{{ tournament.lifecycle_status_label }}</span>
+                            <span class="status-badge status-{{ tournament.lifecycle_status }}" data-i18n-message>{{ tournament.lifecycle_status }}</span>
                         </div>
                         <div class="section-note spacer-top">
-                            <span data-i18n="home.tournaments.start">Старт</span>: {{ tournament.start_date|default:"-" }} | <span data-i18n="home.tournaments.reg_range">Реєстрація</span>: {{ tournament.registration_start|default:"-" }} - {{ tournament.registration_end|default:"-" }}
+                            <span data-i18n="home.tournaments.start">Старт</span>: {{ tournament.start_date|date:"d.m.Y H:i"|default:"-" }} | <span data-i18n="home.tournaments.reg_range">Реєстрація</span>: {{ tournament.registration_start|date:"d.m.Y H:i"|default:"-" }} - {{ tournament.registration_end|date:"d.m.Y H:i"|default:"-" }}
                         </div>
                         <div class="toolbar spacer-top">
                             <a class="button" href="{% url 'edit_tournament' tournament.id %}" data-i18n="admin.tournaments.edit">Редагувати</a>
@@ -406,7 +406,7 @@
                     <div class="item-card">
                         <div class="section-head">
                             <h3>{{ reg.team.name }} → {{ reg.tournament.name }}</h3>
-                            <span class="status-badge status-{{ reg.status }}" data-i18n="status.{{ reg.status }}">{{ reg.get_status_display }}</span>
+                            <span class="status-badge status-{{ reg.status }}" data-i18n-message>{{ reg.status }}</span>
                         </div>
                         {% if reg.status == 'pending' %}
                             <div class="toolbar spacer-top">
@@ -447,12 +447,12 @@
     <template id="registration-field-template">
         <div class="builder-row">
             <div class="builder-grid">
-                <input type="text" class="builder-label" placeholder="Назва поля">
+                <input type="text" class="builder-label" placeholder="Назва поля" data-i18n-placeholder="builder.placeholder.label">
                 <select class="builder-type">
-                    <option value="text">Текст</option>
-                    <option value="textarea">Абзац</option>
-                    <option value="email">Email</option>
-                    <option value="participants">Учасники</option>
+                    <option value="text" data-i18n="builder.type.text">Текст</option>
+                    <option value="textarea" data-i18n="builder.type.textarea">Абзац</option>
+                    <option value="email" data-i18n="builder.type.email">Email</option>
+                    <option value="participants" data-i18n="builder.type.participants">Учасники</option>
                 </select>
                 <label class="builder-check"><input type="checkbox" class="builder-required" checked> <span data-i18n="builder.required">Обов'язкове</span></label>
                 <button type="button" class="button-danger builder-remove">×</button>
@@ -463,8 +463,8 @@
         <div class="builder-row">
             <div class="schedule-grid" style="display: grid; grid-template-columns: auto 1fr 1fr auto; gap: 10px; align-items: center; margin-bottom: 10px;">
                 <input type="datetime-local" class="schedule-starts-at">
-                <input type="text" class="schedule-title" placeholder="Подія">
-                <input type="text" class="schedule-description" placeholder="Опис">
+                <input type="text" class="schedule-title" placeholder="Подія" data-i18n-placeholder="builder.placeholder.event">
+                <input type="text" class="schedule-description" placeholder="Опис" data-i18n-placeholder="builder.placeholder.desc">
                 <button type="button" class="button-danger schedule-remove" style="padding: 5px 10px;">×</button>
             </div>
         </div>

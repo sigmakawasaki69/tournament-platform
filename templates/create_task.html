@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}{% if mode == 'edit' %}Редагувати завдання{% else %}Створити завдання{% endif %}{% endblock %}
+{% block title %}<span data-i18n="{% if mode == 'edit' %}admin.tasks.edit_title{% else %}admin.tasks.create_title{% endif %}">{% if mode == 'edit' %}Редагувати завдання{% else %}Створити завдання{% endif %}</span>{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -51,8 +51,8 @@
 {% block content %}
     <div class="hero">
         <div class="hero-content">
-            <div class="hero-kicker" data-i18n="admin.tasks.create_title">Управління завданнями</div>
-            <h1 data-i18n="admin.tasks.headline">{% if mode == 'edit' %}Редагування{% else %}Створення{% endif %} завдання</h1>
+            <div class="hero-kicker" data-i18n="admin.tasks.hero_kicker">Управління завданнями</div>
+            <h1 data-i18n="{% if mode == 'edit' %}admin.tasks.headline_edit{% else %}admin.tasks.headline_create{% endif %}">{% if mode == 'edit' %}Редагування{% else %}Створення{% endif %} завдання</h1>
             <p data-i18n="admin.tasks.subtitle">Визначте вимоги, дедлайни та формат відповіді для учасників.</p>
         </div>
     </div>
@@ -150,7 +150,7 @@
                 </div>
 
                 <div class="toolbar">
-                    <button class="button" type="submit">{% if mode == 'edit' %}Зберегти зміни{% else %}Створити завдання{% endif %}</button>
+                    <button class="button" type="submit" data-i18n="{% if mode == 'edit' %}admin.tasks.btn_save_changes{% else %}admin.tasks.btn_create{% endif %}">{% if mode == 'edit' %}Зберегти зміни{% else %}Створити завдання{% endif %}</button>
                     <a class="button-secondary" href="{% if tournament %}{% url 'tournament_tasks' tournament.id %}{% else %}/{% endif %}" data-i18n="admin.tasks.btn_cancel">Скасувати</a>
                 </div>
             </form>
@@ -197,9 +197,9 @@
 
                     return `
                         <div class="builder-row" data-index="${index}">
-                            <input type="text" value="${escapeHtml(row.label)}" placeholder="Назва поля" data-role="label">
+                            <input type="text" value="${escapeHtml(row.label)}" placeholder="Назва поля" data-role="label" data-i18n-placeholder="admin.tasks.placeholder_label">
                             <select data-role="type">${options}</select>
-                            <button type="button" class="button" style="background:var(--error); min-height:42px;" data-role="remove">×</button>
+                            <button type="button" class="button" style="background:var(--error); min-height:42px;" data-role="remove" data-i18n="admin.tournaments.btn_delete">×</button>
                         </div>
                     `;
                 }).join("");
@@ -264,7 +264,9 @@
 
             addButton.addEventListener("click", () => addRow(buildNewCustomRow()));
             if (presetSelect) presetSelect.addEventListener("change", () => {
-                if (confirm("Замінити поточний формат на вибраний шаблон?")) loadPreset(presetSelect.value, true);
+                const lang = document.documentElement.lang || 'uk';
+                const msg = lang === 'en' ? 'Replace current format with selected template?' : 'Замінити поточний формат на вибраний шаблон?';
+                if (confirm(msg)) loadPreset(presetSelect.value, true);
                 else presetSelect.value = lastPresetKey;
             });
 

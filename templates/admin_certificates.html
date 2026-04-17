@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Сертифікати{% endblock %}
+{% block title %}<span data-i18n="admin.certificates.title">Сертифікати</span>{% endblock %}
 
 {% block content %}
     <div class="hero">
@@ -64,8 +64,8 @@
                 {% for template in certificate_templates %}
                     <div class="item-card">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <strong data-i18n-message>{% if template.tournament %}{{ template.tournament.name }}{% else %}Глобальний шаблон{% endif %}</strong>
-                            <span class="status-badge status-registration">{{ template.get_certificate_type_display }}</span>
+                            <strong data-i18n-message>{% if template.tournament %}{{ template.tournament.name }}{% else %}<span data-i18n="admin.certificates.global_template">Глобальний шаблон</span>{% endif %}</strong>
+                            <span class="status-badge status-registration" data-i18n-message>{{ template.certificate_type }}</span>
                         </div>
                         <div class="section-note spacer-top">
                             <span data-i18n="admin.certificates.uploaded_by">Завантажив</span>: {{ template.uploaded_by.username }} · {{ template.created_at|date:"d.m.Y" }}
@@ -125,8 +125,8 @@
                         {% if certificate.team %}<span data-i18n="admin.certificates.team">Команда</span>: {{ certificate.team.name }}<br>{% endif %}
                     </div>
                     <div class="toolbar spacer-top" style="justify-content: space-between;">
-                        <span class="status-badge status-running">{{ certificate.get_certificate_type_display }}</span>
-                        <a class="button" href="{% url 'download_certificate_pdf' certificate.id %}" data-i18n="admin.certificates.btn_download">Download PDF</a>
+                        <span class="status-badge status-running" data-i18n-message>{{ certificate.certificate_type }}</span>
+                        <a class="button" href="{% url 'download_certificate_pdf' certificate.id %}" data-i18n="profile.certificates.download">Завантажити PDF</a>
                     </div>
                 </div>
             {% empty %}
