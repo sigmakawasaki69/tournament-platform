@@ -1656,12 +1656,23 @@ def profile_view(request):
     announcements = build_public_announcements()
     certificates = build_user_certificates_queryset(request.user)
 
+    jury_evaluations = None
+    if request.user.role == 'jury':
+        jury_evaluations = Evaluation.objects.filter(
+            assignment__jury_user=request.user
+        ).select_related(
+            'assignment__submission__team',
+            'assignment__submission__task',
+            'assignment__submission__task__tournament'
+        ).order_by('-evaluated_at')
+
     return render(request, 'profile.html', {
         'profile_user': request.user,
         'my_team': my_teams.first(),
         'tournaments_with_state': tournaments_with_state,
         'announcements': announcements,
         'certificates': certificates,
+        'jury_evaluations': jury_evaluations,
         **build_notification_nav_context(request.user),
     })
 

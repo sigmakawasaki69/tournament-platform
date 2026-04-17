@@ -233,8 +233,10 @@
         </div>
     </section>
 
-    <section class="section grid-2">
-        <div class="card">
+    {% if announcements or news_rows %}
+    <section class="section grid-2 auto-shrink" id="home-news-announcements">
+        {% if announcements %}
+        <div class="card auto-shrink">
             <div class="section-head">
                 <div>
                     <h2 data-i18n="home.announcements.title">Оголошення</h2>
@@ -248,13 +250,13 @@
                         <p class="card-text" data-i18n-message>{{ announcement.message }}</p>
                         <p class="section-note">{% if announcement.tournament %}<span data-i18n="profile.announcements.tournament">Турнір</span>: {{ announcement.tournament.name }} · {% endif %}{{ announcement.created_at|date:"d.m.Y H:i" }}</p>
                     </div>
-                {% empty %}
-                    <div class="empty" data-i18n="home.announcements.empty">Оголошень поки немає.</div>
                 {% endfor %}
             </div>
         </div>
+        {% endif %}
 
-        <div class="card">
+        {% if news_rows %}
+        <div class="card auto-shrink">
             <div class="section-head">
                 <div>
                     <h2 data-i18n="home.news.title">Новини платформи</h2>
@@ -267,12 +269,12 @@
                         <h3 data-i18n-message>{{ news.tournament.name }}</h3>
                         <p class="card-text" data-i18n-message>{{ news.text }}</p>
                     </div>
-                {% empty %}
-                    <div class="empty" data-i18n="home.news.empty">Поки що новин немає.</div>
                 {% endfor %}
             </div>
         </div>
+        {% endif %}
     </section>
+    {% endif %}
 {% endblock %}
 
 {% block extra_scripts %}

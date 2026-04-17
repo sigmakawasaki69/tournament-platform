@@ -350,6 +350,23 @@ class TournamentForm(forms.ModelForm):
         if is_draft:
             return cleaned_data
 
+        now = timezone.now()
+        date_fields_to_check = {
+            'registration_start': registration_start,
+            'registration_end': registration_end,
+            'start_date': start_date,
+            'end_date': end_date,
+        }
+
+        for field_name, value in date_fields_to_check.items():
+            if value and value < now:
+                # We only error if the value is CHANGED to a past date, 
+                # or if it's a new tournament being published with a past date.
+                # If the tournament was already published and had a past date, we allow keeping it.
+                old_value = getattr(self.instance, field_name, None)
+                if old_value != value:
+                    self.add_error(field_name, "Вибачте, ця дата вже пройшла")
+
         required_fields = {
             'name': name,
             'description': description,

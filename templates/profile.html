@@ -24,6 +24,7 @@
         </div>
     </section>
 
+    {% if profile_user.role == 'participant' or profile_user.is_superuser %}
     <section class="section">
         <div class="section-head">
             <div>
@@ -48,7 +49,41 @@
             <a class="button-success spacer-top" href="{% url 'create_team' %}" data-i18n="profile.team.create">Створити команду</a>
         {% endif %}
     </section>
+    {% endif %}
 
+    {% if profile_user.role == 'jury' %}
+    <section class="section auto-shrink">
+        <div class="section-head">
+            <div>
+                <h2 class="section-title">Оцінені роботи</h2>
+                <div class="section-note">Список робіт, які ви вже оцінили в рамках призначених вам завдань.</div>
+            </div>
+        </div>
+
+        <div class="list spacer-top">
+            {% for evaluation in jury_evaluations %}
+                <div class="item-card">
+                    <div class="section-head">
+                        <h3>{{ evaluation.assignment.submission.team.name }} — {{ evaluation.assignment.submission.task.title }}</h3>
+                        <span class="status-badge status-finished">Бал: {{ evaluation.total_score }}</span>
+                    </div>
+                    <div class="meta-list spacer-top">
+                        <span>Турнір: <strong>{{ evaluation.assignment.submission.task.tournament.name }}</strong></span><br>
+                        <span>Дата оцінювання: {{ evaluation.evaluated_at|date:"d.m.Y H:i" }}</span>
+                    </div>
+                    <div class="toolbar spacer-top">
+                        <a class="button" href="{% url 'evaluate_submission' evaluation.assignment.id %}">Переглянути оцінку</a>
+                    </div>
+                </div>
+            {% empty %}
+                <p class="empty">Ви ще не оцінили жодної роботи.</p>
+                <a class="button spacer-top" href="{% url 'jury_dashboard' %}">Перейти до оцінювання</a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    {% if profile_user.role == 'participant' %}
     <section class="section">
         <div class="section-head">
             <div>
@@ -94,9 +129,11 @@
             {% endfor %}
         </div>
     </section>
+    {% endif %}
 
-    <section class="grid-2">
-        <div class="card">
+    <section class="grid-2 auto-shrink">
+        {% if profile_user.role == 'participant' %}
+        <div class="card auto-shrink">
             <div class="section-head">
                 <div>
                     <h2 data-i18n="profile.certificates.title">Мої сертифікати</h2>
@@ -121,6 +158,7 @@
                 {% endfor %}
             </div>
         </div>
+        {% endif %}
 
         <div class="card">
             <div class="section-head">

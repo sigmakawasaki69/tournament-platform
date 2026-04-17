@@ -290,21 +290,25 @@
                                 </div>
                             </div>
                             <div class="section-note">{{ user.email|default:"-" }}</div>
-                            <div class="toolbar spacer-top">
+                            <div class="toolbar spacer-top" style="justify-content: space-between;">
                                 {% if user.id != request.user.id %}
-                                    <form method="post" action="{% url 'update_user_role' user.id %}" style="display:flex; gap:8px;">
-                                        {% csrf_token %}
-                                        <select name="role" class="button-compact" style="font-size:12px;">
-                                            {% for value, label in role_choices %}
-                                                <option value="{{ value }}"{% if user.role == value %} selected{% endif %}>{{ label }}</option>
-                                            {% endfor %}
-                                        </select>
-                                        <button class="button" type="submit" data-i18n="admin.users.save_role">ОК</button>
-                                    </form>
-                                    <form method="post" action="{% url 'delete_user' user.id %}">
-                                        {% csrf_token %}
-                                        <button class="button-danger" type="submit" data-i18n="admin.users.delete">×</button>
-                                    </form>
+                                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                                        <form method="post" action="{% url 'update_user_role' user.id %}" style="display:flex; gap:6px; align-items: center;">
+                                            {% csrf_token %}
+                                            <select name="role" class="button-compact" style="font-size:12px; height: 32px; min-width: 120px;">
+                                                {% for value, label in role_choices %}
+                                                    <option value="{{ value }}"{% if user.role == value %} selected{% endif %}>{{ label }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <button class="button" type="submit" data-i18n="admin.users.save_role" style="height: 32px; padding: 0 12px; min-height: 32px;">ОК</button>
+                                        </form>
+                                        <form method="post" action="{% url 'delete_user' user.id %}" onsubmit="return confirm('Ви впевнені?');">
+                                            {% csrf_token %}
+                                            <button class="button-danger" type="submit" data-i18n="admin.users.delete" style="height: 32px; width: 32px; min-height: 32px; display: flex; align-items: center; justify-content: center;">×</button>
+                                        </form>
+                                    </div>
+                                {% else %}
+                                    <span class="section-note" data-i18n="admin.users.current_user">Ви (стекучий користувач)</span>
                                 {% endif %}
                             </div>
                         </div>
