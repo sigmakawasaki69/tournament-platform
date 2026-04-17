@@ -32,7 +32,7 @@
             <a href="{% url 'home' %}" class="drawer-link active">
                 <span data-i18n="nav.home">Головна</span>
             </a>
-            <a href="{% if request.user.is_authenticated and request.user.is_superuser or request.user.role == 'admin' %}{% url 'admin_active_tournaments' %}{% else %}{% url 'home' %}{% endif %}" class="drawer-link">
+            <a href="{% if request.user.is_authenticated and request.user.is_superuser or request.user.role == 'admin' %}{% url 'admin_all_tournaments' %}{% else %}{% url 'home' %}{% endif %}" class="drawer-link">
                 <span data-i18n="nav.all_tournaments">Всі турніри</span>
             </a>
             <a href="{% url 'messages' %}" class="drawer-link">
@@ -56,6 +56,9 @@
                 {% if request.user.is_superuser or request.user.role == 'admin' %}
                     <div class="drawer-section-title" data-i18n="nav.management">Керування</div>
                     <a href="{% url 'admin_users' %}" class="drawer-link" data-i18n="nav.users">Користувачі</a>
+                    <a href="{% url 'admin_all_tournaments' %}" class="drawer-link">
+                        <span data-i18n="nav.all_tournaments">Всі турніри</span>
+                    </a>
                     <a href="{% url 'admin_active_tournaments' %}" class="drawer-link" data-i18n="nav.active_tournaments">Активні турніри</a>
                     <a href="{% url 'admin_inactive_tournaments' %}" class="drawer-link" data-i18n="nav.inactive_tournaments">Неактивні турніри</a>
                     <a href="{% url 'admin_teams' %}" class="drawer-link" data-i18n="nav.teams">Команди</a>

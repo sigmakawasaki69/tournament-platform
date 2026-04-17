@@ -82,6 +82,7 @@ urlpatterns = [
 
     path('admin-dashboard/', admin_dashboard, name='admin_dashboard'),
     path('dashboard/users/', admin_users, name='admin_users'),
+    path('dashboard/tournaments/all/', admin_all_tournaments, name='admin_all_tournaments'),
     path('dashboard/tournaments/active/', admin_active_tournaments, name='admin_active_tournaments'),
     path('dashboard/tournaments/inactive/', admin_inactive_tournaments, name='admin_inactive_tournaments'),
     path('dashboard/teams/', admin_teams, name='admin_teams'),

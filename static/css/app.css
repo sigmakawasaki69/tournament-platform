@@ -838,14 +838,19 @@ a {
 .tournament-track > * {
     flex: 0 0 calc(33.333% - 13.5px);
     display: flex !important;
-    height: auto !important;
+    align-items: stretch;
 }
 
 .tournament-track > .card,
 .tournament-track > a.card {
-    height: 100% !important;
+    width: 100%;
+    height: 100%;
     display: flex !important;
     flex-direction: column !important;
+}
+
+.card-description {
+    flex-grow: 1; /* Pushes bottom meta to the bottom of the card */
 }
 
 @media (max-width: 1024px) {
@@ -904,6 +909,7 @@ a {
     display: flex;
     flex-direction: column;
     min-height: 0;
+    justify-content: space-between;
 }
 
 @media (max-width: 1024px) {
@@ -954,7 +960,8 @@ a {
     flex-direction: column;
     text-decoration: none;
     transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-    min-height: 240px;
+    min-height: 260px;
+    height: 100%;
 }
 
 .card-link:hover {
@@ -1564,10 +1571,11 @@ select.button-compact {
     padding: 6px 14px;
     font-size: 13px;
     border-radius: 8px;
-    height: 34px; /* Force consistent height */
+    min-height: 36px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    line-height: normal;
 }
 
 select.button-compact {

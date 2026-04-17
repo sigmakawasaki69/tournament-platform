@@ -850,6 +850,11 @@ def admin_users(request):
 
 
 @login_required
+def admin_all_tournaments(request):
+    return render_admin_section(request, 'all_tournaments')
+
+
+@login_required
 def admin_active_tournaments(request):
     return render_admin_section(request, 'active_tournaments')
 

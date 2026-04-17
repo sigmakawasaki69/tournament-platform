@@ -290,25 +290,23 @@
                                 </div>
                             </div>
                             <div class="section-note">{{ user.email|default:"-" }}</div>
-                            <div class="toolbar spacer-top" style="justify-content: space-between;">
+                            <div class="toolbar spacer-top" style="gap: 8px; flex-wrap: wrap;">
                                 {% if user.id != request.user.id %}
-                                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                                        <form method="post" action="{% url 'update_user_role' user.id %}" style="display:flex; gap:6px; align-items: center;">
-                                            {% csrf_token %}
-                                            <select name="role" class="button-compact" style="font-size:12px; height: 32px; min-width: 120px;">
-                                                {% for value, label in role_choices %}
-                                                    <option value="{{ value }}"{% if user.role == value %} selected{% endif %}>{{ label }}</option>
-                                                {% endfor %}
-                                            </select>
-                                            <button class="button" type="submit" data-i18n="admin.users.save_role" style="height: 32px; padding: 0 12px; min-height: 32px;">ОК</button>
-                                        </form>
-                                        <form method="post" action="{% url 'delete_user' user.id %}" onsubmit="return confirm('Ви впевнені?');">
-                                            {% csrf_token %}
-                                            <button class="button-danger" type="submit" data-i18n="admin.users.delete" style="height: 32px; width: 32px; min-height: 32px; display: flex; align-items: center; justify-content: center;">×</button>
-                                        </form>
-                                    </div>
+                                    <form method="post" action="{% url 'update_user_role' user.id %}" style="display:flex; gap:6px; align-items: center; flex: 1; min-width: 200px;">
+                                        {% csrf_token %}
+                                        <select name="role" class="button-compact" style="font-size:12px; height: 36px; flex: 1;">
+                                            {% for value, label in role_choices %}
+                                                <option value="{{ value }}"{% if user.role == value %} selected{% endif %}>{{ label }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <button class="button" type="submit" data-i18n="admin.users.save_role" style="height: 36px; padding: 0 12px; white-space: nowrap;">Зберегти роль</button>
+                                    </form>
+                                    <form method="post" action="{% url 'delete_user' user.id %}" onsubmit="return confirm('Ви впевнені?');">
+                                        {% csrf_token %}
+                                        <button class="button-danger" type="submit" data-i18n="admin.users.delete" style="height: 36px; width: 36px; display: flex; align-items: center; justify-content: center;">×</button>
+                                    </form>
                                 {% else %}
-                                    <span class="section-note" data-i18n="admin.users.current_user">Ви (стекучий користувач)</span>
+                                    <span class="section-note" data-i18n="admin.users.current_user">Ви (поточний користувач)</span>
                                 {% endif %}
                             </div>
                         </div>
@@ -316,6 +314,41 @@
                 </div>
             </section>
         </div>
+    {% elif current_section == 'all_tournaments' %}
+        <section class="section">
+            <div class="section-head">
+                <h2 class="section-title" data-i18n="admin.tournaments.all.title">Всі турніри</h2>
+                <a class="button" href="{% url 'admin_all_tournaments' %}?action=create-tournament" data-i18n="admin.sidebar.create_tournament">+ Створити турнир</a>
+            </div>
+            <div class="list spacer-top">
+                {% for tournament in tournaments %}
+                    <div class="item-card">
+                        <div class="section-head">
+                            <div style="display:flex; gap:16px; align-items:center;">
+                                <img src="{% if tournament.banner_image %}{{ tournament.banner_image.url }}{% else %}https://placehold.co/100x60?text=No+Banner{% endif %}" class="item-banner-preview" alt="">
+                                <h3>{{ tournament.name }}</h3>
+                            </div>
+                            <span class="status-badge status-{{ tournament.lifecycle_status }}" data-i18n="status.{{ tournament.lifecycle_status }}">{{ tournament.lifecycle_status_label }}</span>
+                        </div>
+                        <div class="section-note spacer-top">
+                            <span data-i18n="home.tournaments.start">Старт</span>: {{ tournament.start_date|default:"-" }} | <span data-i18n="home.tournaments.reg_range">Реєстрація</span>: {{ tournament.registration_start|default:"-" }} - {{ tournament.registration_end|default:"-" }}
+                        </div>
+                        <div class="toolbar spacer-top">
+                            <a class="button" href="{% url 'edit_tournament' tournament.id %}" data-i18n="admin.tournaments.edit">Редагувати</a>
+                            <a class="button-secondary" href="{% url 'create_tournament_task' tournament.id %}" data-i18n="admin.tournaments.add_task">Завдання ({{ tournament.tasks.count }})</a>
+                            {% if tournament.is_active or not tournament.is_finished %}
+                                <form method="post" action="{% url 'delete_tournament' tournament.id %}" onsubmit="return confirm('Ви впевнені?');">
+                                    {% csrf_token %}
+                                    <button class="button-danger" type="submit" data-i18n="admin.tournaments.delete">Видалити</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="empty" data-i18n="admin.tournaments.empty">Турнірів ще не створено.</p>
+                {% endfor %}
+            </div>
+        </section>
     {% elif current_section == 'active_tournaments' %}
         <section class="section">
             <div class="section-head">
