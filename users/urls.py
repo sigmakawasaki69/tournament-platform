@@ -15,6 +15,7 @@ from .views import (
     my_team_view,
     admin_dashboard,
     admin_users,
+    admin_all_tournaments,
     admin_active_tournaments,
     admin_inactive_tournaments,
     admin_teams,
