@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}<span data-i18n="{% if mode == 'edit' %}admin.tasks.edit_title{% else %}admin.tasks.create_title{% endif %}">{% if mode == 'edit' %}Редагувати завдання{% else %}Створити завдання{% endif %}</span>{% endblock %}
+{% block title %}{% if mode == 'edit' %}Редагувати завдання{% else %}Створити завдання{% endif %}{% endblock %}
 
 {% block extra_head %}
 <style>
