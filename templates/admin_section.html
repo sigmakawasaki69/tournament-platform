@@ -336,12 +336,10 @@
                         <div class="toolbar spacer-top">
                             <a class="button" href="{% url 'edit_tournament' tournament.id %}" data-i18n="admin.tournaments.edit">Редагувати</a>
                             <a class="button-secondary" href="{% url 'create_tournament_task' tournament.id %}" data-i18n="admin.tournaments.add_task">Завдання ({{ tournament.tasks.count }})</a>
-                            {% if tournament.is_active or not tournament.is_finished %}
                                 <form method="post" action="{% url 'delete_tournament' tournament.id %}" onsubmit="return confirm('Ви впевнені?');">
                                     {% csrf_token %}
                                     <button class="button-danger" type="submit" data-i18n="admin.tournaments.delete">Видалити</button>
                                 </form>
-                            {% endif %}
                         </div>
                     </div>
                 {% empty %}

@@ -1085,6 +1085,17 @@ class EvaluationForm(forms.ModelForm):
 
 
 class AnnouncementForm(forms.ModelForm):
+    send_internal = forms.BooleanField(
+        label="Опублікувати на платформі",
+        required=False,
+        initial=True,
+    )
+    send_email = forms.BooleanField(
+        label="Відслати на пошту командам",
+        required=False,
+        initial=False,
+    )
+
     class Meta:
         model = Announcement
         fields = ['title', 'message', 'tournament']

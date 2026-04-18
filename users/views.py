@@ -890,7 +890,39 @@ def admin_announcements(request):
         if form.is_valid():
             announcement = form.save(commit=False)
             announcement.created_by = request.user
-            announcement.save()
+            
+            if form.cleaned_data.get('send_internal', True):
+                announcement.save()
+            
+            if form.cleaned_data.get('send_email', False):
+                from django.contrib.auth import get_user_model
+                from .platform_services import send_platform_email
+                import threading
+                User = get_user_model()
+                
+                # Fetch target emails
+                if announcement.tournament:
+                    from core.tournament.models import TournamentRegistration
+                    emails = set()
+                    regs = TournamentRegistration.objects.filter(tournament=announcement.tournament).select_related('team__captain_user')
+                    for reg in regs:
+                        if reg.team and reg.team.captain_user and reg.team.captain_user.email:
+                            emails.add(reg.team.captain_user.email)
+                    for jury in announcement.tournament.jury_users.all():
+                        if jury.email:
+                            emails.add(jury.email)
+                else:
+                    emails = set(User.objects.exclude(email='').values_list('email', flat=True))
+                
+                def send_bulk_emails(email_set, subj, msg):
+                    for e in email_set:
+                        try:
+                            send_platform_email(e, subj, msg)
+                        except Exception:
+                            pass
+                            
+                threading.Thread(target=send_bulk_emails, args=(emails, announcement.title, announcement.message)).start()
+
             return redirect('admin_announcements')
     else:
         form = AnnouncementForm(tournament_queryset=tournament_queryset)

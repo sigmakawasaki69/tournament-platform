@@ -33,6 +33,16 @@
                         {{ form.tournament }}
                         {% if form.tournament.errors %}<div class="field-errors">{{ form.tournament.errors }}</div>{% endif %}
                     </div>
+                    <div class="field-group span-2" style="display: flex; gap: 24px;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: normal;">
+                            {{ form.send_internal }}
+                            <span data-i18n="admin.announcements.label_send_internal">Опублікувати на платформі</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: normal;">
+                            {{ form.send_email }}
+                            <span data-i18n="admin.announcements.label_send_email">Відслати на пошту командам</span>
+                        </label>
+                    </div>
                 </div>
                 <div class="toolbar spacer-top">
                     <button class="button" type="submit" data-i18n="admin.announcements.btn_publish">Опублікувати</button>
