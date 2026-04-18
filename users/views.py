@@ -1697,7 +1697,7 @@ def my_team_view(request):
 
 @login_required
 def create_team(request):
-    if not is_participant_user(request.user) and not request.user.is_superuser:
+    if not is_participant_user(request.user):
         return redirect('profile')
 
     next_url = request.GET.get('next') or request.POST.get('next')

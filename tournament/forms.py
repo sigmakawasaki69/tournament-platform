@@ -375,6 +375,13 @@ class TournamentForm(forms.ModelForm):
             'registration_start': registration_start,
             'registration_end': registration_end,
         }
+        
+        banner = cleaned_data.get('banner_image')
+        if not banner and not getattr(self.instance, 'banner_image', None):
+            self.add_error('banner_image', 'Обов’язково додайте банер для публікації турніру.')
+        elif cleaned_data.get('clear_banner') and not banner:
+            self.add_error('banner_image', 'Обов’язково додайте банер для публікації турніру.')
+
         for field_name, value in required_fields.items():
             if value in [None, '']:
                 self.add_error(field_name, 'Це поле є обов’язковим для опублікованого турніру.')

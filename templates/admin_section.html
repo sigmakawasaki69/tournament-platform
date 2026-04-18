@@ -318,7 +318,7 @@
         <section class="section">
             <div class="section-head">
                 <h2 class="section-title" data-i18n="admin.tournaments.all.title">Всі турніри</h2>
-                <a class="button" href="{% url 'admin_all_tournaments' %}?action=create-tournament" data-i18n="admin.sidebar.create_tournament">+ Створити турнир</a>
+                <a class="button" href="{% url 'admin_active_tournaments' %}?action=create-tournament" data-i18n="admin.sidebar.create_tournament">+ Створити турнир</a>
             </div>
             <div class="list spacer-top">
                 {% for tournament in tournaments %}

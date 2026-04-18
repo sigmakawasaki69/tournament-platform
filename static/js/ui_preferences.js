@@ -9,6 +9,10 @@
 
     const translations = {
         uk: {
+            "admin.users.hero.title": "Керування користувачами",
+            "home.tournaments.tasks": "Завдання",
+            "public_tournament.hero_kicker": "Турнір",
+            "team.participants.add.subtitle": "Запросіть учасників до команди.",
             "brand.title": "Турнірна платформа",
             "brand.subtitle": "Турніри, команди, повідомлення, сертифікати та результати в одному просторі.",
             "nav.home": "Головна",
@@ -906,6 +910,10 @@
             "organizer.action.finish_now": "Завершити зараз",
         },
         en: {
+            "admin.users.hero.title": "User Management",
+            "home.tournaments.tasks": "Tasks",
+            "public_tournament.hero_kicker": "Tournament",
+            "team.participants.add.subtitle": "Invite participants to the team.",
             "admin.tasks.create_title": "Create Task",
             "admin.tasks.headline": "New Task",
             "admin.tasks.subtitle": "Define requirements and evaluation criteria for participants.",

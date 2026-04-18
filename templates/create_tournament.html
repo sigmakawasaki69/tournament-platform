@@ -184,7 +184,7 @@
                             {{ form.max_teams }}
                             {% if form.max_teams.errors %}<div class="field-errors">{{ form.max_teams.errors }}</div>{% endif %}
                         </div>
-                        <div class="field-group checkbox-row">
+                        <div class="field-group checkbox-row" style="display:none;">
                             {{ form.is_draft }}
                             <label for="{{ form.is_draft.id_for_label }}" style="margin:0; font-weight: 700;" data-i18n="admin.tournaments.label_draft">Чернетка</label>
                         </div>
