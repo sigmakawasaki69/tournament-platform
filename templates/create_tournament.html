@@ -100,7 +100,10 @@
                             {% if form.banner_image.errors %}<div class="field-errors">{{ form.banner_image.errors }}</div>{% endif %}
                             <div id="banner-new-preview" style="margin-top:12px; display:none;">
                                 <img id="banner-preview-img" src="" alt="Preview" style="max-width:300px; border-radius:12px; display:block; border: 1px solid var(--border);">
-                                <small class="section-note" data-i18n="create_tournament.label.banner_preview_new">Попередній перегляд нового банера</small>
+                                <div style="margin-top: 8px; display: flex; align-items: center; gap: 8px;">
+                                    <small class="section-note" data-i18n="create_tournament.label.banner_preview_new">Попередній перегляд нового банера</small>
+                                    <button type="button" class="button-secondary" id="clear-new-banner-btn" style="padding: 4px 8px; font-size: 12px; color: var(--error); border-color: var(--error);" data-i18n="admin.tournaments.btn_delete">Видалити</button>
+                                </div>
                             </div>
                         </div>
                         <div class="field-group span-2">
@@ -395,6 +398,14 @@
                     previewWrap.style.display = 'none';
                 }
             });
+
+            const clearNewBtn = document.getElementById('clear-new-banner-btn');
+            if (clearNewBtn) {
+                clearNewBtn.addEventListener('click', function() {
+                    bannerInput.value = '';
+                    previewWrap.style.display = 'none';
+                });
+            }
 
             const removeBtn = document.getElementById('remove-banner-btn');
             const clearCheck = document.getElementById('id_clear_banner');

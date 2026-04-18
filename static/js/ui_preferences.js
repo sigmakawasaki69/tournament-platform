@@ -9,7 +9,10 @@
 
     const translations = {
         uk: {
-            "admin.users.hero.title": "Керування користувачами",
+            "admin.hero.users.title": "Керування користувачами",
+            "admin.hero.users.subtitle": "Керування користувачами та їхніми ролями.",
+            "admin.hero.all_tournaments.title": "Всі турніри",
+            "admin.hero.all_tournaments.subtitle": "Перегляд всіх створених турнірів.",
             "home.tournaments.tasks": "Завдання",
             "public_tournament.hero_kicker": "Турнір",
             "team.participants.add.subtitle": "Запросіть учасників до команди.",
@@ -910,7 +913,10 @@
             "organizer.action.finish_now": "Завершити зараз",
         },
         en: {
-            "admin.users.hero.title": "User Management",
+            "admin.hero.users.title": "User Management",
+            "admin.hero.users.subtitle": "Manage users and their roles.",
+            "admin.hero.all_tournaments.title": "All Tournaments",
+            "admin.hero.all_tournaments.subtitle": "View all created tournaments.",
             "home.tournaments.tasks": "Tasks",
             "public_tournament.hero_kicker": "Tournament",
             "team.participants.add.subtitle": "Invite participants to the team.",
