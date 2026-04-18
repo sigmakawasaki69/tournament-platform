@@ -775,6 +775,13 @@ a {
     margin-top: 24px;
 }
 
+/* Cancel sibling margin-top in grid and flex rows */
+.grid-2 > .card + .card,
+.grid-3 > .card + .card,
+.list-grid > .card + .card {
+    margin-top: 0;
+}
+
 .section-head {
     justify-content: space-between;
 }
@@ -839,6 +846,7 @@ a {
     flex: 0 0 calc(33.333% - 13.5px);
     display: flex !important;
     align-items: stretch;
+    margin: 0 !important; /* Cancel .card+.card margin-top inside carousel */
 }
 
 .tournament-track > .card,
