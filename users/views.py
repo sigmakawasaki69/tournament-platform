@@ -460,16 +460,21 @@ def home(request):
     for row in tournament_rows[:4]:
         tournament = row['tournament']
         if tournament.is_registration_open:
-            text = 'Відкрита реєстрація. Можна подавати заявки.'
+            text_key = 'news.status.registration_open'
+            text_default = 'Відкрита реєстрація. Можна подавати заявки.'
         elif tournament.is_running:
-            text = 'Турнір уже триває.'
+            text_key = 'news.status.running'
+            text_default = 'Турнір уже триває.'
         elif tournament.is_finished and tournament.evaluation_results_ready:
-            text = 'Турнір завершено, оцінювання закрито. Підсумковий лідерборд уже доступний.'
+            text_key = 'news.status.finished_evaluated'
+            text_default = 'Турнір завершено, оцінювання закрито. Підсумковий лідерборд уже доступний.'
         elif tournament.is_finished:
-            text = 'Турнір завершено. Оцінювання ще триває, підсумковий лідерборд з’явиться пізніше.'
+            text_key = 'news.status.finished_evaluating'
+            text_default = 'Турнір завершено. Оцінювання ще триває.'
         else:
-            text = 'Турнір заплановано. Слідкуйте за датами старту.'
-        news_rows.append({'tournament': tournament, 'text': text})
+            text_key = 'news.status.scheduled'
+            text_default = 'Турнір заплановано. Слідкуйте за датами старту.'
+        news_rows.append({'tournament': tournament, 'text': text_default, 'text_key': text_key})
 
     return render(request, 'home.html', {
         'tournament_rows': tournament_rows,

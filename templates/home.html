@@ -267,7 +267,7 @@
                 {% for news in news_rows %}
                     <div class="summary-card">
                         <h3 data-i18n-message>{{ news.tournament.name }}</h3>
-                        <p class="card-text" data-i18n-message>{{ news.text }}</p>
+                        <p class="card-text" data-i18n="{{ news.text_key }}">{{ news.text }}</p>
                     </div>
                 {% endfor %}
             </div>
