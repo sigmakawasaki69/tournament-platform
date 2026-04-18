@@ -210,7 +210,7 @@
         </div>
     </section>
 
-    <section class="section">
+    <section class="section" id="tournament-summary-section">
         <div class="section-head">
             <div>
                 <h2 class="section-title" data-i18n="home.summary.title">Списки за статусом</h2>
@@ -422,6 +422,12 @@
                 });
                 
                 emptyState.hidden = visibleCount > 0;
+                
+                // Hide summary section when a specific filter is active
+                const summarySection = document.getElementById('tournament-summary-section');
+                if (summarySection) {
+                    summarySection.style.display = status === 'all' ? '' : 'none';
+                }
                 
                 // Reset carousel completely to 0 and re-sync
                 tCurrentIndex = 0;

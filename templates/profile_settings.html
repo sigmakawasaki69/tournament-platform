@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Налаштування профілю{% endblock %}
+
+{% block extra_head %}
+<style>
+    .settings-grid {
+        display: grid;
+        gap: 24px;
+        max-width: 680px;
+    }
+    .settings-card {
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 24px;
+        background: var(--surface);
+    }
+    .settings-card h3 {
+        margin: 0 0 4px;
+        font-size: 18px;
+    }
+    .settings-card .section-note {
+        margin-bottom: 16px;
+    }
+    .settings-field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 14px;
+    }
+    .settings-field label {
+        font-weight: 700;
+        font-size: 14px;
+    }
+    .avatar-block {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 16px;
+    }
+    .avatar-preview {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid var(--border);
+        background: var(--bg-soft);
+    }
+    .avatar-placeholder {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        border: 3px dashed var(--border);
+        background: var(--bg-soft);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        font-weight: 800;
+        color: var(--muted);
+        text-transform: uppercase;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-kicker" data-i18n="settings.hero.kicker">Особистий кабінет</div>
+            <h1 data-i18n="settings.hero.title">Налаштування профілю</h1>
+            <p data-i18n="settings.hero.text">Змініть нікнейм, пароль або аватарку свого акаунту.</p>
+        </div>
+    </section>
+
+    <section class="section spacer-top">
+        {% if success_message %}
+            <div class="message-box success spacer-bottom">{{ success_message }}</div>
+        {% endif %}
+        {% if error_message %}
+            <div class="message-box error spacer-bottom">{{ error_message }}</div>
+        {% endif %}
+
+        <div class="settings-grid">
+
+            <!-- Avatar -->
+            <div class="settings-card">
+                <h3 data-i18n="settings.avatar.title">Аватарка</h3>
+                <div class="section-note" data-i18n="settings.avatar.note">Завантажте зображення профілю (PNG, JPG). Максимум 5 МБ.</div>
+
+                <div class="avatar-block">
+                    {% if profile_user.avatar %}
+                        <img src="{{ profile_user.avatar.url }}" alt="Avatar" class="avatar-preview" id="avatar-current">
+                    {% else %}
+                        <div class="avatar-placeholder" id="avatar-placeholder">{{ profile_user.username|first }}</div>
+                    {% endif %}
+                    <div>
+                        <div style="font-weight: 700;">{{ profile_user.username }}</div>
+                        <div class="section-note">{{ profile_user.email }}</div>
+                    </div>
+                </div>
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="change_avatar">
+                    <div class="settings-field">
+                        <label data-i18n="settings.avatar.label">Виберіть файл</label>
+                        <input type="file" name="avatar" accept="image/*" id="avatar-input">
+                    </div>
+                    <div id="avatar-new-preview" style="display:none; margin-bottom: 14px;">
+                        <img id="avatar-preview-img" src="" alt="Preview" class="avatar-preview">
+                    </div>
+                    <div class="toolbar" style="gap: 8px;">
+                        <button type="submit" class="button" data-i18n="settings.avatar.upload">Завантажити</button>
+                        {% if profile_user.avatar %}
+                            <button type="submit" class="button-secondary" name="action" value="remove_avatar" data-i18n="settings.avatar.remove" style="color: var(--error); border-color: var(--error);">Видалити</button>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+
+            <!-- Username -->
+            <div class="settings-card">
+                <h3 data-i18n="settings.username.title">Нікнейм</h3>
+                <div class="section-note" data-i18n="settings.username.note">Змініть ваше ім'я на платформі. Від 3 до 30 символів.</div>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="change_username">
+                    <div class="settings-field">
+                        <label data-i18n="settings.username.label">Новий нікнейм</label>
+                        <input type="text" name="new_username" value="{{ profile_user.username }}" required minlength="3" maxlength="30">
+                    </div>
+                    <button type="submit" class="button" data-i18n="settings.username.save">Зберегти</button>
+                </form>
+            </div>
+
+            <!-- Password -->
+            <div class="settings-card">
+                <h3 data-i18n="settings.password.title">Зміна пароля</h3>
+                <div class="section-note" data-i18n="settings.password.note">Введіть поточний пароль та задайте новий (мінімум 6 символів).</div>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="change_password">
+                    <div class="settings-field">
+                        <label data-i18n="settings.password.current">Поточний пароль</label>
+                        <input type="password" name="old_password" required>
+                    </div>
+                    <div class="settings-field">
+                        <label data-i18n="settings.password.new">Новий пароль</label>
+                        <input type="password" name="new_password" required minlength="6">
+                    </div>
+                    <div class="settings-field">
+                        <label data-i18n="settings.password.confirm">Підтвердження нового пароля</label>
+                        <input type="password" name="new_password_confirm" required minlength="6">
+                    </div>
+                    <button type="submit" class="button" data-i18n="settings.password.save">Змінити пароль</button>
+                </form>
+            </div>
+
+        </div>
+
+        <div class="toolbar spacer-top">
+            <a href="{% url 'profile' %}" class="button-secondary" data-i18n="settings.back">← Повернутися до профілю</a>
+        </div>
+    </section>
+
+    <script>
+        (function() {
+            var input = document.getElementById('avatar-input');
+            var previewWrap = document.getElementById('avatar-new-preview');
+            var previewImg = document.getElementById('avatar-preview-img');
+            if (!input || !previewWrap || !previewImg) return;
+            input.addEventListener('change', function() {
+                var file = this.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewImg.src = e.target.result;
+                        previewWrap.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    previewWrap.style.display = 'none';
+                }
+            });
+        })();
+    </script>
+{% endblock %}

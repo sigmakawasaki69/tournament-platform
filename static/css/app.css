@@ -1227,6 +1227,15 @@ textarea {
     background: var(--surface-strong);
 }
 
+input[type="checkbox"],
+input[type="radio"] {
+    width: auto;
+    padding: 0;
+    border-radius: 4px;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
 textarea {
     min-height: 120px;
     resize: vertical;

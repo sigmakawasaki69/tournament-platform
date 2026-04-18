@@ -82,7 +82,7 @@
 
         <form method="post" id="tournament-form" enctype="multipart/form-data">
             {% csrf_token %}
-            <div class="form-grid">
+            <div style="display: flex; flex-direction: column; gap: 24px;">
                 <div class="item-card">
                     <h2 class="section-title" data-i18n="admin.tournaments.basic_title">Основна інформація</h2>
                     <div class="form-grid spacer-top">

@@ -16,6 +16,7 @@ class CustomUser(AbstractUser):
     email_verified_at = models.DateTimeField(null=True, blank=True)
     announcements_seen_at = models.DateTimeField(null=True, blank=True)
     certificates_seen_at = models.DateTimeField(null=True, blank=True)
+    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True, verbose_name="Аватар")
 
     def save(self, *args, **kwargs):
         if self.role == 'participant':

@@ -362,7 +362,7 @@ def build_admin_nav_items():
         {'url': reverse('admin_users') + '?action=create-user', 'label': 'Створити користувача'},
         {'url': reverse('admin_active_tournaments'), 'label': 'Активні турніри'},
         {'url': reverse('admin_inactive_tournaments'), 'label': 'Неактивні турніри'},
-        {'url': reverse('admin_active_tournaments') + '?action=create-tournament', 'label': 'Створити турнір'},
+        {'url': reverse('create_tournament'), 'label': 'Створити турнір'},
         {'url': reverse('admin_teams'), 'label': 'Команди'},
         {'url': reverse('admin_registrations'), 'label': 'Заявки'},
         {'url': reverse('admin_submissions'), 'label': 'Роботи'},
@@ -1131,22 +1131,14 @@ def create_tournament(request):
     if not can_manage_tournaments(request.user):
         return redirect('redirect_by_role')
 
-    if request.method == 'GET' and is_admin_user(request.user):
-        return redirect(reverse('admin_active_tournaments') + '?action=create-tournament')
+    dashboard_url = reverse('admin_active_tournaments') if is_admin_user(request.user) else get_dashboard_url_for_user(request.user)
 
     if request.method == 'POST':
         form = TournamentForm(request.POST, request.FILES)
         if form.is_valid():
             form.instance.created_by = request.user
             tournament = form.save()
-            return redirect(reverse('admin_active_tournaments') if is_admin_user(request.user) else get_dashboard_url_for_user(request.user))
-        if is_admin_user(request.user):
-            return render_admin_section(
-                request,
-                'active_tournaments',
-                action='create-tournament',
-                tournament_form=form,
-            )
+            return redirect(dashboard_url)
     else:
         form = TournamentForm()
 
@@ -1156,7 +1148,7 @@ def create_tournament(request):
         {
             'form': form,
             'mode': 'create',
-            'dashboard_url': reverse('admin_active_tournaments') if is_admin_user(request.user) else get_dashboard_url_for_user(request.user),
+            'dashboard_url': dashboard_url,
         },
     )
 
@@ -1711,6 +1703,77 @@ def profile_view(request):
         'certificates': certificates,
         'jury_evaluations': jury_evaluations,
         **build_notification_nav_context(request.user),
+    })
+
+
+@login_required
+def profile_settings(request):
+    user = request.user
+    success_message = None
+    error_message = None
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        if action == 'change_username':
+            new_username = request.POST.get('new_username', '').strip()
+            if not new_username:
+                error_message = 'Нікнейм не може бути порожнім.'
+            elif len(new_username) < 3:
+                error_message = 'Нікнейм повинен містити щонайменше 3 символи.'
+            elif len(new_username) > 30:
+                error_message = 'Нікнейм не може бути довшим за 30 символів.'
+            elif CustomUser.objects.filter(username=new_username).exclude(pk=user.pk).exists():
+                error_message = 'Цей нікнейм вже зайнятий.'
+            else:
+                user.username = new_username
+                user.save(update_fields=['username'])
+                success_message = 'Нікнейм успішно змінено.'
+
+        elif action == 'change_password':
+            old_password = request.POST.get('old_password', '')
+            new_password = request.POST.get('new_password', '')
+            new_password_confirm = request.POST.get('new_password_confirm', '')
+
+            if not user.check_password(old_password):
+                error_message = 'Поточний пароль невірний.'
+            elif len(new_password) < 6:
+                error_message = 'Новий пароль повинен містити щонайменше 6 символів.'
+            elif new_password != new_password_confirm:
+                error_message = 'Паролі не збігаються.'
+            else:
+                user.set_password(new_password)
+                user.save()
+                from django.contrib.auth import update_session_auth_hash
+                update_session_auth_hash(request, user)
+                success_message = 'Пароль успішно змінено.'
+
+        elif action == 'change_avatar':
+            avatar_file = request.FILES.get('avatar')
+            if avatar_file:
+                if not avatar_file.content_type.startswith('image/'):
+                    error_message = 'Завантажте файл зображення (PNG, JPG, JPEG).'
+                elif avatar_file.size > 5 * 1024 * 1024:
+                    error_message = 'Максимальний розмір аватарки — 5 МБ.'
+                else:
+                    user.avatar = avatar_file
+                    user.save(update_fields=['avatar'])
+                    success_message = 'Аватарку успішно оновлено.'
+            else:
+                error_message = 'Виберіть файл зображення.'
+
+        elif action == 'remove_avatar':
+            if user.avatar:
+                user.avatar.delete(save=False)
+                user.avatar = None
+                user.save(update_fields=['avatar'])
+                success_message = 'Аватарку видалено.'
+
+    return render(request, 'profile_settings.html', {
+        'profile_user': user,
+        'success_message': success_message,
+        'error_message': error_message,
+        **build_notification_nav_context(user),
     })
 
 
