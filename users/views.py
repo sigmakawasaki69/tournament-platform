@@ -772,7 +772,7 @@ def public_tournament_detail(request, tournament_id):
     can_submit_registration = False
     viewer_can_register = (
         request.user.is_authenticated
-        and (request.user.is_superuser or is_participant_user(request.user))
+        and is_participant_user(request.user)
     )
 
     if request.user.is_authenticated:
@@ -1724,7 +1724,7 @@ def create_team(request):
 
 @login_required
 def register_team_for_tournament(request, tournament_id):
-    if not is_participant_user(request.user) and not request.user.is_superuser:
+    if not is_participant_user(request.user):
         return redirect('redirect_by_role')
 
     tournament = get_object_or_404(Tournament, id=tournament_id, is_draft=False)
