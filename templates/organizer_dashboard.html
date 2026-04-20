@@ -25,8 +25,12 @@
             {% for tournament in tournaments %}
                 <div class="item-card">
                     <div class="section-head">
-                        <div style="display:flex; gap:16px; align-items:center;">
-                            <img src="{% if tournament.banner_image %}{{ tournament.banner_image.url }}{% else %}https://placehold.co/100x60?text=No+Banner{% endif %}" style="width:80px; height:50px; object-fit:cover; border-radius:8px;" alt="">
+                        <div class="media-object">
+                            {% if tournament.banner_image %}
+                                <img class="media-thumb" src="{{ tournament.banner_image.url }}" alt="{{ tournament.name }}">
+                            {% else %}
+                                <div class="placeholder-thumb" data-i18n="admin.tournaments.no_banner">Без банера</div>
+                            {% endif %}
                             <h3>{{ tournament.name }}</h3>
                         </div>
                         <span class="status-badge status-{{ tournament.lifecycle_status }}" data-i18n-message>{{ tournament.lifecycle_status }}</span>

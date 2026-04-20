@@ -786,15 +786,15 @@ def public_tournament_detail(request, tournament_id):
             team__captain_user=request.user,
         ).order_by('-created_at').first()
 
-    if viewer_can_register and tournament.is_registration_open:
+    if tournament.is_registration_open and (viewer_can_register or not request.user.is_authenticated):
         registration_form = TournamentRegistrationForm(
-            request.POST if request.method == 'POST' else None,
-            user=request.user,
+            request.POST if request.method == 'POST' and viewer_can_register else None,
+            user=request.user if request.user.is_authenticated else None,
             tournament=tournament,
         )
-        can_submit_registration = True
+        can_submit_registration = viewer_can_register
 
-        if request.method == 'POST':
+        if request.method == 'POST' and viewer_can_register:
             if existing_registration and existing_registration.status in [
                 TournamentRegistration.Status.PENDING,
                 TournamentRegistration.Status.APPROVED,

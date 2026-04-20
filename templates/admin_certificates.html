@@ -15,7 +15,7 @@
     {% if messages %}
         <div class="section spacer-top">
             {% for message in messages %}
-                <div class="message-box {% if message.tags == 'error' %}error{% elif message.tags == 'success' %}success{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}">
+                <div class="message-box {% if message.tags == 'error' %}error{% elif message.tags == 'success' %}success{% elif message.tags == 'warning' %}warn{% else %}info{% endif %}">
                     {{ message }}
                 </div>
             {% endfor %}
@@ -63,7 +63,7 @@
             <div class="list spacer-top">
                 {% for template in certificate_templates %}
                     <div class="item-card">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="inline-row between">
                             <strong data-i18n-message>{% if template.tournament %}{{ template.tournament.name }}{% else %}<span data-i18n="admin.certificates.global_template">Глобальний шаблон</span>{% endif %}</strong>
                             <span class="status-badge status-registration" data-i18n-message>{{ template.certificate_type }}</span>
                         </div>
@@ -96,13 +96,13 @@
                         </div>
                         <div class="toolbar">
                             <a class="button-secondary" href="{% url 'export_tournament_results_csv' tournament.id %}" data-i18n="admin.certificates.btn_export">Експорт CSV</a>
-                            <form method="post" action="{% url 'issue_participant_certificates' tournament.id %}" style="display:inline;">
+                            <form method="post" action="{% url 'issue_participant_certificates' tournament.id %}">
                                 {% csrf_token %}
                                 <button class="button" type="submit" data-i18n="admin.certificates.btn_gen_part">Сертифікати членів</button>
                             </form>
-                            <form method="post" action="{% url 'issue_winner_certificates' tournament.id %}" style="display:inline;">
+                            <form method="post" action="{% url 'issue_winner_certificates' tournament.id %}">
                                 {% csrf_token %}
-                                <button class="button" style="background: var(--error);" type="submit" data-i18n="admin.certificates.btn_gen_win">Сертифікати переможців</button>
+                                <button class="button-danger" type="submit" data-i18n="admin.certificates.btn_gen_win">Сертифікати переможців</button>
                             </form>
                         </div>
                     </div>
@@ -124,7 +124,7 @@
                         <span data-i18n="admin.certificates.tournament">Турнір</span>: {{ certificate.tournament.name }}<br>
                         {% if certificate.team %}<span data-i18n="admin.certificates.team">Команда</span>: {{ certificate.team.name }}<br>{% endif %}
                     </div>
-                    <div class="toolbar spacer-top" style="justify-content: space-between;">
+                    <div class="inline-row between spacer-top">
                         <span class="status-badge status-running" data-i18n-message>{{ certificate.certificate_type }}</span>
                         <a class="button" href="{% url 'download_certificate_pdf' certificate.id %}" data-i18n="profile.certificates.download">Завантажити PDF</a>
                     </div>

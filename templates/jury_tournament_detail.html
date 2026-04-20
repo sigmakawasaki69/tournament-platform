@@ -3,50 +3,6 @@
 
 {% block title %}{{ tournament.name }} - оцінювання{% endblock %}
 
-{% block extra_head %}
-    <style>
-        .team-folder {
-            padding: 24px;
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--border);
-            background: var(--surface-strong);
-            margin-bottom: 24px;
-        }
-        .team-folder summary {
-            font-size: 20px;
-            font-weight: 800;
-            cursor: pointer;
-            list-style: none;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .team-folder summary::after {
-            content: '↓';
-            opacity: 0.5;
-        }
-        .team-folder[open] summary::after {
-            content: '↑';
-        }
-        .submission-item {
-            padding: 18px;
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            background: var(--bg-soft);
-            margin-top: 16px;
-        }
-        .eval-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-top: 12px;
-        }
-        @media (max-width: 640px) {
-            .eval-grid { grid-template-columns: 1fr; }
-        }
-    </style>
-{% endblock %}
-
 {% block content %}
     <div class="hero">
         <div class="hero-content">
@@ -58,6 +14,23 @@
             <div class="hero-stat"><strong>{{ pending_team_rows|length }}</strong><span data-i18n="jury.tournament.pending">Неоцінені</span></div>
         </div>
     </div>
+
+    <section class="section spacer-top">
+        <h2 class="section-title" data-i18n="public_tournament.schedule_title">Розклад турніру</h2>
+        <div class="list spacer-top">
+            {% for item in tournament.schedule_items.all %}
+                <div class="surface-row">
+                    <strong>{{ item.title }}</strong>
+                    <div class="section-note">{{ item.starts_at|date:"d.m.Y H:i" }}</div>
+                    {% if item.description %}
+                        <p class="card-text spacer-top">{{ item.description }}</p>
+                    {% endif %}
+                </div>
+            {% empty %}
+                <p class="empty" data-i18n="public_tournament.no_schedule">Розклад турніру ще не додано.</p>
+            {% endfor %}
+        </div>
+    </section>
 
     <section class="section spacer-top">
         <h2 class="section-title" data-i18n="jury.tournament.pending_submissions">Неоцінені роботи</h2>
@@ -74,7 +47,7 @@
                                     <div class="meta-item">
                                         <strong>{{ item.label }}:</strong>
                                         {% if item.is_link %}
-                                            <a href="{{ item.value }}" class="btn-text" target="_blank">{{ item.display_value|default:item.value }}</a>
+                                            <a href="{{ item.value }}" class="btn-text">{{ item.display_value|default:item.value }}</a>
                                         {% else %}
                                             {{ item.display_value|default:item.value }}
                                         {% endif %}

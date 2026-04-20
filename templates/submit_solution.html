@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 
-{% block title %}<span data-i18n-message>{{ task.title }}{% endblock %}
+{% block title %}{{ task.title }}{% endblock %}
 
 {% block content %}
-<div class="wrap" style="max-width: 800px; margin: 0 auto;">
-    <div style="margin-bottom:14px;">
+<div class="content-narrow stack">
+    <div class="card-actions">
         <a class="button-secondary" href="{% url 'tournament_tasks' task.tournament.id %}" data-i18n="common.back">Назад</a>
     </div>
 
-    <div class="card">
+    <section class="section">
         <h1 data-i18n="submit_solution.title">Надіслати рішення</h1>
-        <h2 style="margin-top:10px;" data-i18n-message>{{ task.title }}</h2>
+        <h2 class="page-title spacer-top" data-i18n-message>{{ task.title }}</h2>
 
         <div class="meta-list spacer-top">
             <span data-i18n="submit_solution.tournament">Турнір</span>: <strong>{{ task.tournament.name }}</strong><br>
@@ -18,12 +18,12 @@
         </div>
 
         <div class="task-meta grid-2 spacer-top">
-            <div style="background: #f8fbff; border: 1px solid #dbe7f3; border-radius: 12px; padding: 12px;">
-                <strong style="font-size:12px; color:#64748b;" data-i18n="tournament_tasks.task_start">Початок завдання</strong>
+            <div class="surface-muted">
+                <strong class="section-note" data-i18n="tournament_tasks.task_start">Початок завдання</strong>
                 {{ task.effective_start|date:"d.m.Y H:i"|default:"-" }}
             </div>
-            <div style="background: #f8fbff; border: 1px solid #dbe7f3; border-radius: 12px; padding: 12px;">
-                <strong style="font-size:12px; color:#64748b;" data-i18n="tournament_tasks.task_deadline">Дедлайн здачі</strong>
+            <div class="surface-muted">
+                <strong class="section-note" data-i18n="tournament_tasks.task_deadline">Дедлайн здачі</strong>
                 {{ task.effective_deadline|date:"d.m.Y H:i"|default:"-" }}
             </div>
         </div>
@@ -41,16 +41,16 @@
 
             {% for field in form.visible_fields %}
                 {% if field.name == 'is_final' %}
-                    <div class="checkbox-row" style="display: flex; gap: 10px; align-items: center; margin: 8px 0 16px;">
+                    <div class="checkbox-inline spacer-top">
                         {{ field }}
-                        <label for="{{ field.id_for_label }}" style="margin:0; font-weight:700;" data-i18n-message>{{ field.label }}</label>
+                        <label for="{{ field.id_for_label }}" data-i18n-message>{{ field.label }}</label>
                     </div>
-                    {% if field.errors %}<div class="field-errors" style="color:#dc2626; font-size:14px;" data-i18n-message>{{ field.errors|join:", " }}</div>{% endif %}
+                    {% if field.errors %}<div class="field-errors" data-i18n-message>{{ field.errors|join:", " }}</div>{% endif %}
                 {% else %}
                     <div class="field-group spacer-top">
-                        <label for="{{ field.id_for_label }}" style="display:block; margin-bottom:6px; font-weight:700;" data-i18n-message>{{ field.label }}</label>
+                        <label for="{{ field.id_for_label }}" data-i18n-message>{{ field.label }}</label>
                         {{ field }}
-                        {% if field.errors %}<div class="field-errors" style="color:#dc2626; font-size:14px;" data-i18n-message>{{ field.errors|join:", " }}</div>{% endif %}
+                        {% if field.errors %}<div class="field-errors" data-i18n-message>{{ field.errors|join:", " }}</div>{% endif %}
                     </div>
                 {% endif %}
             {% endfor %}
@@ -62,6 +62,6 @@
                 <a class="button-secondary" href="{% url 'tournament_tasks' task.tournament.id %}" data-i18n="common.back">Назад</a>
             </div>
         </form>
-    </div>
+    </section>
 </div>
 {% endblock %}
