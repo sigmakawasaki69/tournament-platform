@@ -102,7 +102,7 @@ body {
         linear-gradient(180deg, #08111f 0%, #0b1220 45%, #0f1728 100%);
 }
 
-[hidden] {
+[hidden], .hidden {
     display: none !important;
 }
 
@@ -844,7 +844,7 @@ a {
 
 .tournament-track > * {
     flex: 0 0 calc(33.333% - 13.5px);
-    display: flex !important;
+    display: flex;
     align-items: stretch;
     margin: 0 !important; /* Cancel .card+.card margin-top inside carousel */
 }
@@ -853,8 +853,8 @@ a {
 .tournament-track > a.card {
     width: 100%;
     
-    display: flex !important;
-    flex-direction: column !important;
+    display: flex;
+    flex-direction: column;
 }
 
 .card-description {
