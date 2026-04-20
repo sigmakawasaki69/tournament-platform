@@ -48,7 +48,7 @@ def can_view_curated_tournament(user, tournament):
 
 def get_dashboard_url_for_user(user):
     if is_admin_user(user):
-        return reverse("admin_users")
+        return reverse("admin_dashboard")
     if is_organizer_user(user):
         return reverse("organizer_dashboard")
     if user.role == "jury":

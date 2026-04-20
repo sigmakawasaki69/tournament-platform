@@ -65,6 +65,10 @@
                                 {{ announcement.created_at|date:"d.m.Y H:i" }}
                             </div>
                         </div>
+                        <form method="post" action="{% url 'delete_announcement' announcement.id %}" onsubmit="return confirm('Ви впевнені?');">
+                            {% csrf_token %}
+                            <button class="button-danger" type="submit" style="height: 36px; width: 36px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 20px;">×</button>
+                        </form>
                     </div>
                     <div class="card-text spacer-top" data-i18n-message>
                         {{ announcement.message|linebreaksbr }}

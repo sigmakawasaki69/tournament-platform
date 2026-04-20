@@ -66,6 +66,7 @@ from .views import (
     password_reset_request_view,
     password_reset_verify_view,
     password_reset_confirm_view,
+    delete_announcement,
 )
 
 urlpatterns = [
@@ -141,4 +142,5 @@ urlpatterns = [
     path('password-reset/', password_reset_request_view, name='password_reset_request'),
     path('password-reset/verify/', password_reset_verify_view, name='password_reset_verify'),
     path('password-reset/confirm/', password_reset_confirm_view, name='password_reset_confirm'),
+    path('delete-announcement/<int:announcement_id>/', delete_announcement, name='delete_announcement'),
 ]

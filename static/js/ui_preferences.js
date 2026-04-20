@@ -532,6 +532,9 @@
             "admin.users.create.hide": "Сховати",
             "admin.users.create.btn": "Створити",
 
+            "admin.announcements.label_send_internal": "Внутрішнє сповіщення",
+            "admin.announcements.label_send_email": "Відправити Email (усім учасникам)",
+
             "organizer.title": "Кабінет організатора",
             "organizer.hero.kicker": "Робочий кабінет",
             "organizer.hero.title": "Керуйте турнірами, заявками, завданнями та дедлайнами",
@@ -979,6 +982,9 @@
             "admin.tasks.btn_cancel": "Cancel",
             "admin.tasks.btn_create": "Create Task",
             "admin.tasks.btn_save_changes": "Save Changes",
+
+            "admin.announcements.label_send_internal": "Internal Notification",
+            "admin.announcements.label_send_email": "Send Email (to all participants)",
 
             "admin.tournaments.edit_title": "Edit Tournament",
             "admin.tournaments.create_title": "Create Tournament",

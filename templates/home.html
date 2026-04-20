@@ -158,7 +158,7 @@
             <div class="tournament-viewport">
                 <div class="tournament-track" id="tournament-track">
             {% for row in tournament_rows %}
-                <a class="card card-link" href="{% url 'public_tournament_detail' row.tournament.id %}" data-filter-bucket="{{ row.filter_bucket }}">
+                <a class="card card-link" href="{% url 'public_tournament_detail' row.tournament.id %}" data-filter-bucket="{{ row.tournament.lifecycle_status }}">
                     <div class="card-body">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
                             <h3 class="quick-title" data-i18n-message style="margin:0;">{{ row.tournament.name }}</h3>

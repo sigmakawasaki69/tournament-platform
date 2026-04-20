@@ -940,6 +940,18 @@ def admin_announcements(request):
 
 
 @login_required
+def delete_announcement(request, announcement_id):
+    if not is_admin_user(request.user):
+        return redirect('redirect_by_role')
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+
+    announcement = get_object_or_404(Announcement, id=announcement_id)
+    announcement.delete()
+    return redirect('admin_announcements')
+
+
+@login_required
 def admin_certificates(request):
     if not is_admin_user(request.user):
         return redirect('redirect_by_role')
