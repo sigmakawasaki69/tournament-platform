@@ -1,11 +1,27 @@
-venv/
+# Django / Python
 __pycache__/
-*.pyc
-db.sqlite3
+*.py[cod]
+*$py.class
 .env
-*.env
-.cursor/
-.idea/
-*.log
-staticfiles/
+db.sqlite3
 media/
+static_root/
+
+# Database Dumps (Твої JSON дампи бази)
+db_data.json
+db_data_fixed.json
+db_data_final.json
+*.json
+
+# VS Code / IDE
+.vscode/
+.idea/
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Railway / Environments
+.railway/
+venv/
+env/

@@ -235,6 +235,7 @@ default_csrf_trusted_origins = [
     "https://*.trycloudflare.com",
     "https://serverdenis.pp.ua",
     "https://*.onrender.com",
+    "https://tournament-platform-production-5888.up.railway.app",
 ]
 CSRF_TRUSTED_ORIGINS = list(
     dict.fromkeys(default_csrf_trusted_origins + env_list("CSRF_TRUSTED_ORIGINS"))
