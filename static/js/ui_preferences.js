@@ -19,6 +19,8 @@
             "brand.title": "Турнірна платформа",
             "brand.subtitle": "Турніри, команди, повідомлення, сертифікати та результати в одному просторі.",
             "nav.home": "Головна",
+            "nav.close_menu": "Закрити меню",
+            "nav.open_menu": "Відкрити меню",
             "nav.all_tournaments": "Всі турніри",
             "nav.messages": "Повідомлення",
             "nav.certificates": "Сертифікати",
@@ -94,6 +96,10 @@
             "news.status.finished_evaluated": "Турнір завершено, оцінювання закрито. Підсумковий лідерборд уже доступний.",
             "news.status.finished_evaluating": "Турнір завершено. Оцінювання ще триває.",
             "news.status.scheduled": "Турнір заплановано. Слідкуйте за датами старту.",
+            "team.detail.quick_block": "Швидкий блок команди",
+            "team.detail.title": "Деталі команди",
+            "schedule.btn_remove": "Видалити",
+            "create_tournament.label.banner_preview_new": "Новий банер",
             "messages.hero.kicker": "Центр повідомлень",
             "messages.hero.title": "Повідомлення платформи",
             "messages.hero.text": "Тут зібрані особисті статуси команди, загальні оголошення та турнірні події: старт реєстрації, старт завдань, дедлайни, завершення оцінювання й системні оновлення.",
@@ -901,12 +907,15 @@
             "admin.hero.registrations.subtitle": "Підтвердження або відхилення заявок на участь.",
             "admin.hero.submissions.title": "Надіслані роботи",
             "admin.hero.submissions.subtitle": "Усі надіслані матеріали команд на одному екрані.",
+            "admin.hero.all_tournaments.title": "Усі турніри",
+            "admin.hero.all_tournaments.subtitle": "Перегляд усіх створених турнірів.",
             "create_tournament.label.banner_preview": "Попередній перегляд банера",
             "create_tournament.back_to_dashboard": "Сховати",
             "admin.tournaments.all.title": "Усі турніри",
 
             "admin.users.current_user": "Поточний користувач",
-            "admin.tournaments.empty": "Список турнірів порожній.",
+            "admin.tournaments.all.empty": "Список турнірів порожній.",
+            "admin.tournaments.all.subtitle": "Повний список усіх створених турнірів на платформі.",
             "builder.empty": "Поля не додані.",
             "builder.placeholder.label": "Назва поля",
             "builder.type.text": "Текст",
@@ -918,6 +927,7 @@
             "builder.placeholder.event": "Подія",
             "builder.placeholder.desc": "Опис",
             "schedule.empty": "Розклад порожній.",
+            "schedule.description_placeholder": "Введіть опис події...",
 
             "participant.no_team": "Ви ще не створили жодної команди.",
             "participant.btn_retry": "Спробувати знову",
@@ -1002,6 +1012,8 @@
             "brand.title": "Tournament Platform",
             "brand.subtitle": "Tournaments, teams, messages, certificates, and results in one place.",
             "nav.home": "Home",
+            "nav.close_menu": "Close menu",
+            "nav.open_menu": "Open menu",
             "nav.all_tournaments": "All Tournaments",
             "nav.messages": "Messages",
             "nav.certificates": "Certificates",
@@ -1061,6 +1073,15 @@
             "messages.hero.kicker": "Message center",
             "messages.hero.title": "Platform messages",
             "messages.hero.text": "Here you can find personal team statuses, general announcements, and tournament events: registration start, task launch, deadlines, evaluation completion, and system updates.",
+            "news.status.registration_open": "Registration open. Applications can be submitted.",
+            "news.status.running": "Tournament is already running.",
+            "news.status.finished_evaluated": "Tournament finished, evaluation closed. Final leaderboard is available.",
+            "news.status.finished_evaluating": "Tournament finished. Evaluation is still ongoing.",
+            "news.status.scheduled": "Tournament scheduled. Watch for start dates.",
+            "team.detail.quick_block": "Team Fast Track",
+            "team.detail.title": "Team Details",
+            "schedule.btn_remove": "Remove",
+            "create_tournament.label.banner_preview_new": "New Banner Preview",
             "messages.filters.title": "Message filters",
             "messages.filters.note": "Switch between personal, general, and tournament messages without reloading the page.",
             "messages.filter.all": "All",
@@ -1418,7 +1439,9 @@
             "admin.users.all.empty": "No users yet.",
             "admin.users.approve": "Approve",
             "admin.users.save_role": "Save Role",
-            "admin.users.delete": "Delete",
+            "admin.users.confirm_delete": "Are you sure you want to delete this user?",
+            "admin.tournaments.confirm_delete": "Are you sure you want to delete this tournament?",
+            "admin.certificates.email": "Email",
             "admin.users.status_approved": "approved",
             "admin.users.status_pending": "pending",
             "admin.users.superuser": "Superuser",
@@ -1835,6 +1858,8 @@
             "create_tournament.label.banner_preview": "Banner Preview",
             "create_tournament.back_to_dashboard": "Hide",
             "admin.users.current_user": "Current User",
+            "admin.tournaments.all.empty": "The tournament list is empty.",
+            "admin.tournaments.all.subtitle": "Full list of all created tournaments on the platform.",
             "admin.tournaments.empty": "The tournament list is empty.",
             "builder.empty": "Fields not added.",
             "builder.placeholder.label": "Field Label",
@@ -1847,6 +1872,7 @@
             "builder.placeholder.event": "Event",
             "builder.placeholder.desc": "Description",
             "schedule.empty": "Schedule is empty.",
+            "schedule.description_placeholder": "Enter event description...",
 
             "role.admin": "Administrator",
             "role.organizer": "Organizer",
@@ -2059,7 +2085,57 @@
     function getMessageTranslation(language, message) {
         const messageTable = messageMap[language] || messageMap[FALLBACK_LANGUAGE];
         const trimmed = message.trim();
+
+        // Dynamic prefix translation for notifications
+        if (language === "en") {
+            const replacements = {
+                "Старт реєстрації: ": "Registration Start: ",
+                "Статус заявки: ": "Application Status: ",
+                "Старт завдань: ": "Tasks Start: ",
+                "24 години до дедлайну: ": "24 hours to deadline: ",
+                "Сабміти закрито: ": "Submissions closed: ",
+                "Оцінювання завершено: ": "Evaluation finished: ",
+                "Заявка команди ": "Application of team ",
+                " має статус «": " has status \"",
+                "».": "\".",
+                "очікує": "pending",
+                "схвалено": "approved",
+                "відхилено": "rejected",
+                "Реєстрацію на турнір відкрито. Можна подавати заявки команди.": "Registration for the tournament is open. Team applications can be submitted.",
+                "Завдання турніру вже доступні. Перевірте умови, дедлайни та подайте сабміти вчасно.": "Tournament tasks are now available. Check terms, deadlines and submit your work on time.",
+                "До завершення турніру залишилася доба. Перевірте, чи всі сабміти подані.": "One day left until the end of the tournament. Check if all submissions are filed.",
+                "Турнір завершено. Прийом робіт закрито, офіційні відповіді вже доступні, а підсумковий рейтинг відкриється після завершення оцінювання.": "Tournament finished. Submissions are closed, official answers are available, and the final leaderboard will open after evaluation.",
+                "Підсумковий лідерборд і результати команд уже доступні.": "Final leaderboard and team results are now available."
+            };
+            let translated = trimmed;
+            for (const [uk, en] of Object.entries(replacements)) {
+                if (translated.includes(uk)) {
+                    translated = translated.split(uk).join(en);
+                }
+            }
+            if (translated !== trimmed) return translated;
+        }
+
         return messageTable[trimmed] || (messageMap[FALLBACK_LANGUAGE] || {})[trimmed] || message;
+    }
+
+    function reformatDates(language) {
+        const locale = language === "en" ? "en-GB" : "uk-UA";
+        const options = {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        };
+
+        document.querySelectorAll("[data-timestamp]").forEach(function (element) {
+            const timestamp = parseFloat(element.dataset.timestamp);
+            if (isNaN(timestamp)) return;
+
+            const date = new Date(timestamp * 1000);
+            element.textContent = new Intl.DateTimeFormat(locale, options).format(date);
+        });
     }
 
     function applyTheme(theme) {
@@ -2105,10 +2181,22 @@
         document.querySelectorAll("[data-i18n-aria-label]").forEach(function (element) {
             element.setAttribute("aria-label", getTranslation(resolvedLanguage, element.dataset.i18nAriaLabel));
         });
+        document.querySelectorAll("[data-i18n-label]").forEach(function (element) {
+            element.setAttribute("aria-label", getTranslation(resolvedLanguage, element.dataset.i18nLabel));
+        });
+
+        document.querySelectorAll(".confirm-action").forEach(function (form) {
+            form.onsubmit = function() {
+                const message = getTranslation(resolvedLanguage, form.dataset.confirmKey) || "Are you sure?";
+                return confirm(message);
+            };
+        });
         document.querySelectorAll("[data-language-option]").forEach(function (button) {
             button.classList.toggle("is-active", button.dataset.languageOption === resolvedLanguage);
             button.setAttribute("aria-pressed", button.dataset.languageOption === resolvedLanguage ? "true" : "false");
         });
+
+        reformatDates(resolvedLanguage);
     }
 
     function bindPreferenceButtons() {

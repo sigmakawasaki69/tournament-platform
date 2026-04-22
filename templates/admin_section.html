@@ -301,7 +301,7 @@
                                         </select>
                                         <button class="button" type="submit" data-i18n="admin.users.save_role" style="height: 36px; padding: 0 12px; white-space: nowrap;">Зберегти роль</button>
                                     </form>
-                                    <form method="post" action="{% url 'delete_user' user.id %}" onsubmit="return confirm('Ви впевнені?');">
+                                    <form method="post" action="{% url 'delete_user' user.id %}" class="confirm-action" data-confirm-key="admin.users.confirm_delete">
                                         {% csrf_token %}
                                         <button class="button-danger" type="submit" data-i18n="admin.users.delete" style="height: 36px; width: 36px; display: flex; align-items: center; justify-content: center;">×</button>
                                     </form>
@@ -317,7 +317,7 @@
     {% elif current_section == 'all_tournaments' %}
         <section class="section">
             <div class="section-head">
-                <h2 class="section-title" data-i18n="admin.tournaments.all.title">Всі турніри</h2>
+                <h2 class="section-title" data-i18n="admin.hero.all_tournaments.title">Всі турніри</h2>
                 <a class="button" href="{% url 'create_tournament' %}" data-i18n="admin.sidebar.create_tournament">+ Створити турнир</a>
             </div>
             <div class="list spacer-top">
@@ -331,12 +331,12 @@
                             <span class="status-badge status-{{ tournament.lifecycle_status }}" data-i18n-message>{{ tournament.lifecycle_status }}</span>
                         </div>
                         <div class="section-note spacer-top">
-                            <span data-i18n="home.tournaments.start">Старт</span>: {{ tournament.start_date|date:"d.m.Y H:i"|default:"-" }} | <span data-i18n="home.tournaments.reg_range">Реєстрація</span>: {{ tournament.registration_start|date:"d.m.Y H:i"|default:"-" }} - {{ tournament.registration_end|date:"d.m.Y H:i"|default:"-" }}
+                            <span data-i18n="home.tournaments.start">Старт</span>: <span data-timestamp="{{ tournament.start_date.timestamp }}">{{ tournament.start_date|date:"d.m.Y H:i"|default:"-" }}</span> | <span data-i18n="home.tournaments.reg_range">Реєстрація</span>: <span data-timestamp="{{ tournament.registration_start.timestamp }}">{{ tournament.registration_start|date:"d.m.Y H:i"|default:"-" }}</span> - <span data-timestamp="{{ tournament.registration_end.timestamp }}">{{ tournament.registration_end|date:"d.m.Y H:i"|default:"-" }}</span>
                         </div>
                         <div class="toolbar spacer-top">
                             <a class="button" href="{% url 'edit_tournament' tournament.id %}" data-i18n="admin.tournaments.edit">Редагувати</a>
                             <a class="button-secondary" href="{% url 'create_tournament_task' tournament.id %}" data-i18n="admin.tournaments.add_task">Завдання ({{ tournament.tasks.count }})</a>
-                                <form method="post" action="{% url 'delete_tournament' tournament.id %}" onsubmit="return confirm('Ви впевнені?');">
+                                <form method="post" action="{% url 'delete_tournament' tournament.id %}" class="confirm-action" data-confirm-key="admin.tournaments.confirm_delete">
                                     {% csrf_token %}
                                     <button class="button-danger" type="submit" data-i18n="admin.tournaments.delete">Видалити</button>
                                 </form>
@@ -364,7 +364,7 @@
                             <span class="status-badge status-{{ tournament.lifecycle_status }}" data-i18n-message>{{ tournament.lifecycle_status }}</span>
                         </div>
                         <div class="section-note spacer-top">
-                            <span data-i18n="home.tournaments.start">Старт</span>: {{ tournament.start_date|date:"d.m.Y H:i"|default:"-" }} | <span data-i18n="home.tournaments.reg_range">Реєстрація</span>: {{ tournament.registration_start|date:"d.m.Y H:i"|default:"-" }} - {{ tournament.registration_end|date:"d.m.Y H:i"|default:"-" }}
+                            <span data-i18n="home.tournaments.start">Старт</span>: <span data-timestamp="{{ tournament.start_date.timestamp }}">{{ tournament.start_date|date:"d.m.Y H:i"|default:"-" }}</span> | <span data-i18n="home.tournaments.reg_range">Реєстрація</span>: <span data-timestamp="{{ tournament.registration_start.timestamp }}">{{ tournament.registration_start|date:"d.m.Y H:i"|default:"-" }}</span> - <span data-timestamp="{{ tournament.registration_end.timestamp }}">{{ tournament.registration_end|date:"d.m.Y H:i"|default:"-" }}</span>
                         </div>
                         <div class="toolbar spacer-top">
                             <a class="button" href="{% url 'edit_tournament' tournament.id %}" data-i18n="admin.tournaments.edit">Редагувати</a>
@@ -430,7 +430,7 @@
                     <div class="item-card">
                         <div class="section-head">
                             <h3>{{ submission.team.name }} — {{ submission.task.title }}</h3>
-                            <div class="section-note">{{ submission.submitted_at|date:"d.m.Y H:i" }}</div>
+                            <div class="section-note"><span data-timestamp="{{ submission.submitted_at.timestamp }}">{{ submission.submitted_at|date:"d.m.Y H:i" }}</span></div>
                         </div>
                         <div class="card-text spacer-top">
                             {% if submission.github_link %}<a href="{{ submission.github_link }}" class="btn-text">GitHub</a>{% endif %}

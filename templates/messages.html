@@ -87,7 +87,7 @@
                     </div>
                     <div class="meta-list spacer-top">
                         {% if item.tournament %}<span data-i18n="profile.announcements.tournament">Турнір</span>: {{ item.tournament.name }}<br>{% endif %}
-                        <span data-i18n="profile.announcements.date">Дата</span>: {{ item.created_at|date:"d.m.Y H:i" }}
+                        <span data-i18n="profile.announcements.date">Дата</span>: <span class="format-date" data-timestamp="{{ item.created_at.timestamp }}">{{ item.created_at|date:"d.m.Y H:i" }}</span>
                     </div>
                     <p class="card-text spacer-top" data-i18n-message>{{ item.body }}</p>
                 </article>
