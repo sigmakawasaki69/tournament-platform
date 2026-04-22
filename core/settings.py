@@ -235,8 +235,17 @@ default_csrf_trusted_origins = [
     "https://*.trycloudflare.com",
     "https://serverdenis.pp.ua",
     "https://*.onrender.com",
+    "https://tournament-platform-yiiw.onrender.com",
     "https://tournament-platform-production-5888.up.railway.app",
 ]
+
+if RENDER_EXTERNAL_HOSTNAME:
+    if not RENDER_EXTERNAL_HOSTNAME.startswith("http"):
+        default_csrf_trusted_origins.append(f"https://{RENDER_EXTERNAL_HOSTNAME}")
+        default_csrf_trusted_origins.append(f"http://{RENDER_EXTERNAL_HOSTNAME}")
+    else:
+        default_csrf_trusted_origins.append(RENDER_EXTERNAL_HOSTNAME)
+
 CSRF_TRUSTED_ORIGINS = list(
     dict.fromkeys(default_csrf_trusted_origins + env_list("CSRF_TRUSTED_ORIGINS"))
 )
