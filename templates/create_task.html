@@ -66,6 +66,12 @@
             <form method="post">
                 {% csrf_token %}
                 <div class="hidden-config">{{ form.submission_fields_definition }}</div>
+                {% if form.submission_fields_definition.errors %}
+                    <div class="message-box error spacer-bottom">
+                        <strong data-i18n="admin.tasks.format_error">Помилка у форматі відповіді:</strong>
+                        {{ form.submission_fields_definition.errors }}
+                    </div>
+                {% endif %}
 
                 <div class="form-grid">
                     {% if not form.tournament.is_hidden %}

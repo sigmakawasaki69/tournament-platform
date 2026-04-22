@@ -7,12 +7,20 @@
         <div class="hero-content">
             <div class="hero-kicker" data-i18n="profile.hero.kicker">Особистий кабінет</div>
             <h1 data-i18n="profile.hero.title">Профіль користувача</h1>
-            <p data-i18n="profile.hero.text">Тут зібрано вашу базову інформацію, команди, турніри, сертифікати та останні оголошення платформи.</p>
+            <p data-i18n="{% if profile_user.role == 'jury' %}profile.hero.text_jury{% else %}profile.hero.text{% endif %}">
+                {% if profile_user.role == 'jury' %}
+                    Тут зібрано вашу базову інформацію та список оцінених робіт.
+                {% else %}
+                    Тут зібрано вашу базову інформацію, команди, турніри, сертифікати та останні оголошення платформи.
+                {% endif %}
+            </p>
         </div>
+        {% if profile_user.role != 'jury' %}
         <div class="hero-side">
             <div class="hero-stat"><strong>{{ tournaments_with_state|length }}</strong><span data-i18n="profile.hero.tournaments">Турнірів у профілі</span></div>
             <div class="hero-stat"><strong>{{ certificates|length }}</strong><span data-i18n="profile.hero.certificates">Доступних сертифікатів</span></div>
         </div>
+        {% endif %}
     </section>
 
     <section class="section">
@@ -36,7 +44,7 @@
         </div>
     </section>
 
-    {% if profile_user.role == 'participant' or profile_user.is_superuser %}
+    {% if (profile_user.role == 'participant' or profile_user.is_superuser) and profile_user.role != 'jury' %}
     <section class="section">
         <div class="section-head">
             <div>
@@ -84,7 +92,7 @@
                         <span><span data-i18n="profile.certificates.date">Дата оцінювання</span>: {{ evaluation.evaluated_at|date:"d.m.Y H:i" }}</span>
                     </div>
                     <div class="toolbar spacer-top">
-                        <a class="button" href="{% url 'evaluate_submission' evaluation.assignment.id %}" data-i18n="public_reg.submit">Переглянути оцінку</a>
+                        <a class="button" href="{% url 'jury_tournament_detail' evaluation.assignment.submission.task.tournament.id %}" data-i18n="public_reg.submit">Переглянути оцінку</a>
                     </div>
                 </div>
             {% empty %}
