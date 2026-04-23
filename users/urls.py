@@ -143,4 +143,8 @@ urlpatterns = [
     path('password-reset/verify/', password_reset_verify_view, name='password_reset_verify'),
     path('password-reset/confirm/', password_reset_confirm_view, name='password_reset_confirm'),
     path('delete-announcement/<int:announcement_id>/', delete_announcement, name='delete_announcement'),
+    
+    # API endpoints
+    path('api/schools/autocomplete/', school_autocomplete, name='school_autocomplete'),
+    path('api/contacts/autocomplete/', contact_autocomplete, name='contact_autocomplete'),
 ]

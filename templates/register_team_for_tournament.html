@@ -129,7 +129,10 @@
     </div>
 </template>
 
+
+<script src="{% static 'js/autocomplete.js' %}"></script>
 <script>
+
     (function () {
         const template = document.getElementById("participant-row-template");
 
@@ -189,6 +192,17 @@
             }
 
             addButton.addEventListener("click", () => addParticipantRow(container));
+        });
+
+        // Initialize autocompletes
+        initAutocomplete('input[name="school"]', {
+            endpoint: '/api/schools/autocomplete/',
+            minLength: 2
+        });
+
+        initAutocomplete('input[name="preferred_contact_value"]', {
+            endpoint: '/api/contacts/autocomplete/',
+            minLength: 1
         });
     })();
 </script>

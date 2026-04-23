@@ -217,7 +217,10 @@
 {% endblock %}
 
 {% block extra_scripts %}
+
+    <script src="{% static 'js/autocomplete.js' %}"></script>
     <script>
+
         (function () {
             const template = document.getElementById("participant-row-template");
             function syncParticipants(container) {
@@ -256,7 +259,19 @@
                 if (initialPayload.length) {
                     initialPayload.forEach((item) => addRow(container, item));
                 }
+
                 addButton.addEventListener("click", () => addRow(container));
+            });
+
+            // Initialize autocompletes
+            initAutocomplete('input[name="school"]', {
+                endpoint: '/api/schools/autocomplete/',
+                minLength: 2
+            });
+
+            initAutocomplete('input[name="preferred_contact_value"]', {
+                endpoint: '/api/contacts/autocomplete/',
+                minLength: 1
             });
         })();
     </script>

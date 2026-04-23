@@ -823,6 +823,7 @@
             "auth.reset_password.title": "Новий пароль",
             "auth.reset_password.subtitle": "Створіть надійний пароль для вашого акаунта.",
             "auth.reset_password.submit": "Змінити пароль",
+            "auth.reset_password.length_hint": "Пароль повинен бути не коротшим за 8 символів.",
 
             "auth.verify_code.title": "Підтвердження",
             "auth.verify_code.subtitle": "Введіть код, який ми надіслали на вашу пошту.",
@@ -1735,6 +1736,7 @@
             "auth.reset_password.title": "New Password",
             "auth.reset_password.subtitle": "Create a strong password for your account.",
             "auth.reset_password.submit": "Change Password",
+            "auth.reset_password.length_hint": "Password must be at least 8 characters long.",
 
             "auth.verify_code.title": "Verification",
             "auth.verify_code.subtitle": "Enter the code we sent to your email.",

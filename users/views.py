@@ -2338,3 +2338,25 @@ def password_reset_confirm_view(request):
             
     return render(request, 'password_reset_confirm.html')
 
+
+def school_autocomplete(request):
+    query = request.GET.get('q', '').strip()
+    if len(query) < 2:
+        return JsonResponse([], safe=False)
+    
+    schools = Team.objects.filter(
+        school__icontains=query
+    ).values_list('school', flat=True).distinct().order_by('school')[:10]
+    
+    return JsonResponse(list(schools), safe=False)
+
+
+def contact_autocomplete(request):
+    query = request.GET.get('q', '').strip()
+    # If the user starts with +, suggest country codes
+    if query.startswith('+'):
+        common_codes = ['+380', '+1', '+44', '+49', '+48', '+370', '+371', '+372']
+        suggestions = [code for code in common_codes if code.startswith(query)]
+        return JsonResponse(suggestions, safe=False)
+    
+    return JsonResponse([], safe=False)
