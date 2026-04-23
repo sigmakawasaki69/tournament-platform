@@ -102,40 +102,23 @@ TEMPLATES = [
 WSGI_APPLICATION = "core.wsgi.application"
 
 
-# Database configuration: prefer DATABASE_URL (Render), then individual vars, then SQLite
-database_url = env("DATABASE_URL")
-db_name = env("DB_NAME")
-db_user = env("DB_USER")
-db_password = env("DB_PASSWORD")
-db_host = env("DB_HOST")
-db_port = env("DB_PORT")
-
-if database_url and dj_database_url:
-    DATABASES = {
-        "default": dj_database_url.parse(database_url)
-    }
-elif database_url:
-    raise ImproperlyConfigured(
-        "DATABASE_URL задано, але пакет dj-database-url не встановлений."
+# Database configuration: prefer DATABASE_URL, fallback to SQLite for builds/local dev
+DATABASES = {
+    'default': dj_database_url.config(
+        default=os.getenv('DATABASE_URL'),
+        conn_max_age=600,
+        conn_health_checks=True,
     )
-elif all([db_name, db_user, db_password, db_host, db_port]):
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": db_name,
-            "USER": db_user,
-            "PASSWORD": db_password,
-            "HOST": db_host,
-            "PORT": db_port,
-        }
+}
+
+# КРИТИЧНО: Якщо ми білдимо додаток на Railway або DATABASE_URL порожній
+# Це фіктивний конфиг для collectstatic та локальної розробки
+if not os.getenv('DATABASE_URL'):
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
-    }
+
 
 
 AUTH_USER_MODEL = "users.CustomUser"
