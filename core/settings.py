@@ -9,6 +9,7 @@ from pathlib import Path
 from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
+import sys
 try:
     import dj_database_url
 except ImportError:  # pragma: no cover - local fallback for incomplete environments
@@ -102,21 +103,24 @@ TEMPLATES = [
 WSGI_APPLICATION = "core.wsgi.application"
 
 
-# Database configuration: prefer DATABASE_URL, fallback to SQLite for builds/local dev
-DATABASES = {
-    'default': dj_database_url.config(
-        default=os.getenv('DATABASE_URL'),
-        conn_max_age=600,
-        conn_health_checks=True,
-    )
-}
+# Отримуємо URL бази
+DATABASE_URL = os.getenv('DATABASE_URL')
 
-# КРИТИЧНО: Якщо ми білдимо додаток на Railway або DATABASE_URL порожній
-# Це фіктивний конфиг для collectstatic та локальної розробки
-if not os.getenv('DATABASE_URL'):
-    DATABASES['default'] = {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Якщо ми запускаємо collectstatic, нам база не потрібна
+# 'collectstatic' in sys.argv перевіряє, чи ми зараз збираємо статику
+if 'collectstatic' in sys.argv or os.getenv('RAILWAY_ENVIRONMENT_NAME') is None and not DATABASE_URL:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': ':memory:',  # Тимчасова база в оперативці
+        }
+    }
+else:
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+        )
     }
 
 
