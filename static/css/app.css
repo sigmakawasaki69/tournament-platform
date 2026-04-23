@@ -431,7 +431,10 @@ a {
     transform: translateY(0);
 }
 
-@media (max-width: 980px) { ... }
+@media (max-width: 980px) {
+    .hero { grid-template-columns: 1fr; }
+    .hero-side { grid-template-columns: 1fr; }
+}
 
 .button,
 .button-secondary,
