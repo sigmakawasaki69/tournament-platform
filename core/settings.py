@@ -42,7 +42,6 @@ default_allowed_hosts = [
     "localhost",
     "testserver",
     "serverdenis.pp.ua",
-    "tournament-platform-production-5888.up.railway.app"
     "tournament-platform-production-421e.up.railway.app",
 ]
 if RENDER_EXTERNAL_HOSTNAME:
