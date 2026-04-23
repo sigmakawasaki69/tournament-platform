@@ -2238,9 +2238,36 @@
         applyLanguage: applyLanguage,
     };
 
+    function initPasswordToggles() {
+        document.querySelectorAll(".password-toggle").forEach(function (button) {
+            button.addEventListener("click", function () {
+                const wrapper = button.closest(".password-field-wrapper");
+                if (!wrapper) return;
+                
+                const input = wrapper.querySelector("input");
+                if (!input) return;
+
+                const isPassword = input.type === "password";
+                input.type = isPassword ? "text" : "password";
+
+                const eyeIcon = button.querySelector(".eye-icon");
+                const eyeOffIcon = button.querySelector(".eye-off-icon");
+
+                if (isPassword) {
+                    if (eyeIcon) eyeIcon.classList.add("hidden");
+                    if (eyeOffIcon) eyeOffIcon.classList.remove("hidden");
+                } else {
+                    if (eyeIcon) eyeIcon.classList.remove("hidden");
+                    if (eyeOffIcon) eyeOffIcon.classList.add("hidden");
+                }
+            });
+        });
+    }
+
     document.addEventListener("DOMContentLoaded", function () {
         bindPreferenceButtons();
         applyTheme(getStoredPreference(STORAGE_KEYS.theme, FALLBACK_THEME));
         applyLanguage(getStoredPreference(STORAGE_KEYS.language, FALLBACK_LANGUAGE));
+        initPasswordToggles();
     });
 }());
