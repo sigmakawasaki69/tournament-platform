@@ -44,7 +44,7 @@
         </div>
     </section>
 
-    {% if profile_user.role == 'participant' %}
+    {% if profile_user.role == 'participant' and not profile_user.is_superuser %}
     <section class="section">
         <div class="section-head">
             <div>
