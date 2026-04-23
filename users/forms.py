@@ -1,4 +1,4 @@
-﻿from django import forms
+from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import CustomUser
 
@@ -60,7 +60,7 @@ class RegisterForm(UniqueEmailMixin, UniqueUsernameMixin, UserCreationForm):
 class LoginForm(AuthenticationForm):
 
     username = forms.CharField(
-        label='Логін',
+        label='Логін або Email',
         widget=forms.TextInput(attrs={'class': 'form-input'})
     )
 
@@ -109,4 +109,3 @@ class AdminCreateUserForm(UniqueEmailMixin, UniqueUsernameMixin, UserCreationFor
                 choice for choice in CustomUser.ROLE_CHOICES
                 if choice[0] in available_roles
             ]
-

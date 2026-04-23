@@ -41,7 +41,8 @@ default_allowed_hosts = [
     "localhost",
     "testserver",
     "serverdenis.pp.ua",
-    "tournament-platform-production-5888.up.railway.app",
+    "tournament-platform-production-5888.up.railway.app"
+    "tournament-platform-production-421e.up.railway.app",
 ]
 if RENDER_EXTERNAL_HOSTNAME:
     default_allowed_hosts.append(RENDER_EXTERNAL_HOSTNAME)
@@ -138,6 +139,11 @@ else:
 
 
 AUTH_USER_MODEL = "users.CustomUser"
+
+AUTHENTICATION_BACKENDS = [
+    "users.backends.EmailOrUsernameModelBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
 
 LOGIN_URL = "/login/"
 LOGIN_REDIRECT_URL = "/redirect/"
