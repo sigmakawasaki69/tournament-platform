@@ -67,6 +67,8 @@ from .views import (
     password_reset_verify_view,
     password_reset_confirm_view,
     delete_announcement,
+    school_autocomplete,
+    contact_autocomplete,
 )
 
 urlpatterns = [

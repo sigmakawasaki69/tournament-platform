@@ -70,3 +70,20 @@
         </form>
     </section>
 {% endblock %}
+
+{% block extra_scripts %}
+    <script src="{% static 'js/autocomplete.js' %}"></script>
+    <script>
+        (function () {
+            initAutocomplete('input[name="school"]', {
+                endpoint: '/api/schools/autocomplete/',
+                minLength: 2
+            });
+
+            initAutocomplete('input[name="preferred_contact_value"]', {
+                endpoint: '/api/contacts/autocomplete/',
+                minLength: 1
+            });
+        })();
+    </script>
+{% endblock %}

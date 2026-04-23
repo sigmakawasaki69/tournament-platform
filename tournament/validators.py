@@ -28,6 +28,11 @@ EDUCATION_KEYWORDS = (
     "ззсо",
     "нвк",
     "хл",
+    "зош",
+    "зсш",
+    "сш",
+    "сзш",
+    "спш",
 )
 
 GENERIC_EDUCATION_NAMES = {
@@ -37,7 +42,6 @@ GENERIC_EDUCATION_NAMES = {
     "лицей",
     "гімназія",
     "гимназия",
-    "гімназія",
     "коледж",
     "college",
     "університет",
@@ -48,6 +52,10 @@ GENERIC_EDUCATION_NAMES = {
     "academy",
     "академія",
     "академия",
+    "зош",
+    "зсш",
+    "сш",
+    "сзш",
 }
 
 
@@ -58,6 +66,11 @@ def validate_school_name(value):
 
     normalized = re.sub(r"\s+", " ", school)
     lower_value = normalized.lower()
+    
+    # Check if it's just a number (e.g. "112")
+    if lower_value.isdigit() and 1 <= len(lower_value) <= 5:
+        return normalized
+
     has_letter = bool(re.search(r"[A-Za-zА-Яа-яІіЇїЄєҐґ]", normalized))
     has_digit = bool(re.search(r"\d", normalized))
     tokens = [token for token in re.split(r"[\s,]+", normalized) if token]
@@ -72,6 +85,7 @@ def validate_school_name(value):
         and (
             looks_like_acronym_with_number
             or (has_keyword and not is_generic_name_only)
+            or (has_digit and len(normalized) < 10) # Allow "School 112" even if not in keywords (though school is a keyword)
         )
     )
 
