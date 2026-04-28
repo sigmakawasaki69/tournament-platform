@@ -267,7 +267,13 @@
                     headers: { 'X-Requested-With': 'XMLHttpRequest' },
                     body: formData
                 })
-                .then(function(resp) { return resp.json(); })
+                .then(function(resp) {
+                    var ct = resp.headers.get('content-type') || '';
+                    if (!resp.ok || ct.indexOf('application/json') === -1) {
+                        throw new Error('not json');
+                    }
+                    return resp.json();
+                })
                 .then(function(data) {
                     showToast(data.message, data.status === 'ok' ? 'success' : 'error');
                     if (data.status === 'ok') {
@@ -275,7 +281,7 @@
                     }
                 })
                 .catch(function() {
-                    showToast('Помилка з\'єднання з сервером.', 'error');
+                    showToast('Помилка з\'єднання з сервером. Перезавантажте сторінку та спробуйте ще раз.', 'error');
                 });
             });
         })();
