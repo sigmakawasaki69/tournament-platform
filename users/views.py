@@ -1751,6 +1751,7 @@ def profile_settings(request):
             old_password = request.POST.get('old_password', '')
             new_password = request.POST.get('new_password', '')
             new_password_confirm = request.POST.get('new_password_confirm', '')
+            is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
             if not user.check_password(old_password):
                 error_message = 'Поточний пароль невірний.'
@@ -1760,7 +1761,6 @@ def profile_settings(request):
                 error_message = 'Новий пароль не може збігатися з поточним.'
             else:
                 from django.contrib.auth.password_validation import validate_password
-                from django.core.exceptions import ValidationError
                 try:
                     validate_password(new_password, user)
                     user.set_password(new_password)
@@ -1770,6 +1770,11 @@ def profile_settings(request):
                     success_message = 'Пароль успішно змінено.'
                 except ValidationError as e:
                     error_message = e.messages[0]
+
+            if is_ajax:
+                if error_message:
+                    return JsonResponse({'status': 'error', 'message': error_message})
+                return JsonResponse({'status': 'ok', 'message': success_message})
 
         elif action == 'change_avatar':
             avatar_file = request.FILES.get('avatar')
