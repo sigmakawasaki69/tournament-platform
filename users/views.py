@@ -1751,7 +1751,7 @@ def profile_settings(request):
             old_password = request.POST.get('old_password', '')
             new_password = request.POST.get('new_password', '')
             new_password_confirm = request.POST.get('new_password_confirm', '')
-            is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+            is_ajax = request.POST.get('is_ajax') == '1'
 
             try:
                 if not user.check_password(old_password):

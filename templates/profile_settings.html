@@ -262,31 +262,20 @@
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
                 var formData = new FormData(form);
+                formData.append('is_ajax', '1');
                 fetch(form.action || window.location.href, {
                     method: 'POST',
                     credentials: 'same-origin',
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
                     body: formData
                 })
-                .then(function(resp) {
-                    var ct = resp.headers.get('content-type') || '';
-                    if (ct.indexOf('application/json') !== -1) {
-                        return resp.json();
-                    }
-                    /* Server returned HTML — fallback to normal form submit */
-                    form.removeEventListener('submit', arguments.callee);
-                    form.submit();
-                    return null;
-                })
+                .then(function(resp) { return resp.json(); })
                 .then(function(data) {
-                    if (!data) return;
                     showToast(data.message, data.status === 'ok' ? 'success' : 'error');
                     if (data.status === 'ok') {
                         form.reset();
                     }
                 })
                 .catch(function() {
-                    /* If fetch itself fails, fall back to normal form POST */
                     form.submit();
                 });
             });
