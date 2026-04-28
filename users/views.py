@@ -1754,16 +1754,22 @@ def profile_settings(request):
 
             if not user.check_password(old_password):
                 error_message = 'Поточний пароль невірний.'
-            elif len(new_password) < 6:
-                error_message = 'Новий пароль повинен містити щонайменше 6 символів.'
             elif new_password != new_password_confirm:
                 error_message = 'Паролі не збігаються.'
+            elif old_password == new_password:
+                error_message = 'Новий пароль не може збігатися з поточним.'
             else:
-                user.set_password(new_password)
-                user.save()
-                from django.contrib.auth import update_session_auth_hash
-                update_session_auth_hash(request, user)
-                success_message = 'Пароль успішно змінено.'
+                from django.contrib.auth.password_validation import validate_password
+                from django.core.exceptions import ValidationError
+                try:
+                    validate_password(new_password, user)
+                    user.set_password(new_password)
+                    user.save()
+                    from django.contrib.auth import update_session_auth_hash
+                    update_session_auth_hash(request, user)
+                    success_message = 'Пароль успішно змінено.'
+                except ValidationError as e:
+                    error_message = e.messages[0]
 
         elif action == 'change_avatar':
             avatar_file = request.FILES.get('avatar')
@@ -2317,24 +2323,28 @@ def password_reset_confirm_view(request):
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirm_password')
         
-        if not password or len(password) < 8:
-            messages.error(request, "Пароль має бути не коротшим за 8 символів.")
-        elif password != confirm_password:
+        if password != confirm_password:
             messages.error(request, "Паролі не співпадають.")
         elif CustomUser.objects.get(email__iexact=email).check_password(password):
             messages.error(request, "Ви не можете змінити пароль на той самий.")
         else:
+            from django.contrib.auth.password_validation import validate_password
+            from django.core.exceptions import ValidationError
             user = CustomUser.objects.get(email__iexact=email)
-            user.set_password(password)
-            user.save()
+            try:
+                validate_password(password, user)
+                user.set_password(password)
+                user.save()
             
-            PasswordResetCode.objects.filter(user=user).update(is_used=True)
-            
-            request.session.pop('password_reset_email', None)
-            request.session.pop('password_reset_verified', None)
-            
-            messages.success(request, "Пароль успішно змінено. Тепер ви можете увійти.")
-            return redirect('login')
+                PasswordResetCode.objects.filter(user=user).update(is_used=True)
+                
+                request.session.pop('password_reset_email', None)
+                request.session.pop('password_reset_verified', None)
+                
+                messages.success(request, "Пароль успішно змінено. Тепер ви можете увійти.")
+                return redirect('login')
+            except ValidationError as e:
+                messages.error(request, e.messages[0])
             
     return render(request, 'password_reset_confirm.html')
 
