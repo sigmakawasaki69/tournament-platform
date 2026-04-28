@@ -1753,23 +1753,27 @@ def profile_settings(request):
             new_password_confirm = request.POST.get('new_password_confirm', '')
             is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
-            if not user.check_password(old_password):
-                error_message = 'Поточний пароль невірний.'
-            elif new_password != new_password_confirm:
-                error_message = 'Паролі не збігаються.'
-            elif old_password == new_password:
-                error_message = 'Новий пароль не може збігатися з поточним.'
-            else:
-                from django.contrib.auth.password_validation import validate_password
-                try:
-                    validate_password(new_password, user)
-                    user.set_password(new_password)
-                    user.save()
-                    from django.contrib.auth import update_session_auth_hash
-                    update_session_auth_hash(request, user)
-                    success_message = 'Пароль успішно змінено.'
-                except ValidationError as e:
-                    error_message = e.messages[0]
+            try:
+                if not user.check_password(old_password):
+                    error_message = 'Поточний пароль невірний.'
+                elif new_password != new_password_confirm:
+                    error_message = 'Паролі не збігаються.'
+                elif old_password == new_password:
+                    error_message = 'Новий пароль не може збігатися з поточним.'
+                else:
+                    from django.contrib.auth.password_validation import validate_password
+                    try:
+                        validate_password(new_password, user)
+                        user.set_password(new_password)
+                        user.save()
+                        from django.contrib.auth import update_session_auth_hash
+                        update_session_auth_hash(request, user)
+                        success_message = 'Пароль успішно змінено.'
+                    except ValidationError as e:
+                        error_message = e.messages[0]
+            except Exception as exc:
+                logger.exception("Unexpected error in change_password")
+                error_message = 'Виникла непередбачена помилка. Спробуйте ще раз.'
 
             if is_ajax:
                 if error_message:

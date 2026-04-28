@@ -264,24 +264,30 @@
                 var formData = new FormData(form);
                 fetch(form.action || window.location.href, {
                     method: 'POST',
+                    credentials: 'same-origin',
                     headers: { 'X-Requested-With': 'XMLHttpRequest' },
                     body: formData
                 })
                 .then(function(resp) {
                     var ct = resp.headers.get('content-type') || '';
-                    if (!resp.ok || ct.indexOf('application/json') === -1) {
-                        throw new Error('not json');
+                    if (ct.indexOf('application/json') !== -1) {
+                        return resp.json();
                     }
-                    return resp.json();
+                    /* Server returned HTML — fallback to normal form submit */
+                    form.removeEventListener('submit', arguments.callee);
+                    form.submit();
+                    return null;
                 })
                 .then(function(data) {
+                    if (!data) return;
                     showToast(data.message, data.status === 'ok' ? 'success' : 'error');
                     if (data.status === 'ok') {
                         form.reset();
                     }
                 })
                 .catch(function() {
-                    showToast('Помилка з\'єднання з сервером. Перезавантажте сторінку та спробуйте ще раз.', 'error');
+                    /* If fetch itself fails, fall back to normal form POST */
+                    form.submit();
                 });
             });
         })();
