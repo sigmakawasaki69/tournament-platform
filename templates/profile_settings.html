@@ -256,6 +256,22 @@
             if (!form) return;
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
+
+                /* Run browser-native validation first (minlength, required, etc.) */
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+                    return;
+                }
+
+                /* Run custom pre-submit validation if provided */
+                if (opts && opts.validate) {
+                    var err = opts.validate(form);
+                    if (err) {
+                        showToast(err, 'error');
+                        return;
+                    }
+                }
+
                 var formData = new FormData(form);
                 formData.append('is_ajax', '1');
                 fetch(form.action || window.location.href, {
@@ -289,7 +305,16 @@
         });
 
         /* ── Password form (AJAX) ── */
-        ajaxForm('password-change-form', { resetOnSuccess: true });
+        ajaxForm('password-change-form', {
+            resetOnSuccess: true,
+            validate: function(form) {
+                var newPw = form.querySelector('[name="new_password"]').value;
+                var confirmPw = form.querySelector('[name="new_password_confirm"]').value;
+                if (newPw.length < 8) return 'Пароль повинен містити щонайменше 8 символів.';
+                if (newPw !== confirmPw) return 'Паролі не збігаються.';
+                return null;
+            }
+        });
 
         /* ── Avatar upload form (AJAX) ── */
         ajaxForm('avatar-change-form', {
