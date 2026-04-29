@@ -1734,6 +1734,7 @@ def profile_settings(request):
 
         if action == 'change_username':
             new_username = request.POST.get('new_username', '').strip()
+            is_ajax = request.POST.get('is_ajax') == '1'
             if not new_username:
                 error_message = 'Нікнейм не може бути порожнім.'
             elif len(new_username) < 3:
@@ -1746,6 +1747,11 @@ def profile_settings(request):
                 user.username = new_username
                 user.save(update_fields=['username'])
                 success_message = 'Нікнейм успішно змінено.'
+
+            if is_ajax:
+                if error_message:
+                    return JsonResponse({'status': 'error', 'message': error_message})
+                return JsonResponse({'status': 'ok', 'message': success_message})
 
         elif action == 'change_password':
             old_password = request.POST.get('old_password', '')
@@ -1782,6 +1788,7 @@ def profile_settings(request):
 
         elif action == 'change_avatar':
             avatar_file = request.FILES.get('avatar')
+            is_ajax = request.POST.get('is_ajax') == '1'
             if avatar_file:
                 if not avatar_file.content_type.startswith('image/'):
                     error_message = 'Завантажте файл зображення (PNG, JPG, JPEG).'
@@ -1794,12 +1801,24 @@ def profile_settings(request):
             else:
                 error_message = 'Виберіть файл зображення.'
 
+            if is_ajax:
+                resp = {'status': 'error' if error_message else 'ok', 'message': error_message or success_message}
+                if not error_message and user.avatar:
+                    resp['avatar_url'] = user.avatar.url
+                return JsonResponse(resp)
+
         elif action == 'remove_avatar':
+            is_ajax = request.POST.get('is_ajax') == '1'
             if user.avatar:
                 user.avatar.delete(save=False)
                 user.avatar = None
                 user.save(update_fields=['avatar'])
                 success_message = 'Аватарку видалено.'
+
+            if is_ajax:
+                if error_message:
+                    return JsonResponse({'status': 'error', 'message': error_message})
+                return JsonResponse({'status': 'ok', 'message': success_message or 'Аватарку видалено.'})
 
     return render(request, 'profile_settings.html', {
         'profile_user': user,

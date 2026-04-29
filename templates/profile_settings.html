@@ -111,12 +111,6 @@
     </section>
 
     <section class="section spacer-top">
-        {% if success_message %}
-            <div class="message-box success spacer-bottom">{{ success_message }}</div>
-        {% endif %}
-        {% if error_message %}
-            <div class="message-box error spacer-bottom">{{ error_message }}</div>
-        {% endif %}
 
         <div class="settings-grid">
 
@@ -132,12 +126,12 @@
                         <div class="avatar-placeholder" id="avatar-placeholder">{{ profile_user.username|first }}</div>
                     {% endif %}
                     <div>
-                        <div style="font-weight: 700;">{{ profile_user.username }}</div>
+                        <div style="font-weight: 700;" id="avatar-username-label">{{ profile_user.username }}</div>
                         <div class="section-note">{{ profile_user.email }}</div>
                     </div>
                 </div>
 
-                <form method="post" enctype="multipart/form-data">
+                <form method="post" enctype="multipart/form-data" id="avatar-change-form">
                     {% csrf_token %}
                     <input type="hidden" name="action" value="change_avatar">
                     <div class="settings-field">
@@ -150,7 +144,7 @@
                     <div class="toolbar" style="gap: 8px;">
                         <button type="submit" class="button" data-i18n="settings.avatar.upload">Завантажити</button>
                         {% if profile_user.avatar %}
-                            <button type="submit" class="button-secondary" name="action" value="remove_avatar" data-i18n="settings.avatar.remove" style="color: var(--error); border-color: var(--error);">Видалити</button>
+                            <button type="button" class="button-secondary" id="remove-avatar-btn" data-i18n="settings.avatar.remove" style="color: var(--error); border-color: var(--error);">Видалити</button>
                         {% endif %}
                     </div>
                 </form>
@@ -160,7 +154,7 @@
             <div class="settings-card">
                 <h3 data-i18n="settings.username.title">Нікнейм</h3>
                 <div class="section-note" data-i18n="settings.username.note">Змініть ваше ім'я на платформі. Від 3 до 30 символів.</div>
-                <form method="post">
+                <form method="post" id="username-change-form">
                     {% csrf_token %}
                     <input type="hidden" name="action" value="change_username">
                     <div class="settings-field">
@@ -222,6 +216,7 @@
     <div class="toast-container" id="toast-container"></div>
 
     <script>
+        /* ── Avatar file preview ── */
         (function() {
             var input = document.getElementById('avatar-input');
             var previewWrap = document.getElementById('avatar-new-preview');
@@ -242,7 +237,7 @@
             });
         })();
 
-        /* Toast notifications */
+        /* ── Toast notifications ── */
         function showToast(message, type) {
             var container = document.getElementById('toast-container');
             var toast = document.createElement('div');
@@ -255,9 +250,9 @@
             }, 4000);
         }
 
-        /* AJAX password change form */
-        (function() {
-            var form = document.getElementById('password-change-form');
+        /* ── Generic AJAX form helper ── */
+        function ajaxForm(formId, opts) {
+            var form = document.getElementById(formId);
             if (!form) return;
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -272,11 +267,91 @@
                 .then(function(data) {
                     showToast(data.message, data.status === 'ok' ? 'success' : 'error');
                     if (data.status === 'ok') {
-                        form.reset();
+                        if (opts && opts.onSuccess) opts.onSuccess(data);
+                        if (opts && opts.resetOnSuccess) form.reset();
                     }
                 })
                 .catch(function() {
+                    /* fallback: normal submit */
                     form.submit();
+                });
+            });
+        }
+
+        /* ── Username form (AJAX) ── */
+        ajaxForm('username-change-form', {
+            onSuccess: function(data) {
+                /* update username label on this page */
+                var label = document.getElementById('avatar-username-label');
+                var input = document.querySelector('[name="new_username"]');
+                if (label && input) label.textContent = input.value;
+            }
+        });
+
+        /* ── Password form (AJAX) ── */
+        ajaxForm('password-change-form', { resetOnSuccess: true });
+
+        /* ── Avatar upload form (AJAX) ── */
+        ajaxForm('avatar-change-form', {
+            onSuccess: function(data) {
+                /* swap placeholder → img or update existing img */
+                var current = document.getElementById('avatar-current');
+                var placeholder = document.getElementById('avatar-placeholder');
+                if (data.avatar_url) {
+                    if (current) {
+                        current.src = data.avatar_url;
+                    } else if (placeholder) {
+                        var img = document.createElement('img');
+                        img.src = data.avatar_url;
+                        img.alt = 'Avatar';
+                        img.className = 'avatar-preview';
+                        img.id = 'avatar-current';
+                        placeholder.parentNode.replaceChild(img, placeholder);
+                    }
+                }
+                /* hide local file preview */
+                var previewWrap = document.getElementById('avatar-new-preview');
+                if (previewWrap) previewWrap.style.display = 'none';
+                var fileInput = document.getElementById('avatar-input');
+                if (fileInput) fileInput.value = '';
+            }
+        });
+
+        /* ── Remove avatar button (AJAX) ── */
+        (function() {
+            var btn = document.getElementById('remove-avatar-btn');
+            if (!btn) return;
+            btn.addEventListener('click', function() {
+                var csrfToken = document.querySelector('[name="csrfmiddlewaretoken"]').value;
+                var formData = new FormData();
+                formData.append('csrfmiddlewaretoken', csrfToken);
+                formData.append('action', 'remove_avatar');
+                formData.append('is_ajax', '1');
+                fetch(window.location.href, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    body: formData
+                })
+                .then(function(resp) { return resp.json(); })
+                .then(function(data) {
+                    showToast(data.message, data.status === 'ok' ? 'success' : 'error');
+                    if (data.status === 'ok') {
+                        /* swap img → placeholder */
+                        var current = document.getElementById('avatar-current');
+                        if (current) {
+                            var label = document.getElementById('avatar-username-label');
+                            var letter = label ? label.textContent.charAt(0) : '?';
+                            var ph = document.createElement('div');
+                            ph.className = 'avatar-placeholder';
+                            ph.id = 'avatar-placeholder';
+                            ph.textContent = letter;
+                            current.parentNode.replaceChild(ph, current);
+                        }
+                        btn.remove();
+                    }
+                })
+                .catch(function() {
+                    window.location.reload();
                 });
             });
         })();
