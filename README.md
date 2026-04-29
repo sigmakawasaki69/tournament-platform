@@ -1,41 +1,41 @@
-# 🏆 Tournament Platform
+# Tournament Platform
 
 ![Python](https://img.shields.io/badge/Python-3.11-blue?style=for-the-badge&logo=python)
 ![Django](https://img.shields.io/badge/Django-5.0-092E20?style=for-the-badge&logo=django)
 ![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)
 
-## 📖 About
+## About
 Tournament Platform is a comprehensive web application designed to streamline the management of programming tournaments. It provides a seamless experience for administrators to organize events, teams to register and submit their work, and jury members to efficiently evaluate submissions. Developed as a collaborative effort by a passionate team of 9th-grade students, this platform makes hosting competitions accessible, transparent, and highly organized.
 
-## ✨ Features
-- **👮 Admin Control**: Administrators can seamlessly create, manage, and oversee programming tournaments from end to end.
-- **🫂 Team Portal**: Teams can easily register for tournaments, view assigned tasks, and submit their solutions (including GitHub repository links and video demonstrations).
-- **⚖️ Jury Evaluation**: Dedicated interfaces for jury members to review submissions and provide scores based on predefined categories.
-- **📊 Automatic Leaderboards**: The system automatically aggregates scores and generates dynamic leaderboards immediately after evaluations are completed.
+## Features
+- **Admin Control**: Administrators can seamlessly create, manage, and oversee programming tournaments from end to end.
+- **Team Portal**: Teams can easily register for tournaments, view assigned tasks, and submit their solutions (including GitHub repository links and video demonstrations).
+- **Jury Evaluation**: Dedicated interfaces for jury members to review submissions and provide scores based on predefined categories.
+- **Automatic Leaderboards**: The system automatically aggregates scores and generates dynamic leaderboards immediately after evaluations are completed.
 
-## 🛠️ Tech Stack
+## Tech Stack
 | Component | Technologies |
 | --- | --- |
 | **Backend** | Python 3.11, Django 5 |
 | **Frontend** | HTML5, Tailwind CSS |
 | **Database** | SQLite (Development) → PostgreSQL (Production) |
 
-## 👥 Meet the Team
+## Meet the Team
 We are an IT team consisting of 5 driven 9th-grade high school students. 
 
 | Role | Details |
 | :--- | :--- |
-| **👑 Team Lead / Backend** | Core architecture, Django models, views, and routing. |
-| **🎨 UX/UI Designer** | Interfaces, responsive design, and Tailwind CSS styling. |
-| **💼 Product Owner** | Project management, requirements gathering, and task prioritization. |
-| **🤖 AI Ops** | Artificial Intelligence integrations and operations. |
-| **🐛 QA Tester** | Manual and automated testing to ensure platform stability. |
+| **Team Lead / Backend** | Core architecture, Django models, views, and routing. |
+| **UX/UI Designer** | Interfaces, responsive design, and Tailwind CSS styling. |
+| **Product Owner** | Project management, requirements gathering, and task prioritization. |
+| **AI Ops** | Artificial Intelligence integrations and operations. |
+| **QA Tester** | Manual and automated testing to ensure platform stability. |
 
-## 📸 Screenshots
+## Screenshots
 > [!NOTE]
 > *[Coming soon]*
 
-## 🚀 Installation & How to Run
+## Installation & How to Run
 
 Follow these steps to get the project up and running on your local machine.
 
@@ -85,7 +85,7 @@ Follow these steps to get the project up and running on your local machine.
    ```
    The application will now be running at `http://localhost:8000/`.
 
-## 📁 Project Structure
+## Project Structure
 
 ```text
 tournament-platform/
@@ -103,7 +103,7 @@ tournament-platform/
 └── requirements.txt       # Python package dependencies
 ```
 
-## 🤝 Contributing
+## Contributing
 We welcome contributions! Please follow these guidelines:
 1. Fork the project.
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`).
@@ -111,5 +111,5 @@ We welcome contributions! Please follow these guidelines:
 4. Push to the branch (`git push origin feature/AmazingFeature`).
 5. Open a Pull Request.
 
-## 📄 License
+## License
 This project is licensed under the MIT License - see the LICENSE file for details.
