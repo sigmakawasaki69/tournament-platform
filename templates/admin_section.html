@@ -291,7 +291,19 @@
                             </div>
                             <div class="section-note">{{ user.email|default:"-" }}</div>
                             <div class="toolbar spacer-top" style="gap: 8px; flex-wrap: wrap;">
-                                {% if user.id != request.user.id %}
+                                {% if user.id == request.user.id %}
+                                    <span class="section-note" data-i18n="admin.users.current_user">Ви (поточний користувач)</span>
+                                {% elif user.role == 'admin' and not request.user.is_superuser or user.is_superuser and not request.user.is_superuser %}
+                                    <form style="display:flex; gap:6px; align-items: center; flex: 1; min-width: 200px;">
+                                        <select name="role" class="button-compact" style="font-size:12px; height: 36px; flex: 1; opacity: 0.5; cursor: not-allowed;" disabled>
+                                            {% for value, label in role_choices %}
+                                                <option value="{{ value }}"{% if user.role == value %} selected{% endif %}>{{ label }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <button class="button" type="button" disabled style="height: 36px; padding: 0 12px; white-space: nowrap; opacity: 0.5; cursor: not-allowed;" data-i18n="admin.users.save_role" title="Тільки суперкористувач може змінювати роль адміністраторів">Зберегти роль</button>
+                                    </form>
+                                    <button class="button-danger" type="button" disabled style="height: 36px; width: 36px; display: flex; align-items: center; justify-content: center; opacity: 0.5; cursor: not-allowed;" title="Тільки суперкористувач може видаляти адміністраторів" data-i18n="admin.users.delete">×</button>
+                                {% else %}
                                     <form method="post" action="{% url 'update_user_role' user.id %}" style="display:flex; gap:6px; align-items: center; flex: 1; min-width: 200px;">
                                         {% csrf_token %}
                                         <select name="role" class="button-compact" style="font-size:12px; height: 36px; flex: 1;">
@@ -305,8 +317,6 @@
                                         {% csrf_token %}
                                         <button class="button-danger" type="submit" data-i18n="admin.users.delete" style="height: 36px; width: 36px; display: flex; align-items: center; justify-content: center;">×</button>
                                     </form>
-                                {% else %}
-                                    <span class="section-note" data-i18n="admin.users.current_user">Ви (поточний користувач)</span>
                                 {% endif %}
                             </div>
                         </div>

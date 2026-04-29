@@ -382,10 +382,8 @@ def render_admin_section(request, section, action=None, admin_create_user_form=N
         'admin_create_user_form': admin_create_user_form or AdminCreateUserForm(
             available_roles=get_available_admin_roles(request.user),
         ),
-        'role_choices': [
-            choice for choice in CustomUser.ROLE_CHOICES
-            if choice[0] in get_available_admin_roles(request.user)
-        ],
+        'role_choices': list(CustomUser.ROLE_CHOICES),
+        'can_manage_admin_roles': request.user.is_superuser,
         'now': timezone.now(),
         'tournament_form': tournament_form or TournamentForm(),
     })
