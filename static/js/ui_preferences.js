@@ -479,6 +479,9 @@
             "admin.tournaments.is_draft": "Чернетка",
             "admin.tournaments.created_by": "Створив",
             "admin.tournaments.tasks_count": "Завдань",
+            "admin.filter.all": "Усі",
+            "admin.filter.mine": "Мої",
+            "admin.tournaments.filter_empty": "Немає турнірів за цим фільтром.",
 
             "admin.teams.title": "Команди",
             "admin.teams.subtitle": "Швидкий доступ до складу команд та їхніх профілів.",
@@ -1466,6 +1469,9 @@
             "admin.tournaments.is_draft": "Draft",
             "admin.tournaments.created_by": "Created by",
             "admin.tournaments.tasks_count": "Tasks",
+            "admin.filter.all": "All",
+            "admin.filter.mine": "Mine",
+            "admin.tournaments.filter_empty": "No tournaments match this filter.",
 
             "admin.teams.title": "Teams",
             "admin.teams.subtitle": "Quick access to team rosters and profiles.",
