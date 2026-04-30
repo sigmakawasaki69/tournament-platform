@@ -47,7 +47,16 @@
                         <div><span class="leaderboard-place">#{{ row.place }}</span></div>
                         <div class="meta-stack">
                             <strong>{{ row.team.name }}</strong>
-                            <div class="leaderboard-meta"><span data-i18n="home.team_block.captain">Контактна особа (капітан)</span>: {{ row.team.captain_name }}</div>
+                            <div class="leaderboard-meta">
+                                <a href="{% url 'public_profile' row.team.captain_user_id %}" class="user-profile-link user-profile-link--inline user-profile-link--compact">
+                                    {% if row.team.captain_user.avatar %}
+                                        <img src="{{ row.team.captain_user.avatar.url }}" alt="" class="user-profile-link__avatar user-profile-link__avatar--xs">
+                                    {% else %}
+                                        <div class="user-profile-link__avatar user-profile-link__avatar--xs user-profile-link__avatar--placeholder">{{ row.team.captain_user.username|first }}</div>
+                                    {% endif %}
+                                    <span>{{ row.team.captain_name }}</span>
+                                </a>
+                            </div>
                         </div>
                         <div class="leaderboard-score">{% if row.overall_average is not None %}{{ row.overall_average|floatformat:1 }}{% else %}-{% endif %}</div>
                         <div>{% if row.best_score is not None %}{{ row.best_score|floatformat:1 }}{% else %}-{% endif %}</div>
@@ -67,6 +76,7 @@
         const leaderboardBody = document.getElementById('leaderboard-body');
         const updatedAt = document.getElementById('leaderboard-updated-at');
         const endpoint = `${window.location.pathname}?format=json`;
+        const profileBaseUrl = '/profile/';
 
         function escapeHtml(value) {
             return String(value ?? '')
@@ -94,12 +104,19 @@
             }
 
             leaderboardBody.innerHTML = rows.map((row) => {
+                const captainInitial = escapeHtml((row.captain_name || '?')[0]).toUpperCase();
+                const captainProfileUrl = row.captain_user_id ? `${profileBaseUrl}${row.captain_user_id}/` : '#';
                 return `
                     <div class="leaderboard-row${row.is_my_team ? ' is-my-team' : ''}">
                         <div><span class="leaderboard-place">#${escapeHtml(row.place)}</span></div>
                         <div class="meta-stack">
                             <strong>${escapeHtml(row.team_name)}</strong>
-                            <div class="leaderboard-meta">${captainText}: ${escapeHtml(row.captain_name)}</div>
+                            <div class="leaderboard-meta">
+                                <a href="${captainProfileUrl}" class="user-profile-link user-profile-link--inline user-profile-link--compact">
+                                    <div class="user-profile-link__avatar user-profile-link__avatar--xs user-profile-link__avatar--placeholder">${captainInitial}</div>
+                                    <span>${escapeHtml(row.captain_name)}</span>
+                                </a>
+                            </div>
                         </div>
                         <div class="leaderboard-score">${escapeHtml(formatScore(row.overall_average))}</div>
                         <div>${escapeHtml(formatScore(row.best_score))}</div>

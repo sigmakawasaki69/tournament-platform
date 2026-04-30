@@ -29,13 +29,31 @@
         {% endif %}
 
         <div class="item" style="border: 1px solid #e5e7eb; border-radius: 14px; padding: 16px; margin-bottom: 12px; background: #fbfdff;">
-            <div class="name" style="font-weight: 700; margin-bottom: 8px;">{{ team.captain_name }} *</div>
+            <a href="{% url 'public_profile' team.captain_user.id %}" class="user-profile-link user-profile-link--inline" style="margin-bottom: 8px;">
+                {% if team.captain_user.avatar %}
+                    <img src="{{ team.captain_user.avatar.url }}" alt="" class="user-profile-link__avatar user-profile-link__avatar--sm">
+                {% else %}
+                    <div class="user-profile-link__avatar user-profile-link__avatar--sm user-profile-link__avatar--placeholder">{{ team.captain_user.username|first }}</div>
+                {% endif %}
+                <span class="name" style="font-weight: 700;">{{ team.captain_name }} *</span>
+            </a>
             <div class="meta" style="color: #64748b;">{{ team.captain_email }}</div>
         </div>
 
         {% for participant in participants %}
             <div class="item" style="border: 1px solid #e5e7eb; border-radius: 14px; padding: 16px; margin-bottom: 12px; background: #fbfdff;">
-                <div class="name" style="font-weight: 700; margin-bottom: 8px;">{{ participant.full_name }}</div>
+                {% if participant.linked_user %}
+                    <a href="{% url 'public_profile' participant.linked_user.id %}" class="user-profile-link user-profile-link--inline" style="margin-bottom: 8px;">
+                        {% if participant.linked_user.avatar %}
+                            <img src="{{ participant.linked_user.avatar.url }}" alt="" class="user-profile-link__avatar user-profile-link__avatar--sm">
+                        {% else %}
+                            <div class="user-profile-link__avatar user-profile-link__avatar--sm user-profile-link__avatar--placeholder">{{ participant.linked_user.username|first }}</div>
+                        {% endif %}
+                        <span class="name" style="font-weight: 700;">{{ participant.full_name }}</span>
+                    </a>
+                {% else %}
+                    <div class="name" style="font-weight: 700; margin-bottom: 8px;">{{ participant.full_name }}</div>
+                {% endif %}
                 <div class="meta" style="color: #64748b;">{{ participant.email }}</div>
                 {% if can_manage_roster %}
                     <div class="item-actions" style="margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap;">

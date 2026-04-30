@@ -286,7 +286,11 @@
                     {% for user in pending_users %}
                         <div class="item-card">
                             <div class="section-head">
-                                <h3>{{ user.username }}</h3>
+                                <h3>
+                                    <a href="{% url 'public_profile' user.id %}" class="user-profile-link user-profile-link--inline user-profile-link--compact" style="padding:0;">
+                                        {{ user.username }}
+                                    </a>
+                                </h3>
                                 <span class="status-badge status-pending" data-i18n="role.{{ user.role }}">{{ user.get_role_display }}</span>
                             </div>
                             <div class="section-note">{{ user.email|default:"-" }}</div>
@@ -310,7 +314,11 @@
                     {% for user in all_users %}
                         <div class="item-card">
                             <div class="section-head">
-                                <h3>{{ user.username }}</h3>
+                                <h3>
+                                    <a href="{% url 'public_profile' user.id %}" class="user-profile-link user-profile-link--inline user-profile-link--compact" style="padding:0;">
+                                        {{ user.username }}
+                                    </a>
+                                </h3>
                                 <div class="toolbar">
                                     <span class="status-badge status-registration" data-i18n="role.{{ user.role }}">{{ user.get_role_display }}</span>
                                     {% if not user.is_approved %}<span class="status-badge status-pending" data-i18n="admin.users.status_pending">очікує</span>{% endif %}

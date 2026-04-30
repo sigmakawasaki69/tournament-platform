@@ -151,13 +151,35 @@
 
         <div class="list spacer-top">
             <div class="item-card">
-                <h3>{{ team.captain_name }} *</h3>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <a href="{% url 'public_profile' team.captain_user.id %}" class="user-profile-link user-profile-link--inline">
+                        {% if team.captain_user.avatar %}
+                            <img src="{{ team.captain_user.avatar.url }}" alt="" class="user-profile-link__avatar user-profile-link__avatar--sm">
+                        {% else %}
+                            <div class="user-profile-link__avatar user-profile-link__avatar--sm user-profile-link__avatar--placeholder">{{ team.captain_user.username|first }}</div>
+                        {% endif %}
+                        <strong>{{ team.captain_name }} *</strong>
+                    </a>
+                </div>
                 <div class="meta-list">{{ team.captain_email }}</div>
             </div>
 
-            {% for participant in team.participants.all %}
+            {% for participant in annotated_participants %}
                 <div class="item-card">
-                    <h3>{{ participant.full_name }}</h3>
+                    {% if participant.linked_user %}
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <a href="{% url 'public_profile' participant.linked_user.id %}" class="user-profile-link user-profile-link--inline">
+                                {% if participant.linked_user.avatar %}
+                                    <img src="{{ participant.linked_user.avatar.url }}" alt="" class="user-profile-link__avatar user-profile-link__avatar--sm">
+                                {% else %}
+                                    <div class="user-profile-link__avatar user-profile-link__avatar--sm user-profile-link__avatar--placeholder">{{ participant.linked_user.username|first }}</div>
+                                {% endif %}
+                                <strong>{{ participant.full_name }}</strong>
+                            </a>
+                        </div>
+                    {% else %}
+                        <h3>{{ participant.full_name }}</h3>
+                    {% endif %}
                     <div class="meta-list">{{ participant.email }}</div>
                 </div>
             {% empty %}

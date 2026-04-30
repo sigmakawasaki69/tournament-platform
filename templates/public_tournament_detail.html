@@ -196,6 +196,43 @@
                     <p class="empty spacer-top" data-i18n="public_tournament.leaderboard_note">Рейтинг буде доступний після завершення етапу.</p>
                 {% endif %}
             </section>
+
+            <section class="card">
+                <h2 class="section-title" data-i18n="public_tournament.organizer_title">Організатор</h2>
+                <a href="{% url 'public_profile' tournament.created_by.id %}" class="user-profile-link spacer-top">
+                    {% if tournament.created_by.avatar %}
+                        <img src="{{ tournament.created_by.avatar.url }}" alt="" class="user-profile-link__avatar">
+                    {% else %}
+                        <div class="user-profile-link__avatar user-profile-link__avatar--placeholder">{{ tournament.created_by.username|first }}</div>
+                    {% endif %}
+                    <div class="user-profile-link__info">
+                        <strong>{{ tournament.created_by.username }}</strong>
+                        <span class="user-profile-link__role" data-i18n="role.{{ tournament.created_by.role }}">{{ tournament.created_by.get_role_display }}</span>
+                    </div>
+                </a>
+            </section>
+
+            {% if jury_users %}
+            <section class="card">
+                <h2 class="section-title" data-i18n="public_tournament.jury_title">Журі</h2>
+                <div class="section-note" data-i18n="public_tournament.jury_note">Ці члени журі оцінюють роботи учасників турніру.</div>
+                <div class="list spacer-top">
+                    {% for jury in jury_users %}
+                        <a href="{% url 'public_profile' jury.id %}" class="user-profile-link">
+                            {% if jury.avatar %}
+                                <img src="{{ jury.avatar.url }}" alt="" class="user-profile-link__avatar">
+                            {% else %}
+                                <div class="user-profile-link__avatar user-profile-link__avatar--placeholder">{{ jury.username|first }}</div>
+                            {% endif %}
+                            <div class="user-profile-link__info">
+                                <strong>{{ jury.username }}</strong>
+                                <span class="user-profile-link__role" data-i18n="role.jury">Журі</span>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
         </div>
     </div>
 

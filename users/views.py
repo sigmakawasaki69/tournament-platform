@@ -18,7 +18,7 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.http import FileResponse, HttpResponse, HttpResponseNotAllowed, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -114,8 +114,20 @@ def build_team_detail_context(request, team, participant_form=None):
     submissions = team.submissions.select_related('task', 'task__tournament').all()
     roster_locked = is_team_roster_locked(team) and not request.user.is_superuser
     quick_overview = build_team_quick_overview(team)
+
+    # Annotate participants with linked users for profile links
+    participants = list(team.participants.all())
+    if participants:
+        participant_emails = [p.email.lower() for p in participants]
+        users_by_email = {}
+        for u in CustomUser.objects.filter(email__in=participant_emails):
+            users_by_email[u.email.lower()] = u
+        for participant in participants:
+            participant.linked_user = users_by_email.get(participant.email.lower())
+
     return {
         'team': team,
+        'annotated_participants': participants,
         'invitations': team.invitations.all() if (request.user.is_superuser or team.captain_user_id == request.user.id) else [],
         'participants_count': team.members_count,
         'submissions': submissions,
@@ -144,6 +156,7 @@ def serialize_leaderboard_rows(leaderboard, my_team=None):
             'team_id': row['team'].id,
             'team_name': row['team'].name,
             'captain_name': row['team'].captain_name,
+            'captain_user_id': row['team'].captain_user_id,
             'overall_average': row['overall_average'],
             'best_score': row['best_score'],
             'scored_tasks': row['scored_tasks'],
@@ -245,7 +258,7 @@ def build_tournament_leaderboard(tournament):
     approved_registrations = TournamentRegistration.objects.filter(
         tournament=tournament,
         status=TournamentRegistration.Status.APPROVED,
-    ).select_related('team')
+    ).select_related('team', 'team__captain_user')
     submission_qs = Submission.objects.filter(
         task__tournament=tournament,
     ).select_related('team', 'task').prefetch_related(
@@ -765,7 +778,7 @@ def redirect_by_role(request):
 
 def public_tournament_detail(request, tournament_id):
     tournament = get_object_or_404(
-        Tournament.objects.prefetch_related('tasks', 'schedule_items').select_related('created_by'),
+        Tournament.objects.prefetch_related('tasks', 'schedule_items', 'jury_users').select_related('created_by'),
         id=tournament_id,
         is_draft=False,
     )
@@ -839,6 +852,7 @@ def public_tournament_detail(request, tournament_id):
         'can_submit_registration': can_submit_registration,
         'register_url': f"{reverse('register')}?next={current_path}",
         'login_url': f"{reverse('login')}?next={current_path}",
+        'jury_users': tournament.jury_users.all(),
     })
 
 
@@ -1721,6 +1735,66 @@ def profile_view(request):
     })
 
 
+def public_profile(request, user_id):
+    target_user = get_object_or_404(CustomUser, id=user_id)
+
+    # If viewing own profile and logged in, redirect to the personal profile page
+    if request.user.is_authenticated and request.user.id == target_user.id:
+        return redirect('profile')
+
+    # Build public stats
+    tournaments_created_count = Tournament.objects.filter(
+        created_by=target_user, is_draft=False
+    ).count()
+
+    jury_tournaments_count = target_user.jury_tournaments.filter(is_draft=False).count()
+
+    # For participants: find teams and tournament participation
+    teams = Team.objects.filter(
+        Q(captain_user=target_user) | Q(participants__email=target_user.email)
+    ).select_related('captain_user').prefetch_related(
+        'registrations__tournament',
+        'participants',
+    ).annotate(
+        total_members=Count('participants', distinct=True)
+    ).distinct()
+
+    organized_tournaments = []
+    if target_user.role in ['organizer', 'admin']:
+        organized_tournaments = Tournament.objects.filter(
+            created_by=target_user, is_draft=False
+        ).order_by('-start_date')
+
+    participated_tournaments = []
+    for team in teams:
+        for reg in team.registrations.all():
+            if reg.status == TournamentRegistration.Status.APPROVED and not reg.tournament.is_draft:
+                participated_tournaments.append({
+                    'tournament': reg.tournament,
+                    'team': team,
+                })
+
+    # Jury evaluations count
+    jury_evaluations_count = 0
+    if target_user.role == 'jury':
+        jury_evaluations_count = Evaluation.objects.filter(
+            assignment__jury_user=target_user
+        ).count()
+
+    context = {
+        'target_user': target_user,
+        'tournaments_created_count': tournaments_created_count,
+        'organized_tournaments': organized_tournaments,
+        'jury_tournaments_count': jury_tournaments_count,
+        'participated_tournaments': participated_tournaments,
+        'jury_evaluations_count': jury_evaluations_count,
+        'teams': teams,
+    }
+    if request.user.is_authenticated:
+        context.update(build_notification_nav_context(request.user))
+    return render(request, 'public_profile.html', context)
+
+
 @login_required
 def profile_settings(request):
     user = request.user
@@ -1965,7 +2039,15 @@ def team_participants(request, team_id):
     else:
         team = get_object_or_404(team_queryset, id=team_id, participants__email=request.user.email)
 
-    participants = team.participants.all().order_by('full_name')
+    participants = list(team.participants.all().order_by('full_name'))
+    if participants:
+        participant_emails = [p.email.lower() for p in participants]
+        users_by_email = {}
+        for u in CustomUser.objects.filter(email__in=participant_emails):
+            users_by_email[u.email.lower()] = u
+        for participant in participants:
+            participant.linked_user = users_by_email.get(participant.email.lower())
+
     roster_locked = is_team_roster_locked(team) and not request.user.is_superuser
     return render(request, 'team_participants.html', {
         'team': team,
