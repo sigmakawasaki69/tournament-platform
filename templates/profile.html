@@ -44,7 +44,7 @@
         </div>
     </section>
 
-    {% if profile_user.role == 'participant' and not profile_user.is_superuser %}
+    {% if my_team %}
     <section class="section">
         <div class="section-head">
             <div>
@@ -53,21 +53,27 @@
             </div>
         </div>
 
-        {% if my_team %}
-            <div class="list spacer-top">
-                <div class="item-card">
-                    <h3>{{ my_team.name }}</h3>
-                    <div class="meta-list spacer-top"><span data-i18n="profile.team.captain">Контактна особа (капітан)</span>: {{ my_team.captain_name }}</div>
-                    <div class="toolbar spacer-top">
-                        <a class="button" href="{% url 'team_detail' my_team.id %}" data-i18n="profile.team.open">Відкрити</a>
-                        <a class="button-secondary" href="{% url 'team_results' my_team.id %}" data-i18n="profile.team.results">Результати</a>
-                    </div>
+        <div class="list spacer-top">
+            <div class="item-card">
+                <h3>{{ my_team.name }}</h3>
+                <div class="meta-list spacer-top"><span data-i18n="profile.team.captain">Контактна особа (капітан)</span>: {{ my_team.captain_name }}</div>
+                <div class="toolbar spacer-top">
+                    <a class="button" href="{% url 'team_detail' my_team.id %}" data-i18n="profile.team.open">Відкрити</a>
+                    <a class="button-secondary" href="{% url 'team_results' my_team.id %}" data-i18n="profile.team.results">Результати</a>
                 </div>
             </div>
-        {% else %}
-            <p class="empty spacer-top" data-i18n="profile.team.empty">У вас ще немає команди.</p>
-            <a class="button-success spacer-top" href="{% url 'create_team' %}" data-i18n="profile.team.create">Створити команду</a>
-        {% endif %}
+        </div>
+    </section>
+    {% elif profile_user.role == 'participant' %}
+    <section class="section">
+        <div class="section-head">
+            <div>
+                <h2 class="section-title" data-i18n="profile.team.title">Моя команда</h2>
+                <div class="section-note" data-i18n="profile.team.note">Команда, у якій ви є контактною особою (капітаном) або учасником.</div>
+            </div>
+        </div>
+        <p class="empty spacer-top" data-i18n="profile.team.empty">У вас ще немає команди.</p>
+        <a class="button-success spacer-top" href="{% url 'create_team' %}" data-i18n="profile.team.create">Створити команду</a>
     </section>
     {% endif %}
 
@@ -103,7 +109,7 @@
     </section>
     {% endif %}
 
-    {% if profile_user.role == 'participant' %}
+    {% if profile_user.role == 'participant' or tournaments_with_state %}
     <section class="section">
         <div class="section-head">
             <div>
@@ -152,7 +158,7 @@
     {% endif %}
 
     <section class="grid-2 auto-shrink">
-        {% if profile_user.role == 'participant' %}
+        {% if profile_user.role == 'participant' or certificates %}
         <div class="card auto-shrink">
             <div class="section-head">
                 <div>
