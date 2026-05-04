@@ -1,3 +1,5 @@
+import json
+import secrets
 from datetime import timedelta
 from typing import Any, Dict, Iterable
 
@@ -7,8 +9,9 @@ from django.db import models, transaction
 from django.utils import timezone
 
 from users.models import CustomUser
+from users.platform_services import send_team_invitation_email
 
-from .models import RegistrationMember, Team, Tournament, TournamentRegistration
+from .models import RegistrationMember, Team, Tournament, TournamentRegistration, TeamInvitation
 from .validators import validate_school_name
 
 
@@ -71,6 +74,7 @@ class RegistrationService:
     @transaction.atomic
     def submit_registration(
         *,
+        request=None,
         tournament: Tournament,
         registered_by: CustomUser,
         captain_user: CustomUser,
@@ -209,15 +213,47 @@ class RegistrationService:
         )
 
         if normalized_roster:
-            RegistrationMember.objects.bulk_create([
-                RegistrationMember(
+            # Створюємо записи учасників у заявці (знімок на момент подачі)
+            members = []
+            for item in normalized_roster:
+                members.append(RegistrationMember(
                     registration=registration,
                     user=CustomUser.objects.filter(email__iexact=item["email"]).first(),
                     full_name=item["full_name"],
                     email=item["email"],
-                )
-                for item in normalized_roster
-            ])
+                ))
+            RegistrationMember.objects.bulk_create(members)
+
+            # Логіка запрошень: якщо людини ще немає в команді, створюємо запрошення
+            existing_participant_emails = set(
+                team.participants.values_list('email', flat=True)
+            )
+            
+            for item in normalized_roster:
+                email = item["email"]
+                if email.lower() not in {e.lower() for e in existing_participant_emails}:
+                    # Створюємо або оновлюємо запрошення
+                    invitation, created = TeamInvitation.objects.get_or_create(
+                        team=team,
+                        email=email,
+                        defaults={
+                            'full_name': item["full_name"],
+                            'token': secrets.token_hex(32)
+                        }
+                    )
+                    # Якщо запрошення вже було, оновлюємо ім'я та токен (щоб було нове)
+                    if not created:
+                        invitation.full_name = item["full_name"]
+                        invitation.token = secrets.token_hex(32)
+                        invitation.save()
+                    
+                    # Відправляємо пошту якщо є request
+                    if request:
+                        try:
+                            send_team_invitation_email(request, invitation=invitation)
+                        except Exception as e:
+                            import logging
+                            logging.error(f"Failed to send invitation email to {email}: {e}")
 
         return registration
 

@@ -111,7 +111,7 @@ if 'collectstatic' in sys.argv or os.getenv('RAILWAY_ENVIRONMENT_NAME') is None 
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': ':memory:',  # Тимчасова база в оперативці
+            'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
 else:

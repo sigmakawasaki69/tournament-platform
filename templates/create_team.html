@@ -76,7 +76,7 @@
     <script src="{% static 'js/autocomplete.js' %}"></script>
     <script>
         (function () {
-            initAutocomplete('input[name="school"]', {
+            const schoolAutocomplete = initAutocomplete('input[name="school"]', {
                 endpoint: '/api/schools/autocomplete/',
                 minLength: 2
             });
@@ -85,6 +85,32 @@
                 endpoint: '/api/contacts/autocomplete/',
                 minLength: 1
             });
+
+            // Form submission validation
+            const form = document.querySelector('form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    const schoolInput = form.querySelector('input[name="school"]');
+                    if (schoolInput && schoolInput.value.trim().length > 0 && schoolInput.dataset.selected !== "true") {
+                        // Check if the current value exactly matches any of the already loaded options 
+                        // (This is a fallback in case they typed correctly but didn't click)
+                        // But for now, let's just force the click for 100% certainty.
+                        
+                        e.preventDefault();
+                        schoolInput.classList.add('autocomplete-invalid');
+                        schoolInput.focus();
+                        
+                        let errorDiv = form.querySelector('.school-error-msg');
+                        if (!errorDiv) {
+                            errorDiv = document.createElement('div');
+                            errorDiv.className = 'field-errors school-error-msg';
+                            errorDiv.style.marginTop = '8px';
+                            errorDiv.textContent = 'Будь ласка, оберіть школу зі списку.';
+                            schoolInput.parentNode.appendChild(errorDiv);
+                        }
+                    }
+                });
+            }
         })();
     </script>
 {% endblock %}

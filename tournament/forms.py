@@ -460,6 +460,7 @@ class TeamForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['preferred_contact_method'].required = False
         self.fields['preferred_contact_value'].required = False
+        self.fields['school'].required = True
         if self.instance and self.instance.pk:
             if not self.initial.get('preferred_contact_method'):
                 self.initial['preferred_contact_method'] = self.instance.effective_contact_method
@@ -570,7 +571,7 @@ class TournamentRegistrationForm(forms.Form):
             widget=forms.EmailInput(attrs={'class': 'form-input'}),
         )
         self.fields['school'] = forms.CharField(
-            required=False,
+            required=True,
             label='Школа',
             widget=forms.TextInput(attrs={'class': 'form-input'}),
         )
@@ -614,6 +615,16 @@ class TournamentRegistrationForm(forms.Form):
         elif user is not None:
             self.fields['captain_name'].initial = user.username
             self.fields['captain_email'].initial = user.email
+
+        has_participants_field = any(f.get('type') == 'participants' for f in (self.tournament.registration_fields_config if self.tournament else []))
+        
+        if not has_participants_field and self.tournament and (self.tournament.max_team_members or 2) > 1:
+            self.fields['field_participants_auto'] = self.build_dynamic_field({
+                'key': 'participants_auto',
+                'type': 'participants',
+                'label': 'Склад команди (учасники)',
+                'required': (self.tournament.min_team_members or 1) > 1
+            })
 
         for field_config in (self.tournament.registration_fields_config if self.tournament else []):
             self.fields[self.answer_field_name(field_config['key'])] = self.build_dynamic_field(field_config)
@@ -685,7 +696,16 @@ class TournamentRegistrationForm(forms.Form):
         if not cleaned_data['preferred_contact_value']:
             self.add_error('preferred_contact_value', "Вкажіть контакт для зв'язку.")
 
-        for field_config in (self.tournament.registration_fields_config if self.tournament else []):
+        # Збираємо всі конфігурації полів, включаючи автоматичне поле учасників якщо воно є
+        configs = list(self.tournament.registration_fields_config if self.tournament else [])
+        if 'field_participants_auto' in self.fields:
+             configs.append({
+                 'key': 'participants_auto', 
+                 'type': 'participants', 
+                 'required': (self.tournament.min_team_members or 1) > 1
+             })
+
+        for field_config in configs:
             if field_config['type'] != 'participants':
                 continue
 
@@ -778,6 +798,8 @@ class TournamentRegistrationForm(forms.Form):
         return answers
 
     def cleaned_participants(self):
+        if 'field_participants_auto' in self.cleaned_data:
+            return self.cleaned_data['field_participants_auto']
         for field_config in (self.tournament.registration_fields_config if self.tournament else []):
             if field_config['type'] == 'participants':
                 return self.cleaned_data.get(self.answer_field_name(field_config['key']), [])

@@ -53,6 +53,7 @@ from tournament.models import (
     RegistrationMember,
     Submission,
     Task,
+    School,
     Team,
     TeamInvitation,
     Tournament,
@@ -786,15 +787,21 @@ def public_tournament_detail(request, tournament_id):
     existing_registration = None
     registration_form = None
     can_submit_registration = False
+    # Тільки для звичайних учасників. Адміни та інші - блокуються.
     viewer_can_register = (
         request.user.is_authenticated
-        and is_participant_user(request.user)
+        and request.user.role == 'participant'
+        and not request.user.is_superuser
     )
 
     if request.user.is_authenticated:
         existing_registration = TournamentRegistration.objects.filter(
             tournament=tournament,
             team__captain_user=request.user,
+            status__in=[
+                TournamentRegistration.Status.PENDING,
+                TournamentRegistration.Status.APPROVED,
+            ],
         ).order_by('-created_at').first()
 
     if tournament.is_registration_open and (viewer_can_register or not request.user.is_authenticated):
@@ -806,10 +813,7 @@ def public_tournament_detail(request, tournament_id):
         can_submit_registration = viewer_can_register
 
         if request.method == 'POST' and viewer_can_register:
-            if existing_registration and existing_registration.status in [
-                TournamentRegistration.Status.PENDING,
-                TournamentRegistration.Status.APPROVED,
-            ]:
+            if existing_registration:
                 return redirect('public_tournament_detail', tournament_id=tournament.id)
 
             if (
@@ -827,6 +831,7 @@ def public_tournament_detail(request, tournament_id):
             if registration_form.is_valid():
                 try:
                     RegistrationService.submit_registration(
+                        request=request,
                         tournament=tournament,
                         registered_by=request.user,
                         captain_user=request.user,
@@ -835,9 +840,16 @@ def public_tournament_detail(request, tournament_id):
                         roster=registration_form.cleaned_participants(),
                     )
                 except ValidationError as exc:
+                    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                        return JsonResponse({'success': False, 'errors': str(exc)})
                     registration_form.add_error(None, exc)
                 else:
+                    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                        return JsonResponse({'success': True, 'message': 'Вашу заявку успішно надіслано! Учасники отримали запрошення на пошту.'})
                     return redirect('participant_dashboard')
+            else:
+                if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                    return JsonResponse({'success': False, 'errors': registration_form.errors.as_json()})
 
     current_path = reverse('public_tournament_detail', args=[tournament.id])
     return render(request, 'public_tournament_detail.html', {
@@ -1724,6 +1736,9 @@ def profile_view(request):
             'assignment__submission__task__tournament'
         ).order_by('-evaluated_at')
 
+    # Fetch pending invitations for this user
+    pending_invitations = TeamInvitation.objects.filter(email__iexact=request.user.email).select_related('team')
+
     return render(request, 'profile.html', {
         'profile_user': request.user,
         'my_team': my_teams.first(),
@@ -1731,6 +1746,7 @@ def profile_view(request):
         'announcements': announcements,
         'certificates': certificates,
         'jury_evaluations': jury_evaluations,
+        'pending_invitations': pending_invitations,
         **build_notification_nav_context(request.user),
     })
 
@@ -1942,10 +1958,17 @@ def create_team(request):
 
 @login_required
 def register_team_for_tournament(request, tournament_id):
-    if not is_participant_user(request.user):
-        return redirect('redirect_by_role')
-
     tournament = get_object_or_404(Tournament, id=tournament_id, is_draft=False)
+    
+    # Блокуємо всіх, крім звичайних учасників
+    is_participant = request.user.is_authenticated and request.user.role == 'participant' and not request.user.is_superuser
+    
+    if not is_participant:
+        return render(request, 'register_team_for_tournament.html', {
+            'tournament': tournament,
+            'not_a_participant': True
+        })
+
     if not tournament.is_registration_open:
         return redirect('profile')
 
@@ -1958,7 +1981,10 @@ def register_team_for_tournament(request, tournament_id):
         ],
     ).exists()
     if already_registered:
-        return redirect('profile')
+        return render(request, 'register_team_for_tournament.html', {
+            'tournament': tournament,
+            'already_registered': True
+        })
 
     if (
         tournament.max_teams
@@ -1978,6 +2004,7 @@ def register_team_for_tournament(request, tournament_id):
         if form.is_valid():
             try:
                 RegistrationService.submit_registration(
+                    request=request,
                     tournament=tournament,
                     registered_by=request.user,
                     captain_user=request.user,
@@ -1986,9 +2013,20 @@ def register_team_for_tournament(request, tournament_id):
                     roster=form.cleaned_participants(),
                 )
             except ValidationError as exc:
+                if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                    return JsonResponse({'success': False, 'errors': str(exc)})
                 form.add_error(None, exc)
             else:
+                if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                    return JsonResponse({'success': True, 'message': 'Вашу заявку успішно надіслано! Учасники отримали запрошення на пошту.'})
+                from django.contrib import messages
+                messages.success(request, 'Вашу заявку на участь у турнірі успішно надіслано!')
                 return redirect('participant_dashboard')
+        else:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'errors': form.errors.as_json()})
+            from django.contrib import messages
+            messages.error(request, 'Помилка заповнення форми. Перевірте всі поля.')
     else:
         form = TournamentRegistrationForm(user=request.user, tournament=tournament)
 
@@ -2458,15 +2496,78 @@ def password_reset_confirm_view(request):
 
 
 def school_autocomplete(request):
-    query = request.GET.get('q', '').strip()
+    query = request.GET.get('q', '').strip().lower()
     if len(query) < 2:
         return JsonResponse([], safe=False)
     
-    schools = Team.objects.filter(
-        school__icontains=query
-    ).values_list('school', flat=True).distinct().order_by('school')[:10]
+    # 1. Розширення абревіатур
+    abbreviations = {
+        'хл': 'харківський ліцей',
+        'хг': 'харківська гімназія',
+        'зош': 'школа',
+        'нвк': 'нвк',
+        'ззсо': 'ззсо',
+        'гімн': 'гімназія',
+        'ліц': 'ліцей',
+    }
     
-    return JsonResponse(list(schools), safe=False)
+    # Створюємо різні варіанти пошукових слів
+    words = query.split()
+    search_variants = [words] # Оригінальні слова
+    
+    # Варіант з розширеними абревіатурами
+    if any(w in abbreviations for w in words):
+        expanded = []
+        for w in words:
+            if w in abbreviations:
+                expanded.extend(abbreviations[w].split())
+            else:
+                expanded.append(w)
+        search_variants.append(expanded)
+
+    def search_in_db(word_list, mode='AND'):
+        if not word_list:
+            return []
+        
+        q_objs = Q()
+        if mode == 'AND':
+            first = True
+            for w in word_list:
+                if len(w) < 2: continue
+                condition = Q(name__icontains=w) | Q(short_name__icontains=w)
+                if first:
+                    q_objs = condition
+                    first = False
+                else:
+                    q_objs &= condition
+        else: # OR mode
+            for w in word_list:
+                if len(w) < 3: continue # Skip very short words in OR mode
+                q_objs |= (Q(name__icontains=w) | Q(short_name__icontains=w))
+        
+        if not q_objs:
+            return []
+            
+        return list(School.objects.filter(q_objs).distinct().order_by('name')[:15])
+
+    # Спроба 1: Почерговий пошук за варіантами (AND search)
+    results = []
+    for variant in search_variants:
+        results = search_in_db(variant, mode='AND')
+        if results:
+            break
+            
+    # Спроба 2: Обробка друкарських помилок (пропуск першої літери у довгих словах)
+    if not results and len(query) > 4:
+        typo_variant = [w[1:] if len(w) > 4 else w for w in words]
+        results = search_in_db(typo_variant, mode='AND')
+
+    # Спроба 3: Пошук хоча б за одним словом (OR search)
+    if not results and len(words) > 1:
+        results = search_in_db(words, mode='OR')
+
+    formatted_results = [str(school) for school in results]
+    return JsonResponse(formatted_results, safe=False)
 
 
 def contact_autocomplete(request):

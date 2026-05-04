@@ -44,6 +44,32 @@
         </div>
     </section>
 
+    {% if pending_invitations %}
+    <section class="section">
+        <div class="section-head">
+            <div>
+                <h2 class="section-title" style="color: #d97706;">🔔 Запрошення в команду</h2>
+                <div class="section-note">Вас запросили стати учасником наступних команд. Підтвердіть участь, щоб з'явитися у списку команди.</div>
+            </div>
+        </div>
+        <div class="list spacer-top">
+            {% for invitation in pending_invitations %}
+                <div class="item-card" style="border-left: 4px solid #d97706; background: rgba(245, 158, 11, 0.05);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                        <div>
+                            <h3 style="margin: 0;">{{ invitation.team.name }}</h3>
+                            <div class="meta-list" style="margin-top: 4px;">Запросив: {{ invitation.team.captain_name }}</div>
+                        </div>
+                        <div class="toolbar" style="margin: 0;">
+                            <a class="button-success" href="{% url 'confirm_team_invitation' invitation.token %}">Прийняти запрошення</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
     {% if my_team %}
     <section class="section">
         <div class="section-head">
