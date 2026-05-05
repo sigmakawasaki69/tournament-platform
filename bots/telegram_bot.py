@@ -40,8 +40,9 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
     context.application.last_msg_times[user_id] = now
 
-    # Обробка команди /start або повідомлення "Пройти валідацію"
-    if update.message.text == "/start" or "валідація" in update.message.text.lower():
+    # Обробка кнопки або тексту
+    text = update.message.text or ""
+    if text == "/start" or "валідація" in text.lower() or "валідацію" in text.lower():
         code = generate_code()
         social_id = update.effective_user.id
         
