@@ -7,7 +7,9 @@ import os
 
 # --- CONFIG ---
 TOKEN = os.environ.get("DISCORD_BOT_TOKEN")
-PLATFORM_API_URL = os.environ.get("PLATFORM_API_URL", "https://calculator-112.up.railway.app/api/social/register-code/")
+PORT = os.environ.get("PORT", "8080")
+# Use local address if possible, otherwise public one
+PLATFORM_API_URL = os.environ.get("PLATFORM_API_URL", f"http://127.0.0.1:{PORT}/api/social/register-code/")
 API_BOT_TOKEN = os.environ.get("BOT_API_TOKEN", "ad0209")
 
 def generate_code(length=6):
@@ -54,9 +56,10 @@ class MyBot(discord.Client):
                     except discord.Forbidden:
                         await message.channel.send(f"{message.author.mention}, я не можу відправити вам DM. Перевірте налаштування приватності.")
                 else:
+                    print(f"API Error: Status {response.status_code}, Body: {response.text}")
                     await message.channel.send("❌ Помилка зв'язку з платформою. Спробуйте пізніше.")
             except Exception as e:
-                print(f"API Error: {e}")
+                print(f"API Exception: {e}")
                 await message.channel.send("❌ Помилка підключення до сервера.")
 
 def main():
