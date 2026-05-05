@@ -8,7 +8,7 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters, C
 
 # --- CONFIG ---
 TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
-PLATFORM_API_URL = os.environ.get("PLATFORM_API_URL", "https://calculator-112.up.railway.app/users/api/social/register-code/")
+PLATFORM_API_URL = os.environ.get("PLATFORM_API_URL", "https://calculator-112.up.railway.app/api/social/register-code/")
 API_BOT_TOKEN = os.environ.get("BOT_API_TOKEN", "ad0209")
 
 def generate_code(length=6):

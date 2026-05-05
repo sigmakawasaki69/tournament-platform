@@ -2731,7 +2731,9 @@ def contact_autocomplete(request):
     return JsonResponse([], safe=False)
 
 
-# Social Verification API
+from django.views.decorators.csrf import csrf_exempt
+import json
+
 @csrf_exempt
 def api_register_social_code(request):
     """Called by bots to register a code for a social ID."""
