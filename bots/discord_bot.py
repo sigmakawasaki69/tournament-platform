@@ -6,9 +6,9 @@ import asyncio
 import os
 
 # --- CONFIG ---
-TOKEN = "MTUwMTIyNTc5NDEyMTM3MTcyOQ.GSZMCY.wbtV6L6htCkeiJv6ER9sS8FXdj7Ecb5Il6qD6c"
-PLATFORM_API_URL = "http://127.0.0.1:8000/users/api/social/register-code/"
-API_BOT_TOKEN = "debug_token"
+TOKEN = os.environ.get("DISCORD_BOT_TOKEN")
+PLATFORM_API_URL = os.environ.get("PLATFORM_API_URL", "http://127.0.0.1:8000/users/api/social/register-code/")
+API_BOT_TOKEN = os.environ.get("BOT_API_TOKEN", "debug_token")
 
 def generate_code(length=6):
     return ''.join(random.choices(string.digits, k=length))
@@ -55,6 +55,10 @@ class MyBot(discord.Client):
 
 def main():
     print("Discord Bot starting...")
+    if not TOKEN:
+        print("Error: DISCORD_BOT_TOKEN not found in environment.")
+        return
+        
     intents = discord.Intents.default()
     intents.message_content = True
     

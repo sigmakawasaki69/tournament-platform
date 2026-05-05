@@ -7,9 +7,9 @@ from telegram import Update, ReplyKeyboardMarkup, KeyboardButton
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 
 # --- CONFIG ---
-TOKEN = "8540863952:AAHgXKOLnPa1ZCA0NH-exFHok470419sgpA"
-PLATFORM_API_URL = "http://127.0.0.1:8000/users/api/social/register-code/"
-API_BOT_TOKEN = "debug_token" # Should match settings.BOT_API_TOKEN
+TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
+PLATFORM_API_URL = os.environ.get("PLATFORM_API_URL", "http://127.0.0.1:8000/users/api/social/register-code/")
+API_BOT_TOKEN = os.environ.get("BOT_API_TOKEN", "debug_token")
 
 def generate_code(length=6):
     return ''.join(random.choices(string.digits, k=length))
@@ -58,6 +58,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 def main():
     print("Telegram Bot starting...")
+    if not TOKEN:
+        print("Error: TELEGRAM_BOT_TOKEN not found in environment.")
+        return
+        
     application = Application.builder().token(TOKEN).build()
 
     application.add_handler(CommandHandler("start", start))
