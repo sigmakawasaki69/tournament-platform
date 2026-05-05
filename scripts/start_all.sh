@@ -1,17 +1,10 @@
 #!/bin/bash
 # Apply database migrations
-set -o errexit
-
-pip install --upgrade pip
-pip install -r requirements.txt
-
-python manage.py collectstatic --no-input
-
-#python manage.py migrate --noinput
+python manage.py migrate --noinput || echo "Migration failed, check your database connection."
 
 # Start bots in the background
 python bots/telegram_bot.py &
 python bots/discord_bot.py &
 
-# Start Django with Gunicorn
-gunicorn core.wsgi --bind 0.0.0.0:$PORT
+# Start Django with Gunicorn, fallback to 8080 if PORT is empty
+gunicorn core.wsgi --bind 0.0.0.0:${PORT:-8080}
