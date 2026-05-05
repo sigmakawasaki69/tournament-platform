@@ -8,9 +8,8 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters, C
 
 # --- CONFIG ---
 TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
-PORT = os.environ.get("PORT", "8080")
-# Use local address if possible, otherwise public one
-PLATFORM_API_URL = os.environ.get("PLATFORM_API_URL", f"http://127.0.0.1:{PORT}/api/social/register-code/")
+# Since bots are now separate services, use the public URL of the main platform
+PLATFORM_API_URL = os.environ.get("PLATFORM_API_URL", "https://calculator-112.up.railway.app/api/social/register-code/")
 API_BOT_TOKEN = os.environ.get("BOT_API_TOKEN", "ad0209")
 
 def generate_code(length=6):
