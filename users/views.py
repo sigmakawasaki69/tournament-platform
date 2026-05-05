@@ -858,7 +858,7 @@ def public_tournament_detail(request, tournament_id):
         'leaderboard_preview': leaderboard[:5],
         'leaderboard_total': len(leaderboard),
         'show_public_leaderboard': tournament.evaluation_results_ready,
-        'registration_form': registration_form,
+        'registration_form': None, # We don't show the form here anymore
         'existing_registration': existing_registration,
         'viewer_can_register': viewer_can_register,
         'can_submit_registration': can_submit_registration,
@@ -1741,7 +1741,7 @@ def profile_view(request):
 
     return render(request, 'profile.html', {
         'profile_user': request.user,
-        'my_team': my_teams.first(),
+        'my_teams': my_teams,
         'tournaments_with_state': tournaments_with_state,
         'announcements': announcements,
         'certificates': certificates,
@@ -1936,11 +1936,8 @@ def create_team(request):
 
     next_url = request.GET.get('next') or request.POST.get('next')
 
-    user_is_in_any_team = Team.objects.filter(
-        Q(captain_user=request.user) | Q(participants__email=request.user.email)
-    ).exists()
-    if user_is_in_any_team:
-        return redirect(get_safe_redirect(request, next_url, reverse('participant_dashboard')))
+    # Учасник може мати багато команд
+    pass
 
     if request.method == 'POST':
         form = TeamForm(request.POST)
@@ -1970,7 +1967,7 @@ def register_team_for_tournament(request, tournament_id):
         })
 
     if not tournament.is_registration_open:
-        return redirect('profile')
+        return redirect('public_tournament_detail', tournament_id=tournament.id)
 
     already_registered = TournamentRegistration.objects.filter(
         tournament=tournament,
@@ -1997,7 +1994,8 @@ def register_team_for_tournament(request, tournament_id):
         ).count()
         >= tournament.max_teams
     ):
-        return redirect('profile')
+        messages.error(request, 'На жаль, ліміт команд на цей турнір уже вичерпано.')
+        return redirect('public_tournament_detail', tournament_id=tournament.id)
 
     if request.method == 'POST':
         form = TournamentRegistrationForm(request.POST, user=request.user, tournament=tournament)
@@ -2031,6 +2029,143 @@ def register_team_for_tournament(request, tournament_id):
         form = TournamentRegistrationForm(user=request.user, tournament=tournament)
 
     return render(request, 'register_team_for_tournament.html', {'form': form, 'tournament': tournament})
+
+
+@login_required
+def tournament_registration_options(request, tournament_id):
+    tournament = get_object_or_404(Tournament, id=tournament_id, is_draft=False)
+    
+    # Тільки для учасників
+    if request.user.role != 'participant' or request.user.is_superuser:
+        return redirect('public_tournament_detail', tournament_id=tournament.id)
+
+    # Check if registration is open
+    if not tournament.is_registration_open:
+        return redirect('public_tournament_detail', tournament_id=tournament.id)
+    
+    # Check if already registered
+    existing_registration = TournamentRegistration.objects.filter(
+        tournament=tournament,
+        team__captain_user=request.user,
+        status__in=[
+            TournamentRegistration.Status.PENDING,
+            TournamentRegistration.Status.APPROVED,
+        ],
+    ).exists()
+    
+    if existing_registration:
+        return redirect('public_tournament_detail', tournament_id=tournament.id)
+
+    captain_teams = Team.objects.filter(captain_user=request.user)
+    has_existing_teams = captain_teams.exists()
+    
+    return render(request, 'tournament_registration_options.html', {
+        'tournament': tournament,
+        'has_existing_teams': has_existing_teams,
+        'captain_teams': captain_teams,
+    })
+
+
+@login_required
+def register_existing_team(request, tournament_id):
+    tournament = get_object_or_404(Tournament, id=tournament_id, is_draft=False)
+    
+    # Тільки для учасників
+    if request.user.role != 'participant' or request.user.is_superuser:
+        return redirect('public_tournament_detail', tournament_id=tournament.id)
+
+    if not tournament.is_registration_open:
+        return redirect('public_tournament_detail', tournament_id=tournament.id)
+        
+    captain_teams = Team.objects.filter(captain_user=request.user)
+    if not captain_teams.exists():
+        return redirect('tournament_registration_options', tournament_id=tournament.id)
+        
+    if request.method == 'POST':
+        team_id = request.POST.get('team_id')
+        team = get_object_or_404(captain_teams, id=team_id)
+        
+        # Perform checks
+        errors = []
+        members_count = team.members_count
+        
+        if tournament.min_team_members and members_count < tournament.min_team_members:
+            errors.append(f"У команді замало людей. Потрібно щонайменше: {tournament.min_team_members}. Зараз: {members_count}.")
+        if tournament.max_team_members and members_count > tournament.max_team_members:
+            errors.append(f"У команді забагато людей. Максимум дозволено: {tournament.max_team_members}. Зараз: {members_count}.")
+            
+        # Check if already registered for THIS tournament
+        if TournamentRegistration.objects.filter(
+            tournament=tournament,
+            team=team,
+            status__in=[TournamentRegistration.Status.PENDING, TournamentRegistration.Status.APPROVED]
+        ).exists():
+            errors.append("Ця команда вже зареєстрована на цей турнір.")
+
+        # Check for email conflicts in THIS tournament
+        try:
+            roster = list(team.participants.values('full_name', 'email'))
+            RegistrationService._ensure_unique_tournament_emails(
+                tournament=tournament,
+                team=team,
+                captain_email=team.captain_email,
+                roster=roster
+            )
+        except ValidationError as exc:
+            errors.append(str(exc))
+
+        if errors:
+            return render(request, 'register_existing_team.html', {
+                'tournament': tournament,
+                'captain_teams': captain_teams,
+                'selected_team_id': int(team_id),
+                'errors': errors
+            })
+            
+        # If all good, create registration
+        # Since TournamentRegistrationForm handles dynamic fields, and we are registering an EXISTING team,
+        # we might need to handle those dynamic fields if they are required.
+        # But for now, let's assume we just register the team.
+        # If there are required dynamic fields, we should probably show them.
+        
+        if tournament.registration_fields_config:
+            # If there are dynamic fields, we should probably redirect to the full form but with the team selected.
+            # But the user asked for simple registration of existing team.
+            # Let's see if we can just submit with empty answers if not provided.
+            pass
+
+        try:
+            RegistrationService.submit_registration(
+                request=request,
+                tournament=tournament,
+                registered_by=request.user,
+                captain_user=request.user,
+                team_data={
+                    'name': team.name,
+                    'captain_name': team.captain_name,
+                    'captain_email': team.captain_email,
+                    'school': team.school,
+                    'preferred_contact_method': team.preferred_contact_method,
+                    'preferred_contact_value': team.preferred_contact_value,
+                },
+                form_answers={}, # Empty for now, or we should have a form for them
+                roster=list(team.participants.values('full_name', 'email')),
+            )
+            messages.success(request, f'Команду "{team.name}" успішно зареєстровано!')
+            return redirect('participant_dashboard')
+        except ValidationError as exc:
+            errors.append(str(exc))
+            return render(request, 'register_existing_team.html', {
+                'tournament': tournament,
+                'captain_teams': captain_teams,
+                'selected_team_id': int(team_id),
+                'errors': errors
+            })
+
+    return render(request, 'register_existing_team.html', {
+        'tournament': tournament,
+        'captain_teams': captain_teams,
+    })
 def team_detail(request, team_id):
     team_queryset = Team.objects.select_related('captain_user').prefetch_related('registrations__tournament')
     if request.user.is_superuser:

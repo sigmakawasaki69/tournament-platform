@@ -70,6 +70,30 @@ class RegistrationService:
         if conflicting_registrations.exists():
             raise ValidationError("Один email не може бути у двох командах цього турніру.")
 
+        # Перевірка на перетин у часі з іншими турнірами
+        # Учасник не може бути у двох турнірах, які проходять одночасно
+        overlapping_tournaments = Tournament.objects.filter(
+            is_draft=False,
+            start_date__lte=tournament.end_date,
+            end_date__gte=tournament.start_date,
+        ).exclude(id=tournament.id)
+
+        if overlapping_tournaments.exists():
+            conflicting_other_registrations = TournamentRegistration.objects.filter(
+                tournament__in=overlapping_tournaments,
+                status__in=active_statuses,
+            ).filter(
+                models.Q(team__captain_email__in=emails_to_check)
+                | models.Q(members__email__in=emails_to_check)
+            ).select_related('tournament', 'team').distinct()
+
+            if conflicting_other_registrations.exists():
+                conflict = conflicting_other_registrations.first()
+                raise ValidationError(
+                    f"Учасники вашої команди вже зареєстровані на турнір '{conflict.tournament.name}', "
+                    f"який перетинається за часом із цим турніром. Одночасна участь у декількох турнірах заборонена."
+                )
+
     @staticmethod
     @transaction.atomic
     def submit_registration(

@@ -52,6 +52,8 @@ from .views import (
     participant_dashboard,
     create_team,
     register_team_for_tournament,
+    tournament_registration_options,
+    register_existing_team,
     team_detail,
     edit_team,
     team_participants,
@@ -130,6 +132,8 @@ urlpatterns = [
     path('participant-dashboard/', participant_dashboard, name='participant_dashboard'),
     path('create-team/', create_team, name='create_team'),
     path('register-team-for-tournament/<int:tournament_id>/', register_team_for_tournament, name='register_team_for_tournament'),
+    path('tournament/<int:tournament_id>/registration-options/', tournament_registration_options, name='tournament_registration_options'),
+    path('tournament/<int:tournament_id>/register-existing/', register_existing_team, name='register_existing_team'),
 
     path('team/<int:team_id>/', team_detail, name='team_detail'),
     path('team/<int:team_id>/edit/', edit_team, name='edit_team'),

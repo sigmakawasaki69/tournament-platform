@@ -84,100 +84,19 @@
                             <a class="button-secondary" href="{{ register_url }}" data-i18n="public_tournament.register_cta">Зареєструватися</a>
                         </div>
                     </div>
-                    {% if registration_form %}
-                        <div class="stack-sm spacer-top">
-                            {% for field in registration_form %}
-                                <div class="surface-muted">
-                                    <strong>{{ field.label }}</strong>
-                                    <div class="section-note">
-                                        {% if field.field.required %}Обов'язкове поле{% else %}Необов'язкове поле{% endif %}
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
                 {% elif not viewer_can_register %}
                     <div class="message-box warn spacer-top" data-i18n="public_tournament.reg_permission_denied">У вас немає прав для подачі заявки на цей турнір.</div>
-                {% elif registration_form %}
-                    <form method="post" id="registration-form" class="spacer-top">
-                        {% csrf_token %}
-                        
-                        {% if registration_form.errors %}
-                            <div class="message-box error spacer-top" style="margin-bottom: 24px;">
-                                <h4 style="margin: 0 0 8px 0;">Будь ласка, виправте помилки у формі:</h4>
-                                <ul style="margin: 0; padding-left: 20px;">
-                                    {% if registration_form.non_field_errors %}
-                                        <li>{{ registration_form.non_field_errors|join:", " }}</li>
-                                    {% endif %}
-                                    {% for field in registration_form %}
-                                        {% if field.errors %}
-                                            <li><strong>{{ field.label }}:</strong> {{ field.errors|join:", " }}</li>
-                                        {% endif %}
-                                    {% endfor %}
-                                </ul>
-                            </div>
-                        {% endif %}
-
-                        <div class="form-grid">
-                            <div class="field-group">
-                                <label for="{{ registration_form.team_name.id_for_label }}" data-i18n="common.team_name">Назва команди</label>
-                                {{ registration_form.team_name }}
-                                {% if registration_form.team_name.errors %}<div class="field-errors" style="color:#dc2626; font-weight:600; margin-top:4px;">{{ registration_form.team_name.errors|join:", " }}</div>{% endif %}
-                            </div>
-                            <div class="grid-2">
-                                <div class="field-group">
-                                    <label for="{{ registration_form.captain_name.id_for_label }}" data-i18n="public_reg.participant_name">Ім'я капітана</label>
-                                    {{ registration_form.captain_name }}
-                                    {% if registration_form.captain_name.errors %}<div class="field-errors" style="color:#dc2626; font-weight:600; margin-top:4px;">{{ registration_form.captain_name.errors|join:", " }}</div>{% endif %}
-                                </div>
-                                <div class="field-group">
-                                    <label for="{{ registration_form.captain_email.id_for_label }}" data-i18n="public_reg.participant_email">Email капітана</label>
-                                    {{ registration_form.captain_email }}
-                                    {% if registration_form.captain_email.errors %}<div class="field-errors" style="color:#dc2626; font-weight:600; margin-top:4px;">{{ registration_form.captain_email.errors|join:", " }}</div>{% endif %}
-                                </div>
-                            </div>
-                            <div class="field-group">
-                                <label for="{{ registration_form.school.id_for_label }}" data-i18n="common.school">Навчальний заклад</label>
-                                {{ registration_form.school }}
-                                {% if registration_form.school.errors %}<div class="field-errors" style="color:#dc2626; font-weight:600; margin-top:4px;">{{ registration_form.school.errors|join:", " }}</div>{% endif %}
-                            </div>
-                            <div class="grid-2">
-                                <div class="field-group">
-                                    <label for="{{ registration_form.preferred_contact_method.id_for_label }}" data-i18n="common.contact_method">Спосіб зв'язку</label>
-                                    {{ registration_form.preferred_contact_method }}
-                                    {% if registration_form.preferred_contact_method.errors %}<div class="field-errors" style="color:#dc2626; font-weight:600; margin-top:4px;">{{ registration_form.preferred_contact_method.errors|join:", " }}</div>{% endif %}
-                                </div>
-                                <div class="field-group">
-                                    <label for="{{ registration_form.preferred_contact_value.id_for_label }}" data-i18n="common.contact_value">Логін / Номер</label>
-                                    {{ registration_form.preferred_contact_value }}
-                                    {% if registration_form.preferred_contact_value.errors %}<div class="field-errors" style="color:#dc2626; font-weight:600; margin-top:4px;">{{ registration_form.preferred_contact_value.errors|join:", " }}</div>{% endif %}
-                                </div>
-                            </div>
-
-                            {% for field in registration_form %}
-                                {% if field.name not in "team_name captain_name captain_email school preferred_contact_method preferred_contact_value" %}
-                                    <div class="card spacer-top">
-                                        <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span style="color:var(--danger);">*</span>{% endif %}</label>
-                                        {% if field.field.widget.attrs.data_field_type == "participants" %}
-                                            {{ field }}
-                                            <div class="participants-wrap" data-target-id="{{ field.auto_id }}">
-                                                <div class="section-note spacer-bottom" data-i18n="public_reg.participant_summary">Додайте інших учасників команди (капітан вже врахований).</div>
-                                                <div class="participants-list"></div>
-                                                <button type="button" class="button-secondary add-participant-btn spacer-top" data-i18n="public_reg.add_participant">+ Додати учасника</button>
-                                            </div>
-                                        {% else %}
-                                            {{ field }}
-                                        {% endif %}
-                                        {% if field.errors %}<div class="field-errors">{{ field.errors|join:", " }}</div>{% endif %}
-                                    </div>
-                                {% endif %}
-                            {% endfor %}
+                {% elif not existing_registration %}
+                    <div class="card spacer-top">
+                        <div class="card-body text-center" style="padding: 2rem;">
+                            <p class="p-medium text-secondary spacer-bottom" data-i18n="public_tournament.reg_form_note_short">
+                                Оберіть існуючу команду або створіть нову для участі у цьому турнірі.
+                            </p>
+                            <a href="{% url 'tournament_registration_options' tournament.id %}" class="button primary" data-i18n="public_tournament.register_cta">
+                                Зареєструватися
+                            </a>
                         </div>
-
-                        <div class="toolbar spacer-top">
-                            <button class="button" type="submit" data-i18n="public_reg.submit">Надіслати заявку</button>
-                        </div>
-                    </form>
+                    </div>
                 {% endif %}
             </section>
         </div>
@@ -280,165 +199,9 @@
 {% block extra_scripts %}
 
     <script src="{% static 'js/autocomplete.js' %}"></script>
-    <script>
-
-        (function () {
-            const template = document.getElementById("participant-row-template");
-            function syncParticipants(container) {
-                const hiddenInput = document.getElementById(container.dataset.targetId);
-                const rows = container.querySelectorAll(".participant-row");
-                const payload = Array.from(rows).map((row) => ({
-                    full_name: row.querySelector(".participant-name").value.trim(),
-                    email: row.querySelector(".participant-email").value.trim(),
-                })).filter((item) => item.full_name || item.email);
-                hiddenInput.value = JSON.stringify(payload);
-            }
-            function addRow(container, data = {}) {
-                const fragment = template.content.cloneNode(true);
-                const row = fragment.querySelector(".participant-row");
-                const nameInput = row.querySelector(".participant-name");
-                const emailInput = row.querySelector(".participant-email");
-                const removeButton = row.querySelector(".remove-participant-btn");
-                nameInput.value = data.full_name || "";
-                emailInput.value = data.email || "";
-                nameInput.addEventListener("input", () => syncParticipants(container));
-                emailInput.addEventListener("input", () => syncParticipants(container));
-                removeButton.addEventListener("click", () => {
-                    row.remove();
-                    syncParticipants(container);
-                });
-                container.querySelector(".participants-list").appendChild(row);
-                syncParticipants(container);
-            }
-            document.querySelectorAll(".participants-wrap").forEach((container) => {
-                const addButton = container.querySelector(".add-participant-btn");
-                const hiddenInput = document.getElementById(container.dataset.targetId);
-                let initialPayload = [];
-                if (hiddenInput.value) {
-                    try { initialPayload = JSON.parse(hiddenInput.value); } catch (e) {}
-                }
-                if (initialPayload.length) {
-                    initialPayload.forEach((item) => addRow(container, item));
-                }
-
-                addButton.addEventListener("click", () => addRow(container));
-            });
-
-            // Initialize autocompletes
-            initAutocomplete('input[name="school"]', {
-                endpoint: '/api/schools/autocomplete/',
-                minLength: 2
-            });
-
-            initAutocomplete('input[name="preferred_contact_value"]', {
-                endpoint: '/api/contacts/autocomplete/',
-                minLength: 1
-            });
-
-            // Form interception
-            const regForm = document.getElementById("registration-form");
-            if (regForm) {
-                regForm.addEventListener("submit", function(e) {
-                    const schoolInput = regForm.querySelector('input[name="school"]');
-                    if (schoolInput && schoolInput.value.trim().length > 0 && schoolInput.dataset.selected !== "true") {
-                        e.preventDefault();
-                        schoolInput.classList.add('autocomplete-invalid');
-                        schoolInput.focus();
-                        schoolInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        
-                        // Pulse effect
-                        schoolInput.style.animation = 'none';
-                        schoolInput.offsetHeight; // trigger reflow
-                        schoolInput.style.animation = 'pulse-error 0.5s 2';
-
-                        // Show message
-                        let errorDiv = regForm.querySelector('.school-error-msg');
-                        if (!errorDiv) {
-                            errorDiv = document.createElement('div');
-                            errorDiv.className = 'field-errors school-error-msg';
-                            errorDiv.style.marginTop = '8px';
-                            errorDiv.style.padding = '8px';
-                            errorDiv.style.background = '#fef2f2';
-                            errorDiv.style.borderLeft = '4px solid #dc2626';
-                            errorDiv.textContent = 'Будь ласка, оберіть школу зі списку.';
-                            schoolInput.parentNode.appendChild(errorDiv);
-                        }
-                        return;
-                    }
-
-                    // AJAX SUBMISSION
-                    e.preventDefault();
-                    const formData = new FormData(regForm);
-                    const submitBtn = regForm.querySelector('button[type="submit"]');
-                    const originalBtnText = submitBtn.textContent;
-                    
-                    submitBtn.disabled = true;
-                    submitBtn.textContent = 'Надсилається...';
-
-                    fetch(window.location.href, {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Hide form and show success message
-                            regForm.style.transition = 'opacity 0.3s ease';
-                            regForm.style.opacity = '0';
-                            setTimeout(() => {
-                                regForm.innerHTML = `
-                                    <div class="message-box success animate-in" style="padding: 40px; text-align: center; border: 2px solid #22c55e;">
-                                        <div style="font-size: 48px; margin-bottom: 20px;">✅</div>
-                                        <h3 style="margin-bottom: 12px; color: #15803d;">${data.message}</h3>
-                                        <p style="color: #166534; font-size: 16px;">Тепер ви можете перейти до свого кабінету, щоб слідкувати за статусом заявки.</p>
-                                        <div class="toolbar" style="justify-content: center; margin-top: 24px;">
-                                            <a class="button" href="/profile/">Перейти до кабінету</a>
-                                        </div>
-                                    </div>
-                                `;
-                                regForm.style.opacity = '1';
-                                regForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            }, 300);
-                        } else {
-                            submitBtn.disabled = false;
-                            submitBtn.textContent = originalBtnText;
-                            
-                            // Handle errors
-                            let errorContainer = regForm.querySelector('.global-error-container');
-                            if (!errorContainer) {
-                                errorContainer = document.createElement('div');
-                                errorContainer.className = 'message-box error global-error-container spacer-top';
-                                errorContainer.style.marginBottom = '24px';
-                                regForm.prepend(errorContainer);
-                            }
-                            
-                            if (typeof data.errors === 'string' && data.errors.startsWith('{')) {
-                                const errorsObj = JSON.parse(data.errors);
-                                let errorHtml = '<h4 style="margin: 0 0 8px 0;">Виправте помилки:</h4><ul style="margin: 0; padding-left: 20px;">';
-                                for (let field in errorsObj) {
-                                    errorsObj[field].forEach(err => {
-                                        errorHtml += `<li>${err.message}</li>`;
-                                    });
-                                }
-                                errorHtml += '</ul>';
-                                errorContainer.innerHTML = errorHtml;
-                            } else {
-                                errorContainer.innerHTML = `<p style="margin:0;">${data.errors || 'Сталася помилка при реєстрації. Спробуйте ще раз.'}</p>`;
-                            }
-                            errorContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        submitBtn.disabled = false;
-                        submitBtn.textContent = originalBtnText;
-                        alert('Сталася мережева помилка. Спробуйте ще раз.');
-                    });
-                });
-            }
+    <script rendered="true">
+        (function() {
+            // Placeholder for any specific logic if needed
         })();
     </script>
     <style>
