@@ -1,14 +1,10 @@
 #!/bin/bash
+# Apply database migrations
+python manage.py migrate --noinput
 
-# Run migrations
-python manage.py migrate
-
-# Start Telegram Bot in background
+# Start bots in the background
 python bots/telegram_bot.py &
-
-# Start Discord Bot in background
 python bots/discord_bot.py &
 
-# Start Django (Web server)
-# Use gunicorn for production
+# Start Django with Gunicorn
 gunicorn core.wsgi --bind 0.0.0.0:$PORT
