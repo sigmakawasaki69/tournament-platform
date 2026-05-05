@@ -135,19 +135,20 @@ class MyBot(discord.Client):
                 print(f"API Error: {e}")
                 await message.channel.send("❌ Помилка підключення до сервера.")
 
+def# ... попередній код ...
+
 def main():
     print("Discord Bot starting...")
     if not TOKEN:
         print("Error: DISCORD_BOT_TOKEN not found in environment.")
         return
     
-    # --- ВИПРАВЛЕННЯ INTENTS ---
     intents = discord.Intents.default()
-    intents.message_content = True  # Дозволяє читати текст повідомлень (!validate)
-    intents.members = True          # Дозволяє бачити учасників та відправляти DM
+    intents.message_content = True  
+    intents.members = True          
     
     client = MyBot(intents=intents)
     client.run(TOKEN)
 
 if __name__ == "__main__":
-    main()
+    main()  # <--- Переконайтеся, що тут немає нічого зайвого після дужок
