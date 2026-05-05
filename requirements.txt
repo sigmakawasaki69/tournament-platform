@@ -14,4 +14,3 @@ cloudinary==1.42.2
 django-cloudinary-storage==0.3.0
 python-telegram-bot==21.10
 discord.py==2.4.0
-audioop-lsm
