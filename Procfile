@@ -1,1 +1,1 @@
-web: bash scripts/start_all.sh
+web: bash scripts/start_all.sh 
