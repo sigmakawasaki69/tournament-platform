@@ -1,6 +1,6 @@
 #!/bin/bash
 # Apply database migrations
-python manage.py migrate --noinput || echo "Migration failed, check your database connection."
+#python manage.py migrate --noinput || echo "Migration failed, check your database connection."
 
 # Start bots in the background
 python bots/telegram_bot.py &
