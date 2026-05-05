@@ -62,6 +62,25 @@
                 </div>
             </div>
 
+            <div id="verification-notice" class="spacer-top" style="display: none;">
+                <div id="tg-notice" class="notice" style="display: none; border-color: #3b82f6; background: #eff6ff; color: #1e40af;">
+                    {% if request.user.is_tg_verified %}
+                        <span style="color: #059669;">✅ Telegram підтверджено</span>
+                    {% else %}
+                        <span style="color: #dc2626;">❌ Telegram не підтверджено.</span> 
+                        <a href="{% url 'profile_settings' %}" style="color: #2563eb; font-weight: 700;">Перейти до підтвердження</a>
+                    {% endif %}
+                </div>
+                <div id="discord-notice" class="notice" style="display: none; border-color: #3b82f6; background: #eff6ff; color: #1e40af;">
+                    {% if request.user.is_discord_verified %}
+                        <span style="color: #059669;">✅ Discord підтверджено</span>
+                    {% else %}
+                        <span style="color: #dc2626;">❌ Discord не підтверджено.</span>
+                        <a href="{% url 'profile_settings' %}" style="color: #2563eb; font-weight: 700;">Перейти до підтвердження</a>
+                    {% endif %}
+                </div>
+            </div>
+
             <div class="toolbar spacer-top">
                 <button class="button-success" type="submit">
                     {% if mode == 'edit' %}<span data-i18n="common.save_changes">Зберегти зміни</span>{% else %}<span data-i18n="create_team.title.create">Створити команду</span>{% endif %}
@@ -85,6 +104,23 @@
                 endpoint: '/api/contacts/autocomplete/',
                 minLength: 1
             });
+
+            // Contact verification toggle
+            const contactMethodSelect = document.querySelector('select[name="preferred_contact_method"]');
+            const verificationNotice = document.getElementById('verification-notice');
+            const tgNotice = document.getElementById('tg-notice');
+            const discordNotice = document.getElementById('discord-notice');
+
+            if (contactMethodSelect) {
+                function updateVerificationNotice() {
+                    const method = contactMethodSelect.value;
+                    verificationNotice.style.display = (method === 'telegram' || method === 'discord') ? 'block' : 'none';
+                    tgNotice.style.display = (method === 'telegram') ? 'block' : 'none';
+                    discordNotice.style.display = (method === 'discord') ? 'block' : 'none';
+                }
+                contactMethodSelect.addEventListener('change', updateVerificationNotice);
+                updateVerificationNotice();
+            }
 
             // Form submission validation
             const form = document.querySelector('form');

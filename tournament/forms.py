@@ -485,6 +485,15 @@ class TeamForm(forms.ModelForm):
             self.add_error('preferred_contact_method', "Оберіть зручний спосіб зв'язку.")
         if not preferred_contact_value:
             self.add_error('preferred_contact_value', "Вкажіть контакт для зв'язку.")
+
+        # Verification check
+        user = self.instance.captain_user if self.instance and self.instance.pk else None
+        if user:
+            if preferred_contact_method == Team.ContactMethod.TELEGRAM and not user.is_tg_verified:
+                self.add_error('preferred_contact_method', "Ви повинні підтвердити свій Telegram у налаштуваннях профілю перед використанням цього методу.")
+            elif preferred_contact_method == Team.ContactMethod.DISCORD and not user.is_discord_verified:
+                self.add_error('preferred_contact_method', "Ви повинні підтвердити свій Discord у налаштуваннях профілю перед використанням цього методу.")
+
         return cleaned_data
 
     def save(self, commit=True):
@@ -694,6 +703,14 @@ class TournamentRegistrationForm(forms.Form):
             self.add_error('preferred_contact_method', "Оберіть зручний спосіб зв'язку.")
         if not cleaned_data['preferred_contact_value']:
             self.add_error('preferred_contact_value', "Вкажіть контакт для зв'язку.")
+
+        # Verification check for the current user
+        if self.user:
+            method = cleaned_data.get('preferred_contact_method')
+            if method == Team.ContactMethod.TELEGRAM and not self.user.is_tg_verified:
+                self.add_error('preferred_contact_method', "Будь ласка, підтвердіть свій Telegram у профілі для реєстрації з цим методом зв'язку.")
+            elif method == Team.ContactMethod.DISCORD and not self.user.is_discord_verified:
+                self.add_error('preferred_contact_method', "Будь ласка, підтвердіть свій Discord у профілі для реєстрації з цим методом зв'язку.")
 
         # Збираємо всі конфігурації полів, включаючи автоматичне поле учасників якщо воно є
         configs = list(self.tournament.registration_fields_config if self.tournament else [])

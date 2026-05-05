@@ -1946,7 +1946,9 @@ def create_team(request):
     if request.method == 'POST':
         form = TeamForm(request.POST)
         if form.is_valid():
-            TeamManagementService.create_team_for_user(user=request.user, form=form)
+            team = TeamManagementService.create_team_for_user(user=request.user, form=form)
+            from django.contrib import messages
+            messages.success(request, f'Команду "{team.name}" успішно створено!')
             return redirect(get_safe_redirect(request, next_url, reverse('participant_dashboard')))
     else:
         form = TeamForm(initial={
@@ -2196,6 +2198,8 @@ def edit_team(request, team_id):
         form = TeamForm(request.POST, instance=team)
         if form.is_valid():
             TeamManagementService.update_team(form=form)
+            from django.contrib import messages
+            messages.success(request, f'Дані команди "{team.name}" успішно оновлено!')
             return redirect('team_detail', team_id=team.id)
     else:
         form = TeamForm(instance=team)
@@ -2265,6 +2269,8 @@ def add_participant(request, team_id):
                 form=form,
             )
             if result.added:
+                from django.contrib import messages
+                messages.success(request, f'Учасника {form.cleaned_data["full_name"]} успішно додано до команди!')
                 return redirect('team_detail', team_id=team.id)
             if result.invited:
                 messages.success(request, result.message)
@@ -2327,6 +2333,8 @@ def delete_participant(request, team_id, participant_id):
 
     if request.method == 'POST':
         TeamManagementService.delete_participant(participant=participant)
+        from django.contrib import messages
+        messages.success(request, f'Учасника {participant.full_name} видалено з команди.')
     return redirect('team_detail', team_id=team.id)
 
 
@@ -2344,6 +2352,8 @@ def delete_team(request, team_id):
 
     if request.method == 'POST':
         TeamManagementService.delete_team(team=team)
+        from django.contrib import messages
+        messages.success(request, f'Команду "{team.name}" успішно видалено.')
         fallback = reverse('admin_teams') if is_admin_user(request.user) else reverse('participant_dashboard')
         return redirect(get_post_redirect(request, fallback))
 
@@ -2362,6 +2372,8 @@ def leave_team(request, team_id):
 
     if request.method == 'POST':
         TeamManagementService.leave_team(team=team, user=request.user)
+        from django.contrib import messages
+        messages.success(request, f'Ви вийшли з команди "{team.name}".')
     return redirect('participant_dashboard')
 
 
@@ -2465,6 +2477,8 @@ def submit_solution(request, task_id):
             submission.team = team
             submission.task = task
             submission.save()
+            from django.contrib import messages
+            messages.success(request, f'Рішення до завдання "{task.title}" успішно надіслано!')
             return redirect('team_detail', team_id=team.id)
     else:
         form = SubmissionForm(instance=submission, task=task)

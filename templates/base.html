@@ -122,14 +122,16 @@
         </header>
 
         {% if messages %}
-            <div class="spacer-top">
+            <div id="django-messages" style="display: none;">
                 {% for message in messages %}
-                    <div class="message-box {% if message.tags == 'error' %}error{% elif message.tags == 'warning' %}warn{% elif message.tags == 'success' %}success{% else %}info{% endif %}" data-i18n-message>
+                    <div class="django-message" data-type="{% if message.tags == 'error' %}error{% elif message.tags == 'warning' %}warn{% elif message.tags == 'success' %}success{% else %}info{% endif %}">
                         {{ message }}
                     </div>
                 {% endfor %}
             </div>
         {% endif %}
+
+        <div id="toast-container"></div>
 
         {% block content %}{% endblock %}
     </div>
@@ -161,5 +163,44 @@
         })();
     </script>
     {% block extra_scripts %}{% endblock %}
+    <script>
+        function showToast(message, type = 'info', duration = 5000) {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            let icon = 'ℹ️';
+            if (type === 'success') icon = '✅';
+            if (type === 'error') icon = '❌';
+            if (type === 'warn') icon = '⚠️';
+
+            toast.innerHTML = `
+                <div class="toast-icon">${icon}</div>
+                <div class="toast-content">${message}</div>
+                <button class="toast-close" onclick="this.parentElement.classList.add('toast-out'); setTimeout(() => this.parentElement.remove(), 400)">✕</button>
+            `;
+
+            container.appendChild(toast);
+
+            if (duration > 0) {
+                setTimeout(() => {
+                    if (toast.parentElement) {
+                        toast.classList.add('toast-out');
+                        setTimeout(() => toast.remove(), 400);
+                    }
+                }, duration);
+            }
+        }
+
+        // Show Django messages as toasts
+        document.addEventListener('DOMContentLoaded', () => {
+            const djangoMessages = document.querySelectorAll('.django-message');
+            djangoMessages.forEach(msg => {
+                showToast(msg.textContent.trim(), msg.dataset.type);
+            });
+        });
+    </script>
 </body>
 </html>
