@@ -26,7 +26,7 @@ class School(models.Model):
 
 
 class Tournament(models.Model):
-    DEFAULT_CONTACT_METHODS = ["telegram", "discord", "viber"]
+    DEFAULT_CONTACT_METHODS = ["telegram", "discord"]
 
     name = models.CharField(max_length=255, verbose_name="Назва")
     description = models.TextField(verbose_name="Опис")
