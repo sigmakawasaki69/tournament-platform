@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils import timezone
 
 
 class CustomUser(AbstractUser):
@@ -68,3 +69,20 @@ class PasswordResetCode(models.Model):
     def __str__(self):
         return f"{self.user.email} - {self.code}"
 
+
+class SocialAccountValidation(models.Model):
+    PROVIDER_CHOICES = (
+        ('telegram', 'Telegram'),
+        ('discord', 'Discord'),
+    )
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='social_validations')
+    provider = models.CharField(max_length=20, choices=PROVIDER_CHOICES)
+    code = models.CharField(max_length=8, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+
+    def is_expired(self):
+        return timezone.now() > self.expires_at
+
+    def __str__(self):
+        return f"{self.user.username} - {self.provider} - {self.code}"

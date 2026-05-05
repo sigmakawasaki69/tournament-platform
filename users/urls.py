@@ -72,6 +72,8 @@ from .views import (
     delete_announcement,
     school_autocomplete,
     contact_autocomplete,
+    api_register_social_code,
+    verify_social_code,
 )
 
 urlpatterns = [
@@ -138,6 +140,8 @@ urlpatterns = [
     path('team/<int:team_id>/', team_detail, name='team_detail'),
     path('team/<int:team_id>/edit/', edit_team, name='edit_team'),
     path('team/<int:team_id>/participants/', team_participants, name='team_participants'),
+    path('api/social/register-code/', api_register_social_code, name='api_register_social_code'),
+    path('verify-social-code/', verify_social_code, name='verify_social_code'),
     path('team/<int:team_id>/add-participant/', add_participant, name='add_participant'),
     path('team/<int:team_id>/participant/<int:participant_id>/delete/', delete_participant, name='delete_participant'),
     path('team/<int:team_id>/delete/', delete_team, name='delete_team'),

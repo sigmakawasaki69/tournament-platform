@@ -3,10 +3,12 @@ import io
 import os
 import logging
 import mimetypes
+import json
 from datetime import timedelta
 from statistics import mean
 import random
 
+from django.views.decorators.csrf import csrf_exempt
 from urllib.error import HTTPError, URLError
 from PIL import Image, ImageDraw, ImageFont
 import requests
@@ -1912,6 +1914,8 @@ def profile_settings(request):
         'profile_user': user,
         'success_message': success_message,
         'error_message': error_message,
+        'telegram_bot_username': getattr(settings, 'TELEGRAM_BOT_USERNAME', 'Tornament_manager_bot'),
+        'discord_bot_name': getattr(settings, 'DISCORD_BOT_NAME', 'Tournament Bot'),
         **build_notification_nav_context(user),
     })
 
@@ -2709,9 +2713,74 @@ def school_autocomplete(request):
 def contact_autocomplete(request):
     query = request.GET.get('q', '').strip()
     # If the user starts with +, suggest country codes
-    if query.startswith('+'):
-        common_codes = ['+380', '+1', '+44', '+49', '+48', '+370', '+371', '+372']
-        suggestions = [code for code in common_codes if code.startswith(query)]
-        return JsonResponse(suggestions, safe=False)
-    
     return JsonResponse([], safe=False)
+
+
+# Social Verification API
+@csrf_exempt
+def api_register_social_code(request):
+    """Called by bots to register a code for a social ID."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    # In production, use a more secure token check
+    token = request.headers.get('X-Bot-Token')
+    if token != getattr(settings, 'BOT_API_TOKEN', 'debug_token'):
+         return JsonResponse({'error': 'Unauthorized'}, status=401)
+
+    try:
+        data = json.loads(request.body)
+        provider = data.get('provider')
+        social_id = data.get('social_id')
+        code = data.get('code')
+        
+        if not all([provider, social_id, code]):
+            return JsonResponse({'error': 'Missing fields'}, status=400)
+
+        # Store the code temporarily using Django cache
+        from django.core.cache import cache
+        cache_key = f"social_verify_{provider}_{code}"
+        cache.set(cache_key, social_id, timeout=300) # 5 minutes
+
+        return JsonResponse({'status': 'ok'})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+def verify_social_code(request):
+    """Called by users on the website to link their account."""
+    if request.method != 'POST':
+        return redirect('profile_settings')
+    
+    provider = request.POST.get('provider')
+    code = request.POST.get('code', '').strip()
+    
+    if not provider or not code:
+        messages.error(request, "Будь ласка, введіть код.")
+        return redirect('profile_settings')
+
+    from django.core.cache import cache
+    cache_key = f"social_verify_{provider}_{code}"
+    social_id = cache.get(cache_key)
+    
+    if not social_id:
+        messages.error(request, "Невірний або прострочений код.")
+        return redirect('profile_settings')
+
+    user = request.user
+    if provider == 'telegram':
+        user.telegram_id = social_id
+        user.is_tg_verified = True
+    elif provider == 'discord':
+        user.discord_id = social_id
+        user.is_discord_verified = True
+    
+    try:
+        user.save()
+        cache.delete(cache_key)
+        messages.success(request, f"Ваш {provider.capitalize()} успішно підтверджено!")
+    except Exception as e:
+        messages.error(request, "Цей акаунт вже прив'язаний до іншого користувача.")
+    
+    return redirect('profile_settings')

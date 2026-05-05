@@ -241,7 +241,6 @@ class Team(models.Model):
     class ContactMethod(models.TextChoices):
         TELEGRAM = "telegram", "Телеграм"
         DISCORD = "discord", "Діскорд"
-        VIBER = "viber", "Вайбер"
 
     captain_user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -283,12 +282,6 @@ class Team(models.Model):
         null=True,
         blank=True,
         verbose_name="Діскорд",
-    )
-    viber = models.CharField(
-        max_length=255,
-        null=True,
-        blank=True,
-        verbose_name="Вайбер",
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата створення")
 

@@ -495,7 +495,6 @@ class TeamForm(forms.ModelForm):
         instance.preferred_contact_value = preferred_contact_value or None
         instance.telegram = preferred_contact_value if preferred_contact_method == Team.ContactMethod.TELEGRAM else None
         instance.discord = preferred_contact_value if preferred_contact_method == Team.ContactMethod.DISCORD else None
-        instance.viber = preferred_contact_value if preferred_contact_method == Team.ContactMethod.VIBER else None
         if commit:
             instance.save()
             self.save_m2m()

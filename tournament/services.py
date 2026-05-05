@@ -129,7 +129,6 @@ class RegistrationService:
         preferred_contact_value = (team_data.get("preferred_contact_value") or "").strip()
         telegram = preferred_contact_value if preferred_contact_method == Team.ContactMethod.TELEGRAM else ""
         discord = preferred_contact_value if preferred_contact_method == Team.ContactMethod.DISCORD else ""
-        viber = preferred_contact_value if preferred_contact_method == Team.ContactMethod.VIBER else ""
 
         if not team_name:
             raise ValidationError("Вкажіть назву команди.")
@@ -162,7 +161,6 @@ class RegistrationService:
                 preferred_contact_value=preferred_contact_value or None,
                 telegram=telegram or None,
                 discord=discord or None,
-                viber=viber or None,
             )
         else:
             team.name = team_name
@@ -173,7 +171,6 @@ class RegistrationService:
             team.preferred_contact_value = preferred_contact_value or None
             team.telegram = telegram or None
             team.discord = discord or None
-            team.viber = viber or None
             team.save(update_fields=[
                 "name",
                 "captain_name",
@@ -183,7 +180,6 @@ class RegistrationService:
                 "preferred_contact_value",
                 "telegram",
                 "discord",
-                "viber",
             ])
 
         if TournamentRegistration.objects.filter(
