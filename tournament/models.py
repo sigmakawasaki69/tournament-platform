@@ -309,7 +309,7 @@ class Team(models.Model):
 
     @property
     def members_count(self):
-        return 1 + self.participants.count()
+        return 1 + self.participants.count() + self.invitations.count()
 
     @property
     def effective_contact_method(self):

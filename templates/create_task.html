@@ -113,6 +113,12 @@
                         {{ form.requirements }}
                         {% if form.requirements.errors %}<div class="field-errors">{{ form.requirements.errors }}</div>{% endif %}
                     </div>
+
+                    <div class="field-group span-2">
+                        <label for="{{ form.must_have.id_for_label }}" data-i18n="admin.tasks.label_must_have">Обов'язково має бути</label>
+                        {{ form.must_have }}
+                        {% if form.must_have.errors %}<div class="field-errors">{{ form.must_have.errors }}</div>{% endif %}
+                    </div>
                 </div>
 
                 <div class="section spacer-top">
@@ -279,6 +285,80 @@
             const initialRows = parseDefinition(hiddenDefinitionField.value);
             if (initialRows.length) { rows = initialRows; renderRows(); }
             else loadPreset(lastPresetKey || "generic", true);
+
+            // Захист від втрати даних та автозбереження
+            const form = document.querySelector('form');
+            let isDirty = false;
+            
+            const markDirty = () => { isDirty = true; };
+            form.querySelectorAll('input, textarea, select').forEach(el => {
+                el.addEventListener('input', markDirty);
+                el.addEventListener('change', markDirty);
+            });
+
+            window.addEventListener('beforeunload', (e) => {
+                if (isDirty) {
+                    e.preventDefault();
+                    e.returnValue = '';
+                }
+            });
+
+            form.addEventListener('submit', () => { isDirty = false; });
+
+            // Простий автосейв у localStorage
+            const storageKey = `task_draft_${window.location.pathname}`;
+            const saveDraft = () => {
+                const draft = {
+                    title: document.getElementById('id_title').value,
+                    description: document.getElementById('id_description').value,
+                    requirements: document.getElementById('id_requirements').value,
+                    must_have: document.getElementById('id_must_have').value,
+                    start_at: document.getElementById('id_start_at').value,
+                    deadline: document.getElementById('id_deadline').value,
+                    official_solution: document.getElementById('id_official_solution').value,
+                    rows: rows
+                };
+                localStorage.setItem(storageKey, JSON.stringify(draft));
+            };
+
+            const loadDraft = () => {
+                const saved = localStorage.getItem(storageKey);
+                if (!saved) return;
+                const draft = JSON.parse(saved);
+                const lang = document.documentElement.lang || 'uk';
+                const msg = lang === 'en' 
+                    ? 'Found an unsaved draft. Restore it?' 
+                    : 'Знайдено незбережену чернетку. Відновити її?';
+                
+                if (confirm(msg)) {
+                    document.getElementById('id_title').value = draft.title || '';
+                    document.getElementById('id_description').value = draft.description || '';
+                    document.getElementById('id_requirements').value = draft.requirements || '';
+                    document.getElementById('id_must_have').value = draft.must_have || '';
+                    document.getElementById('id_start_at').value = draft.start_at || '';
+                    document.getElementById('id_deadline').value = draft.deadline || '';
+                    document.getElementById('id_official_solution').value = draft.official_solution || '';
+                    if (draft.rows) {
+                        rows = draft.rows;
+                        renderRows();
+                    }
+                    isDirty = true;
+                } else {
+                    localStorage.removeItem(storageKey);
+                }
+            };
+
+            // Зберігаємо кожні 5 секунд якщо є зміни
+            setInterval(() => { if (isDirty) saveDraft(); }, 5000);
+            
+            // Завантажуємо при старті якщо це нова задача або якщо ми повернулися до редагування
+            if (!hiddenDefinitionField.value || rows.length <= 1) {
+                loadDraft();
+            }
+
+            form.addEventListener('submit', () => {
+                localStorage.removeItem(storageKey);
+            });
         }());
     </script>
 {% endblock %}

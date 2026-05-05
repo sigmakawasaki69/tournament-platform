@@ -47,9 +47,9 @@
         </div>
 
         <div class="hero-side">
-            <div class="hero-stat"><strong>{{ participants_count }}</strong><span data-i18n="team.hero.members_count">Учасників у команді</span></div>
-            <div class="hero-stat"><strong>{{ team.registrations.count }}</strong><span data-i18n="team.hero.tournaments_count">Турнірів у профілі</span></div>
-            <div class="hero-stat"><strong>{{ submissions|length }}</strong><span data-i18n="team.hero.submissions_count">Поданих робіт</span></div>
+            <div class="hero-stat"><strong>{{ team.participants.count|add:1 }}</strong><span data-i18n="team.hero.members_confirmed">Підтверджено</span></div>
+            <div class="hero-stat"><strong>{{ team.invitations.count }}</strong><span data-i18n="team.hero.members_pending">Очікують</span></div>
+            <div class="hero-stat"><strong>{{ team.registrations.count }}</strong><span data-i18n="team.hero.tournaments_count">Турнірів</span></div>
         </div>
     </section>
 
@@ -65,7 +65,10 @@
                 <div class="quick-card">
                     <div class="quick-kicker" data-i18n="team.detail.your_tournament">Ваш турнір</div>
                     <div class="quick-title">{{ quick_overview.tournament.name }}</div>
-                    <div class="meta-list"><span data-i18n="home.team_block.status">Статус</span>: <span class="status-badge status-{{ quick_overview.tournament.lifecycle_status }}" data-i18n-message>{{ quick_overview.tournament.lifecycle_status }}</span></div>
+                    <div class="meta-list">
+                        <span data-i18n="home.team_block.status">Статус</span>: <span class="status-badge status-{{ quick_overview.tournament.lifecycle_status }}" data-i18n-message>{{ quick_overview.tournament.lifecycle_status }}</span><br>
+                        <span data-i18n="team.hero.members_count">Учасників у команді</span>: {{ quick_overview.members_count }}
+                    </div>
                     <div class="quick-actions spacer-top">
                         <a class="button" href="{% url 'public_tournament_detail' quick_overview.tournament.id %}" data-i18n="profile.team.open">Відкрити</a>
                         {% if quick_overview.tournament.is_running or quick_overview.tournament.is_finished %}

@@ -18,6 +18,12 @@ class CustomUser(AbstractUser):
     certificates_seen_at = models.DateTimeField(null=True, blank=True)
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True, verbose_name="Аватар")
 
+    # Соціальні мережі та валідація
+    telegram_id = models.BigIntegerField(null=True, blank=True, unique=True, verbose_name="Telegram ID")
+    discord_id = models.BigIntegerField(null=True, blank=True, unique=True, verbose_name="Discord ID")
+    is_tg_verified = models.BooleanField(default=False, verbose_name="Telegram підтверджено")
+    is_discord_verified = models.BooleanField(default=False, verbose_name="Discord підтверджено")
+
     def save(self, *args, **kwargs):
         if self.role == 'participant':
             self.is_approved = True
