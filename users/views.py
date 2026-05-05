@@ -2150,6 +2150,7 @@ def register_existing_team(request, tournament_id):
                 },
                 form_answers={}, # Empty for now, or we should have a form for them
                 roster=list(team.participants.values('full_name', 'email')),
+                team=team,
             )
             messages.success(request, f'Команду "{team.name}" успішно зареєстровано!')
             return redirect('participant_dashboard')

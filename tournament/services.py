@@ -105,9 +105,13 @@ class RegistrationService:
         team_data: Dict[str, Any],
         form_answers: Dict[str, Any],
         roster: Iterable[Dict[str, Any]] | None = None,
+        team: Team | None = None,
     ) -> TournamentRegistration:
         tournament = Tournament.objects.select_for_update().get(pk=tournament.pk)
-        team = Team.objects.select_for_update().filter(captain_user=captain_user).first()
+        
+        # Якщо команду не передано явно, ми її створимо нижче
+        if team:
+            team = Team.objects.select_for_update().get(pk=team.pk)
 
         if tournament.is_draft or not tournament.is_registration_open:
             raise ValidationError("Реєстрація на турнір зараз закрита.")
