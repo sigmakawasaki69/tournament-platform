@@ -7,8 +7,8 @@ import os
 
 # --- CONFIG ---
 TOKEN = os.environ.get("DISCORD_BOT_TOKEN")
-PLATFORM_API_URL = os.environ.get("PLATFORM_API_URL", "http://127.0.0.1:8000/users/api/social/register-code/")
-API_BOT_TOKEN = os.environ.get("BOT_API_TOKEN", "debug_token")
+PLATFORM_API_URL = os.environ.get("PLATFORM_API_URL", "https://calculator-112.up.railway.app/users/api/social/register-code/")
+API_BOT_TOKEN = os.environ.get("BOT_API_TOKEN", "ad0209")
 
 def generate_code(length=6):
     return ''.join(random.choices(string.digits, k=length))

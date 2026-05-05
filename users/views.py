@@ -1914,8 +1914,9 @@ def profile_settings(request):
         'profile_user': user,
         'success_message': success_message,
         'error_message': error_message,
-        'telegram_bot_username': getattr(settings, 'TELEGRAM_BOT_USERNAME', 'Tornament_manager_bot'),
+        'telegram_bot_username': getattr(settings, 'TELEGRAM_BOT_USERNAME', 'Tournament_manager_bot'),
         'discord_bot_name': getattr(settings, 'DISCORD_BOT_NAME', 'Tournament Bot'),
+        'discord_invite_url': getattr(settings, 'DISCORD_INVITE_URL', ''),
         **build_notification_nav_context(user),
     })
 
