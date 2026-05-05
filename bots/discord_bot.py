@@ -52,7 +52,8 @@ class MyBot(discord.Client):
                             f"**{code}**\n\n"
                             f"Введіть його в налаштуваннях профілю на сайті."
                         )
-                        await message.channel.send(f"{message.author.mention}, я відправив вам код в особисті повідомлення (DM).")
+                        if message.guild:
+                            await message.channel.send(f"{message.author.mention}, я відправив вам код в особисті повідомлення (DM).")
                     except discord.Forbidden:
                         await message.channel.send(f"{message.author.mention}, я не можу відправити вам DM. Перевірте налаштування приватності.")
                 else:
@@ -61,6 +62,13 @@ class MyBot(discord.Client):
             except Exception as e:
                 print(f"API Exception: {e}")
                 await message.channel.send("❌ Помилка підключення до сервера.")
+        
+        # Якщо повідомлення в DM і це не команда - даємо підказку
+        elif isinstance(message.channel, discord.DMChannel):
+            await message.author.send(
+                "Привіт! 👋 Щоб отримати код підтвердження для сайту, напишіть команду:\n\n"
+                "**!verify**"
+            )
 
 def main():
     print("Discord Bot starting...")

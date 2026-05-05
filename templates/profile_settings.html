@@ -221,9 +221,9 @@
                         
                         {% if not profile_user.is_discord_verified %}
                             <div class="section-note" style="font-size: 13px; margin-bottom: 12px;">
-                                <span data-i18n="settings.social.discord_instruction">Зайдіть на наш сервер, знайдіть бота та введіть отриманий код:</span><br>
+                                <span data-i18n="settings.social.discord_instruction">Зайдіть до бота та напишіть команду <b>!verify</b>, щоб отримати код:</span><br>
                                 {% if discord_invite_url %}
-                                    <a href="{{ discord_invite_url }}" target="_blank" style="color: #5865F2; font-weight: 700;">{{ discord_bot_name|default:'Discord Bot' }} (Перейти на сервер)</a>
+                                    <a href="{{ discord_invite_url }}" target="_blank" style="color: #5865F2; font-weight: 700;">{{ discord_bot_name|default:'Discord Bot' }} (Написати боту)</a>
                                 {% else %}
                                     <span style="color: #5865F2; font-weight: 700;">{{ discord_bot_name|default:'Discord Bot' }}</span>
                                 {% endif %}
