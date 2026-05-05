@@ -29,17 +29,29 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.message.text == "Пройти валідацію 🛡️":
+    # --- RATE LIMIT ---
+    if not hasattr(context.application, 'last_msg_times'):
+        context.application.last_msg_times = {}
+    
+    user_id = update.effective_user.id
+    now = asyncio.get_event_loop().time()
+    if user_id in context.application.last_msg_times:
+        if now - context.application.last_msg_times[user_id] < 5:
+            return
+    context.application.last_msg_times[user_id] = now
+
+    # Обробка команди /start або повідомлення "Пройти валідацію"
+    if update.message.text == "/start" or "валідація" in update.message.text.lower():
         code = generate_code()
         social_id = update.effective_user.id
         
-        # Call platform API
+        # Виклик API платформи
         try:
             response = requests.post(
                 PLATFORM_API_URL,
                 json={
                     "provider": "telegram",
-                    "social_id": social_id,
+                    "social_id": str(social_id), # Перетворюємо в string для API
                     "code": code
                 },
                 headers={"X-Bot-Token": API_BOT_TOKEN},
@@ -47,6 +59,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             
             if response.status_code == 200:
+                data = response.json()
+                if data.get('status') == 'already_verified':
+                    await update.message.reply_text("✅ Ваш Telegram уже підтверджено на платформі!")
+                    return
+
                 await update.message.reply_text(
                     f"Ваш код підтвердження:\n\n`{code}`\n\n"
                     "Скопіюйте його та введіть у налаштуваннях профілю на сайті.",

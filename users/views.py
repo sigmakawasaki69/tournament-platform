@@ -2754,6 +2754,17 @@ def api_register_social_code(request):
         if not all([provider, social_id, code]):
             return JsonResponse({'error': 'Missing fields'}, status=400)
 
+        # Check if already verified
+        from users.models import CustomUser
+        already_verified = False
+        if provider == 'telegram':
+            already_verified = CustomUser.objects.filter(telegram_id=social_id, is_tg_verified=True).exists()
+        elif provider == 'discord':
+            already_verified = CustomUser.objects.filter(discord_id=social_id, is_discord_verified=True).exists()
+            
+        if already_verified:
+            return JsonResponse({'status': 'already_verified'})
+
         # Store the code temporarily using Django cache
         from django.core.cache import cache
         cache_key = f"social_verify_{provider}_{code}"

@@ -27,6 +27,18 @@ class MyBot(discord.Client):
         if message.author == self.user:
             return
 
+        # Простий Rate Limit (5 секунд)
+        if not hasattr(self, 'last_msg_times'):
+            self.last_msg_times = {}
+        
+        user_id = message.author.id
+        now = asyncio.get_event_loop().time()
+        if user_id in self.last_msg_times:
+            if now - self.last_msg_times[user_id] < 5:
+                # Можна просто ігнорувати або відповісти один раз
+                return
+        self.last_msg_times[user_id] = now
+
         # Обробка команд !validate або !verify
         if message.content.startswith('!validate') or message.content.startswith('!verify'):
             code = generate_code()
@@ -46,6 +58,11 @@ class MyBot(discord.Client):
                 )
                 
                 if response.status_code == 200:
+                    data = response.json()
+                    if data.get('status') == 'already_verified':
+                        await message.author.send("✅ Ваш акаунт Discord уже підтверджено на платформі! Ви можете вільно реєструватися на турніри.")
+                        return
+
                     try:
                         await message.author.send(
                             f"Привіт! 👋\n\nВаш код підтвердження для платформи турнірів:\n\n"

@@ -113,7 +113,7 @@
                     </div>
                 </div>
 
-                <div class="field-group spacer-top">
+                <div class="field-group spacer-top" id="contact-value-group">
                     <label for="{{ form.preferred_contact_value.id_for_label }}" data-i18n="common.contact_value">Контакт для зв'язку</label>
                     {{ form.preferred_contact_value }}
                     {% if form.preferred_contact_value.errors %}<div class="field-errors" style="color:#dc2626; font-weight:600; margin-top:4px;">{{ form.preferred_contact_value.errors|join:", " }}</div>{% endif %}
@@ -255,6 +255,35 @@
         });
 
         // Initialize autocompletes
+        const methodSelect = document.querySelector('select[name="preferred_contact_method"]');
+        const noticeContainer = document.getElementById('verification-notice');
+        const tgNotice = document.getElementById('tg-notice');
+        const discordNotice = document.getElementById('discord-notice');
+        const contactValueGroup = document.getElementById('contact-value-group');
+
+        function updateNotices() {
+            const val = methodSelect.value;
+            noticeContainer.style.display = 'none';
+            tgNotice.style.display = 'none';
+            discordNotice.style.display = 'none';
+            contactValueGroup.style.display = 'block';
+
+            if (val === 'telegram') {
+                noticeContainer.style.display = 'block';
+                tgNotice.style.display = 'block';
+                contactValueGroup.style.display = 'none';
+            } else if (val === 'discord') {
+                noticeContainer.style.display = 'block';
+                discordNotice.style.display = 'block';
+                contactValueGroup.style.display = 'none';
+            }
+        }
+
+        if (methodSelect) {
+            methodSelect.addEventListener('change', updateNotices);
+            updateNotices();
+        }
+
         initAutocomplete('input[name="school"]', {
             endpoint: '/api/schools/autocomplete/',
             minLength: 2

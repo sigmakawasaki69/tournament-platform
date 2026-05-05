@@ -55,7 +55,7 @@
                     {% if form.preferred_contact_method.errors %}<div class="field-errors" data-i18n-message>{{ form.preferred_contact_method.errors|join:", " }}</div>{% endif %}
                 </div>
 
-                <div class="field-group">
+                <div class="field-group" id="contact-value-group">
                     <label for="{{ form.preferred_contact_value.id_for_label }}" data-i18n="common.contact_value">Контакт для зв'язку</label>
                     {{ form.preferred_contact_value }}
                     {% if form.preferred_contact_value.errors %}<div class="field-errors" data-i18n-message>{{ form.preferred_contact_value.errors|join:", " }}</div>{% endif %}
@@ -106,20 +106,33 @@
             });
 
             // Contact verification toggle
-            const contactMethodSelect = document.querySelector('select[name="preferred_contact_method"]');
-            const verificationNotice = document.getElementById('verification-notice');
+            const methodField = document.querySelector('select[name="preferred_contact_method"]');
+            const noticeContainer = document.getElementById('verification-notice');
             const tgNotice = document.getElementById('tg-notice');
             const discordNotice = document.getElementById('discord-notice');
+            const contactValueGroup = document.getElementById('contact-value-group');
 
-            if (contactMethodSelect) {
-                function updateVerificationNotice() {
-                    const method = contactMethodSelect.value;
-                    verificationNotice.style.display = (method === 'telegram' || method === 'discord') ? 'block' : 'none';
-                    tgNotice.style.display = (method === 'telegram') ? 'block' : 'none';
-                    discordNotice.style.display = (method === 'discord') ? 'block' : 'none';
+            function updateNotices() {
+                const val = methodField.value;
+                noticeContainer.style.display = 'none';
+                tgNotice.style.display = 'none';
+                discordNotice.style.display = 'none';
+                contactValueGroup.style.display = 'block';
+
+                if (val === 'telegram') {
+                    noticeContainer.style.display = 'block';
+                    tgNotice.style.display = 'block';
+                    contactValueGroup.style.display = 'none';
+                } else if (val === 'discord') {
+                    noticeContainer.style.display = 'block';
+                    discordNotice.style.display = 'block';
+                    contactValueGroup.style.display = 'none';
                 }
-                contactMethodSelect.addEventListener('change', updateVerificationNotice);
-                updateVerificationNotice();
+            }
+            
+            if (methodField) {
+                methodField.addEventListener('change', updateNotices);
+                updateNotices();
             }
 
             // Form submission validation
