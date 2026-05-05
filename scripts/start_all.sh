@@ -1,6 +1,6 @@
 #!/bin/bash
 # 1. Apply database migrations (CRITICAL for fixing 500 error)
-python manage.py migrate --noinput
+#python manage.py migrate --noinput
 
 # 2. Start bots in the background
 python bots/telegram_bot.py &
