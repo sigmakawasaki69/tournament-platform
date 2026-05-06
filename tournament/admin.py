@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import (
     Tournament,
+    School,
     Team,
     Participant,
     TournamentRegistration,
@@ -10,6 +11,7 @@ from .models import (
     Evaluation,
 )
 
+admin.site.register(School)
 admin.site.register(Tournament)
 admin.site.register(Team)
 admin.site.register(Participant)

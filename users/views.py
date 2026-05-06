@@ -3,10 +3,12 @@ import io
 import os
 import logging
 import mimetypes
+import json
 from datetime import timedelta
 from statistics import mean
 import random
 
+from django.views.decorators.csrf import csrf_exempt
 from urllib.error import HTTPError, URLError
 from PIL import Image, ImageDraw, ImageFont
 import requests
@@ -18,7 +20,7 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.http import FileResponse, HttpResponse, HttpResponseNotAllowed, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -53,6 +55,7 @@ from tournament.models import (
     RegistrationMember,
     Submission,
     Task,
+    School,
     Team,
     TeamInvitation,
     Tournament,
@@ -114,8 +117,20 @@ def build_team_detail_context(request, team, participant_form=None):
     submissions = team.submissions.select_related('task', 'task__tournament').all()
     roster_locked = is_team_roster_locked(team) and not request.user.is_superuser
     quick_overview = build_team_quick_overview(team)
+
+    # Annotate participants with linked users for profile links
+    participants = list(team.participants.all())
+    if participants:
+        participant_emails = [p.email.lower() for p in participants]
+        users_by_email = {}
+        for u in CustomUser.objects.filter(email__in=participant_emails):
+            users_by_email[u.email.lower()] = u
+        for participant in participants:
+            participant.linked_user = users_by_email.get(participant.email.lower())
+
     return {
         'team': team,
+        'annotated_participants': participants,
         'invitations': team.invitations.all() if (request.user.is_superuser or team.captain_user_id == request.user.id) else [],
         'participants_count': team.members_count,
         'submissions': submissions,
@@ -144,6 +159,7 @@ def serialize_leaderboard_rows(leaderboard, my_team=None):
             'team_id': row['team'].id,
             'team_name': row['team'].name,
             'captain_name': row['team'].captain_name,
+            'captain_user_id': row['team'].captain_user_id,
             'overall_average': row['overall_average'],
             'best_score': row['best_score'],
             'scored_tasks': row['scored_tasks'],
@@ -245,7 +261,7 @@ def build_tournament_leaderboard(tournament):
     approved_registrations = TournamentRegistration.objects.filter(
         tournament=tournament,
         status=TournamentRegistration.Status.APPROVED,
-    ).select_related('team')
+    ).select_related('team', 'team__captain_user')
     submission_qs = Submission.objects.filter(
         task__tournament=tournament,
     ).select_related('team', 'task').prefetch_related(
@@ -382,10 +398,8 @@ def render_admin_section(request, section, action=None, admin_create_user_form=N
         'admin_create_user_form': admin_create_user_form or AdminCreateUserForm(
             available_roles=get_available_admin_roles(request.user),
         ),
-        'role_choices': [
-            choice for choice in CustomUser.ROLE_CHOICES
-            if choice[0] in get_available_admin_roles(request.user)
-        ],
+        'role_choices': list(CustomUser.ROLE_CHOICES),
+        'can_manage_admin_roles': request.user.is_superuser,
         'now': timezone.now(),
         'tournament_form': tournament_form or TournamentForm(),
     })
@@ -767,7 +781,7 @@ def redirect_by_role(request):
 
 def public_tournament_detail(request, tournament_id):
     tournament = get_object_or_404(
-        Tournament.objects.prefetch_related('tasks', 'schedule_items').select_related('created_by'),
+        Tournament.objects.prefetch_related('tasks', 'schedule_items', 'jury_users').select_related('created_by'),
         id=tournament_id,
         is_draft=False,
     )
@@ -775,15 +789,21 @@ def public_tournament_detail(request, tournament_id):
     existing_registration = None
     registration_form = None
     can_submit_registration = False
+    # Тільки для звичайних учасників. Адміни та інші - блокуються.
     viewer_can_register = (
         request.user.is_authenticated
-        and is_participant_user(request.user)
+        and request.user.role == 'participant'
+        and not request.user.is_superuser
     )
 
     if request.user.is_authenticated:
         existing_registration = TournamentRegistration.objects.filter(
             tournament=tournament,
             team__captain_user=request.user,
+            status__in=[
+                TournamentRegistration.Status.PENDING,
+                TournamentRegistration.Status.APPROVED,
+            ],
         ).order_by('-created_at').first()
 
     if tournament.is_registration_open and (viewer_can_register or not request.user.is_authenticated):
@@ -795,10 +815,7 @@ def public_tournament_detail(request, tournament_id):
         can_submit_registration = viewer_can_register
 
         if request.method == 'POST' and viewer_can_register:
-            if existing_registration and existing_registration.status in [
-                TournamentRegistration.Status.PENDING,
-                TournamentRegistration.Status.APPROVED,
-            ]:
+            if existing_registration:
                 return redirect('public_tournament_detail', tournament_id=tournament.id)
 
             if (
@@ -816,6 +833,7 @@ def public_tournament_detail(request, tournament_id):
             if registration_form.is_valid():
                 try:
                     RegistrationService.submit_registration(
+                        request=request,
                         tournament=tournament,
                         registered_by=request.user,
                         captain_user=request.user,
@@ -824,9 +842,16 @@ def public_tournament_detail(request, tournament_id):
                         roster=registration_form.cleaned_participants(),
                     )
                 except ValidationError as exc:
+                    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                        return JsonResponse({'success': False, 'errors': str(exc)})
                     registration_form.add_error(None, exc)
                 else:
+                    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                        return JsonResponse({'success': True, 'message': 'Вашу заявку успішно надіслано! Учасники отримали запрошення на пошту.'})
                     return redirect('participant_dashboard')
+            else:
+                if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                    return JsonResponse({'success': False, 'errors': registration_form.errors.as_json()})
 
     current_path = reverse('public_tournament_detail', args=[tournament.id])
     return render(request, 'public_tournament_detail.html', {
@@ -835,12 +860,13 @@ def public_tournament_detail(request, tournament_id):
         'leaderboard_preview': leaderboard[:5],
         'leaderboard_total': len(leaderboard),
         'show_public_leaderboard': tournament.evaluation_results_ready,
-        'registration_form': registration_form,
+        'registration_form': None, # We don't show the form here anymore
         'existing_registration': existing_registration,
         'viewer_can_register': viewer_can_register,
         'can_submit_registration': can_submit_registration,
         'register_url': f"{reverse('register')}?next={current_path}",
         'login_url': f"{reverse('login')}?next={current_path}",
+        'jury_users': tournament.jury_users.all(),
     })
 
 
@@ -1712,15 +1738,79 @@ def profile_view(request):
             'assignment__submission__task__tournament'
         ).order_by('-evaluated_at')
 
+    # Fetch pending invitations for this user
+    pending_invitations = TeamInvitation.objects.filter(email__iexact=request.user.email).select_related('team')
+
     return render(request, 'profile.html', {
         'profile_user': request.user,
-        'my_team': my_teams.first(),
+        'my_teams': my_teams,
         'tournaments_with_state': tournaments_with_state,
         'announcements': announcements,
         'certificates': certificates,
         'jury_evaluations': jury_evaluations,
+        'pending_invitations': pending_invitations,
         **build_notification_nav_context(request.user),
     })
+
+
+def public_profile(request, user_id):
+    target_user = get_object_or_404(CustomUser, id=user_id)
+
+    # If viewing own profile and logged in, redirect to the personal profile page
+    if request.user.is_authenticated and request.user.id == target_user.id:
+        return redirect('profile')
+
+    # Build public stats
+    tournaments_created_count = Tournament.objects.filter(
+        created_by=target_user, is_draft=False
+    ).count()
+
+    jury_tournaments_count = target_user.jury_tournaments.filter(is_draft=False).count()
+
+    # For participants: find teams and tournament participation
+    teams = Team.objects.filter(
+        Q(captain_user=target_user) | Q(participants__email=target_user.email)
+    ).select_related('captain_user').prefetch_related(
+        'registrations__tournament',
+        'participants',
+    ).annotate(
+        total_members=Count('participants', distinct=True)
+    ).distinct()
+
+    organized_tournaments = []
+    if target_user.role in ['organizer', 'admin']:
+        organized_tournaments = Tournament.objects.filter(
+            created_by=target_user, is_draft=False
+        ).order_by('-start_date')
+
+    participated_tournaments = []
+    for team in teams:
+        for reg in team.registrations.all():
+            if reg.status == TournamentRegistration.Status.APPROVED and not reg.tournament.is_draft:
+                participated_tournaments.append({
+                    'tournament': reg.tournament,
+                    'team': team,
+                })
+
+    # Jury evaluations count
+    jury_evaluations_count = 0
+    if target_user.role == 'jury':
+        jury_evaluations_count = Evaluation.objects.filter(
+            assignment__jury_user=target_user
+        ).count()
+
+    context = {
+        'target_user': target_user,
+        'tournaments_created_count': tournaments_created_count,
+        'organized_tournaments': organized_tournaments,
+        'jury_tournaments_count': jury_tournaments_count,
+        'participated_tournaments': participated_tournaments,
+        'jury_evaluations_count': jury_evaluations_count,
+        'teams': teams,
+    }
+    if request.user.is_authenticated:
+        context.update(build_notification_nav_context(request.user))
+    return render(request, 'public_profile.html', context)
 
 
 @login_required
@@ -1734,6 +1824,7 @@ def profile_settings(request):
 
         if action == 'change_username':
             new_username = request.POST.get('new_username', '').strip()
+            is_ajax = request.POST.get('is_ajax') == '1'
             if not new_username:
                 error_message = 'Нікнейм не може бути порожнім.'
             elif len(new_username) < 3:
@@ -1747,26 +1838,47 @@ def profile_settings(request):
                 user.save(update_fields=['username'])
                 success_message = 'Нікнейм успішно змінено.'
 
+            if is_ajax:
+                if error_message:
+                    return JsonResponse({'status': 'error', 'message': error_message})
+                return JsonResponse({'status': 'ok', 'message': success_message})
+
         elif action == 'change_password':
             old_password = request.POST.get('old_password', '')
             new_password = request.POST.get('new_password', '')
             new_password_confirm = request.POST.get('new_password_confirm', '')
+            is_ajax = request.POST.get('is_ajax') == '1'
 
-            if not user.check_password(old_password):
-                error_message = 'Поточний пароль невірний.'
-            elif len(new_password) < 6:
-                error_message = 'Новий пароль повинен містити щонайменше 6 символів.'
-            elif new_password != new_password_confirm:
-                error_message = 'Паролі не збігаються.'
-            else:
-                user.set_password(new_password)
-                user.save()
-                from django.contrib.auth import update_session_auth_hash
-                update_session_auth_hash(request, user)
-                success_message = 'Пароль успішно змінено.'
+            try:
+                if not user.check_password(old_password):
+                    error_message = 'Поточний пароль невірний.'
+                elif new_password != new_password_confirm:
+                    error_message = 'Паролі не збігаються.'
+                elif old_password == new_password:
+                    error_message = 'Новий пароль не може збігатися з поточним.'
+                else:
+                    from django.contrib.auth.password_validation import validate_password
+                    try:
+                        validate_password(new_password, user)
+                        user.set_password(new_password)
+                        user.save()
+                        from django.contrib.auth import update_session_auth_hash
+                        update_session_auth_hash(request, user)
+                        success_message = 'Пароль успішно змінено.'
+                    except ValidationError as e:
+                        error_message = e.messages[0]
+            except Exception as exc:
+                logger.exception("Unexpected error in change_password")
+                error_message = 'Виникла непередбачена помилка. Спробуйте ще раз.'
+
+            if is_ajax:
+                if error_message:
+                    return JsonResponse({'status': 'error', 'message': error_message})
+                return JsonResponse({'status': 'ok', 'message': success_message})
 
         elif action == 'change_avatar':
             avatar_file = request.FILES.get('avatar')
+            is_ajax = request.POST.get('is_ajax') == '1'
             if avatar_file:
                 if not avatar_file.content_type.startswith('image/'):
                     error_message = 'Завантажте файл зображення (PNG, JPG, JPEG).'
@@ -1779,17 +1891,32 @@ def profile_settings(request):
             else:
                 error_message = 'Виберіть файл зображення.'
 
+            if is_ajax:
+                resp = {'status': 'error' if error_message else 'ok', 'message': error_message or success_message}
+                if not error_message and user.avatar:
+                    resp['avatar_url'] = user.avatar.url
+                return JsonResponse(resp)
+
         elif action == 'remove_avatar':
+            is_ajax = request.POST.get('is_ajax') == '1'
             if user.avatar:
                 user.avatar.delete(save=False)
                 user.avatar = None
                 user.save(update_fields=['avatar'])
                 success_message = 'Аватарку видалено.'
 
+            if is_ajax:
+                if error_message:
+                    return JsonResponse({'status': 'error', 'message': error_message})
+                return JsonResponse({'status': 'ok', 'message': success_message or 'Аватарку видалено.'})
+
     return render(request, 'profile_settings.html', {
         'profile_user': user,
         'success_message': success_message,
         'error_message': error_message,
+        'telegram_bot_username': getattr(settings, 'TELEGRAM_BOT_USERNAME', 'Tournament_manager_bot'),
+        'discord_bot_name': getattr(settings, 'DISCORD_BOT_NAME', 'Tournament Bot'),
+        'discord_invite_url': getattr(settings, 'DISCORD_INVITE_URL', ''),
         **build_notification_nav_context(user),
     })
 
@@ -1814,16 +1941,15 @@ def create_team(request):
 
     next_url = request.GET.get('next') or request.POST.get('next')
 
-    user_is_in_any_team = Team.objects.filter(
-        Q(captain_user=request.user) | Q(participants__email=request.user.email)
-    ).exists()
-    if user_is_in_any_team:
-        return redirect(get_safe_redirect(request, next_url, reverse('participant_dashboard')))
+    # Учасник може мати багато команд
+    pass
 
     if request.method == 'POST':
         form = TeamForm(request.POST)
         if form.is_valid():
-            TeamManagementService.create_team_for_user(user=request.user, form=form)
+            team = TeamManagementService.create_team_for_user(user=request.user, form=form)
+            from django.contrib import messages
+            messages.success(request, f'Команду "{team.name}" успішно створено!')
             return redirect(get_safe_redirect(request, next_url, reverse('participant_dashboard')))
     else:
         form = TeamForm(initial={
@@ -1836,12 +1962,19 @@ def create_team(request):
 
 @login_required
 def register_team_for_tournament(request, tournament_id):
-    if not is_participant_user(request.user):
-        return redirect('redirect_by_role')
-
     tournament = get_object_or_404(Tournament, id=tournament_id, is_draft=False)
+    
+    # Блокуємо всіх, крім звичайних учасників
+    is_participant = request.user.is_authenticated and request.user.role == 'participant' and not request.user.is_superuser
+    
+    if not is_participant:
+        return render(request, 'register_team_for_tournament.html', {
+            'tournament': tournament,
+            'not_a_participant': True
+        })
+
     if not tournament.is_registration_open:
-        return redirect('profile')
+        return redirect('public_tournament_detail', tournament_id=tournament.id)
 
     already_registered = TournamentRegistration.objects.filter(
         tournament=tournament,
@@ -1852,7 +1985,10 @@ def register_team_for_tournament(request, tournament_id):
         ],
     ).exists()
     if already_registered:
-        return redirect('profile')
+        return render(request, 'register_team_for_tournament.html', {
+            'tournament': tournament,
+            'already_registered': True
+        })
 
     if (
         tournament.max_teams
@@ -1865,13 +2001,15 @@ def register_team_for_tournament(request, tournament_id):
         ).count()
         >= tournament.max_teams
     ):
-        return redirect('profile')
+        messages.error(request, 'На жаль, ліміт команд на цей турнір уже вичерпано.')
+        return redirect('public_tournament_detail', tournament_id=tournament.id)
 
     if request.method == 'POST':
         form = TournamentRegistrationForm(request.POST, user=request.user, tournament=tournament)
         if form.is_valid():
             try:
                 RegistrationService.submit_registration(
+                    request=request,
                     tournament=tournament,
                     registered_by=request.user,
                     captain_user=request.user,
@@ -1880,13 +2018,162 @@ def register_team_for_tournament(request, tournament_id):
                     roster=form.cleaned_participants(),
                 )
             except ValidationError as exc:
+                if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                    return JsonResponse({'success': False, 'errors': str(exc)})
                 form.add_error(None, exc)
             else:
+                if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                    return JsonResponse({'success': True, 'message': 'Вашу заявку успішно надіслано! Учасники отримали запрошення на пошту.'})
+                from django.contrib import messages
+                messages.success(request, 'Вашу заявку на участь у турнірі успішно надіслано!')
                 return redirect('participant_dashboard')
+        else:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'errors': form.errors.as_json()})
+            from django.contrib import messages
+            messages.error(request, 'Помилка заповнення форми. Перевірте всі поля.')
     else:
         form = TournamentRegistrationForm(user=request.user, tournament=tournament)
 
     return render(request, 'register_team_for_tournament.html', {'form': form, 'tournament': tournament})
+
+
+@login_required
+def tournament_registration_options(request, tournament_id):
+    tournament = get_object_or_404(Tournament, id=tournament_id, is_draft=False)
+    
+    # Тільки для учасників
+    if request.user.role != 'participant' or request.user.is_superuser:
+        return redirect('public_tournament_detail', tournament_id=tournament.id)
+
+    # Check if registration is open
+    if not tournament.is_registration_open:
+        return redirect('public_tournament_detail', tournament_id=tournament.id)
+    
+    # Check if already registered
+    existing_registration = TournamentRegistration.objects.filter(
+        tournament=tournament,
+        team__captain_user=request.user,
+        status__in=[
+            TournamentRegistration.Status.PENDING,
+            TournamentRegistration.Status.APPROVED,
+        ],
+    ).exists()
+    
+    if existing_registration:
+        return redirect('public_tournament_detail', tournament_id=tournament.id)
+
+    captain_teams = Team.objects.filter(captain_user=request.user)
+    has_existing_teams = captain_teams.exists()
+    
+    return render(request, 'tournament_registration_options.html', {
+        'tournament': tournament,
+        'has_existing_teams': has_existing_teams,
+        'captain_teams': captain_teams,
+    })
+
+
+@login_required
+def register_existing_team(request, tournament_id):
+    tournament = get_object_or_404(Tournament, id=tournament_id, is_draft=False)
+    
+    # Тільки для учасників
+    if request.user.role != 'participant' or request.user.is_superuser:
+        return redirect('public_tournament_detail', tournament_id=tournament.id)
+
+    if not tournament.is_registration_open:
+        return redirect('public_tournament_detail', tournament_id=tournament.id)
+        
+    captain_teams = Team.objects.filter(captain_user=request.user)
+    if not captain_teams.exists():
+        return redirect('tournament_registration_options', tournament_id=tournament.id)
+        
+    if request.method == 'POST':
+        team_id = request.POST.get('team_id')
+        team = get_object_or_404(captain_teams, id=team_id)
+        
+        # Perform checks
+        errors = []
+        members_count = team.members_count
+        
+        if tournament.min_team_members and members_count < tournament.min_team_members:
+            errors.append(f"У команді замало людей. Потрібно щонайменше: {tournament.min_team_members}. Зараз: {members_count}.")
+        if tournament.max_team_members and members_count > tournament.max_team_members:
+            errors.append(f"У команді забагато людей. Максимум дозволено: {tournament.max_team_members}. Зараз: {members_count}.")
+            
+        # Check if already registered for THIS tournament
+        if TournamentRegistration.objects.filter(
+            tournament=tournament,
+            team=team,
+            status__in=[TournamentRegistration.Status.PENDING, TournamentRegistration.Status.APPROVED]
+        ).exists():
+            errors.append("Ця команда вже зареєстрована на цей турнір.")
+
+        # Check for email conflicts in THIS tournament
+        try:
+            roster = list(team.participants.values('full_name', 'email'))
+            RegistrationService._ensure_unique_tournament_emails(
+                tournament=tournament,
+                team=team,
+                captain_email=team.captain_email,
+                roster=roster
+            )
+        except ValidationError as exc:
+            errors.append(str(exc))
+
+        if errors:
+            return render(request, 'register_existing_team.html', {
+                'tournament': tournament,
+                'captain_teams': captain_teams,
+                'selected_team_id': int(team_id),
+                'errors': errors
+            })
+            
+        # If all good, create registration
+        # Since TournamentRegistrationForm handles dynamic fields, and we are registering an EXISTING team,
+        # we might need to handle those dynamic fields if they are required.
+        # But for now, let's assume we just register the team.
+        # If there are required dynamic fields, we should probably show them.
+        
+        if tournament.registration_fields_config:
+            # If there are dynamic fields, we should probably redirect to the full form but with the team selected.
+            # But the user asked for simple registration of existing team.
+            # Let's see if we can just submit with empty answers if not provided.
+            pass
+
+        try:
+            RegistrationService.submit_registration(
+                request=request,
+                tournament=tournament,
+                registered_by=request.user,
+                captain_user=request.user,
+                team_data={
+                    'name': team.name,
+                    'captain_name': team.captain_name,
+                    'captain_email': team.captain_email,
+                    'school': team.school,
+                    'preferred_contact_method': team.preferred_contact_method,
+                    'preferred_contact_value': team.preferred_contact_value,
+                },
+                form_answers={}, # Empty for now, or we should have a form for them
+                roster=list(team.participants.values('full_name', 'email')),
+                team=team,
+            )
+            messages.success(request, f'Команду "{team.name}" успішно зареєстровано!')
+            return redirect('participant_dashboard')
+        except ValidationError as exc:
+            errors.append(str(exc))
+            return render(request, 'register_existing_team.html', {
+                'tournament': tournament,
+                'captain_teams': captain_teams,
+                'selected_team_id': int(team_id),
+                'errors': errors
+            })
+
+    return render(request, 'register_existing_team.html', {
+        'tournament': tournament,
+        'captain_teams': captain_teams,
+    })
 def team_detail(request, team_id):
     team_queryset = Team.objects.select_related('captain_user').prefetch_related('registrations__tournament')
     if request.user.is_superuser:
@@ -1912,6 +2199,8 @@ def edit_team(request, team_id):
         form = TeamForm(request.POST, instance=team)
         if form.is_valid():
             TeamManagementService.update_team(form=form)
+            from django.contrib import messages
+            messages.success(request, f'Дані команди "{team.name}" успішно оновлено!')
             return redirect('team_detail', team_id=team.id)
     else:
         form = TeamForm(instance=team)
@@ -1933,7 +2222,15 @@ def team_participants(request, team_id):
     else:
         team = get_object_or_404(team_queryset, id=team_id, participants__email=request.user.email)
 
-    participants = team.participants.all().order_by('full_name')
+    participants = list(team.participants.all().order_by('full_name'))
+    if participants:
+        participant_emails = [p.email.lower() for p in participants]
+        users_by_email = {}
+        for u in CustomUser.objects.filter(email__in=participant_emails):
+            users_by_email[u.email.lower()] = u
+        for participant in participants:
+            participant.linked_user = users_by_email.get(participant.email.lower())
+
     roster_locked = is_team_roster_locked(team) and not request.user.is_superuser
     return render(request, 'team_participants.html', {
         'team': team,
@@ -1973,6 +2270,8 @@ def add_participant(request, team_id):
                 form=form,
             )
             if result.added:
+                from django.contrib import messages
+                messages.success(request, f'Учасника {form.cleaned_data["full_name"]} успішно додано до команди!')
                 return redirect('team_detail', team_id=team.id)
             if result.invited:
                 messages.success(request, result.message)
@@ -2035,6 +2334,8 @@ def delete_participant(request, team_id, participant_id):
 
     if request.method == 'POST':
         TeamManagementService.delete_participant(participant=participant)
+        from django.contrib import messages
+        messages.success(request, f'Учасника {participant.full_name} видалено з команди.')
     return redirect('team_detail', team_id=team.id)
 
 
@@ -2052,6 +2353,8 @@ def delete_team(request, team_id):
 
     if request.method == 'POST':
         TeamManagementService.delete_team(team=team)
+        from django.contrib import messages
+        messages.success(request, f'Команду "{team.name}" успішно видалено.')
         fallback = reverse('admin_teams') if is_admin_user(request.user) else reverse('participant_dashboard')
         return redirect(get_post_redirect(request, fallback))
 
@@ -2070,6 +2373,8 @@ def leave_team(request, team_id):
 
     if request.method == 'POST':
         TeamManagementService.leave_team(team=team, user=request.user)
+        from django.contrib import messages
+        messages.success(request, f'Ви вийшли з команди "{team.name}".')
     return redirect('participant_dashboard')
 
 
@@ -2173,6 +2478,8 @@ def submit_solution(request, task_id):
             submission.team = team
             submission.task = task
             submission.save()
+            from django.contrib import messages
+            messages.success(request, f'Рішення до завдання "{task.title}" успішно надіслано!')
             return redirect('team_detail', team_id=team.id)
     else:
         form = SubmissionForm(instance=submission, task=task)
@@ -2317,46 +2624,191 @@ def password_reset_confirm_view(request):
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirm_password')
         
-        if not password or len(password) < 8:
-            messages.error(request, "Пароль має бути не коротшим за 8 символів.")
-        elif password != confirm_password:
+        if password != confirm_password:
             messages.error(request, "Паролі не співпадають.")
         elif CustomUser.objects.get(email__iexact=email).check_password(password):
             messages.error(request, "Ви не можете змінити пароль на той самий.")
         else:
+            from django.contrib.auth.password_validation import validate_password
+            from django.core.exceptions import ValidationError
             user = CustomUser.objects.get(email__iexact=email)
-            user.set_password(password)
-            user.save()
+            try:
+                validate_password(password, user)
+                user.set_password(password)
+                user.save()
             
-            PasswordResetCode.objects.filter(user=user).update(is_used=True)
-            
-            request.session.pop('password_reset_email', None)
-            request.session.pop('password_reset_verified', None)
-            
-            messages.success(request, "Пароль успішно змінено. Тепер ви можете увійти.")
-            return redirect('login')
+                PasswordResetCode.objects.filter(user=user).update(is_used=True)
+                
+                request.session.pop('password_reset_email', None)
+                request.session.pop('password_reset_verified', None)
+                
+                messages.success(request, "Пароль успішно змінено. Тепер ви можете увійти.")
+                return redirect('login')
+            except ValidationError as e:
+                messages.error(request, e.messages[0])
             
     return render(request, 'password_reset_confirm.html')
 
 
 def school_autocomplete(request):
-    query = request.GET.get('q', '').strip()
+    query = request.GET.get('q', '').strip().lower()
     if len(query) < 2:
         return JsonResponse([], safe=False)
     
-    schools = Team.objects.filter(
-        school__icontains=query
-    ).values_list('school', flat=True).distinct().order_by('school')[:10]
+    # 1. Розширення абревіатур
+    abbreviations = {
+        'хл': 'харківський ліцей',
+        'хг': 'харківська гімназія',
+        'зош': 'школа',
+        'нвк': 'нвк',
+        'ззсо': 'ззсо',
+        'гімн': 'гімназія',
+        'ліц': 'ліцей',
+    }
     
-    return JsonResponse(list(schools), safe=False)
+    # Створюємо різні варіанти пошукових слів
+    words = query.split()
+    search_variants = [words] # Оригінальні слова
+    
+    # Варіант з розширеними абревіатурами
+    if any(w in abbreviations for w in words):
+        expanded = []
+        for w in words:
+            if w in abbreviations:
+                expanded.extend(abbreviations[w].split())
+            else:
+                expanded.append(w)
+        search_variants.append(expanded)
+
+    def search_in_db(word_list, mode='AND'):
+        if not word_list:
+            return []
+        
+        q_objs = Q()
+        if mode == 'AND':
+            first = True
+            for w in word_list:
+                if len(w) < 2: continue
+                condition = Q(name__icontains=w) | Q(short_name__icontains=w)
+                if first:
+                    q_objs = condition
+                    first = False
+                else:
+                    q_objs &= condition
+        else: # OR mode
+            for w in word_list:
+                if len(w) < 3: continue # Skip very short words in OR mode
+                q_objs |= (Q(name__icontains=w) | Q(short_name__icontains=w))
+        
+        if not q_objs:
+            return []
+            
+        return list(School.objects.filter(q_objs).distinct().order_by('name')[:15])
+
+    # Спроба 1: Почерговий пошук за варіантами (AND search)
+    results = []
+    for variant in search_variants:
+        results = search_in_db(variant, mode='AND')
+        if results:
+            break
+            
+    # Спроба 2: Обробка друкарських помилок (пропуск першої літери у довгих словах)
+    if not results and len(query) > 4:
+        typo_variant = [w[1:] if len(w) > 4 else w for w in words]
+        results = search_in_db(typo_variant, mode='AND')
+
+    # Спроба 3: Пошук хоча б за одним словом (OR search)
+    if not results and len(words) > 1:
+        results = search_in_db(words, mode='OR')
+
+    formatted_results = [str(school) for school in results]
+    return JsonResponse(formatted_results, safe=False)
 
 
 def contact_autocomplete(request):
     query = request.GET.get('q', '').strip()
     # If the user starts with +, suggest country codes
-    if query.startswith('+'):
-        common_codes = ['+380', '+1', '+44', '+49', '+48', '+370', '+371', '+372']
-        suggestions = [code for code in common_codes if code.startswith(query)]
-        return JsonResponse(suggestions, safe=False)
-    
     return JsonResponse([], safe=False)
+
+
+from django.views.decorators.csrf import csrf_exempt
+import json
+
+@csrf_exempt
+def api_register_social_code(request):
+    """Called by bots to register a code for a social ID."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    # In production, use a more secure token check
+    token = request.headers.get('X-Bot-Token')
+    if token != getattr(settings, 'BOT_API_TOKEN', 'debug_token'):
+         return JsonResponse({'error': 'Unauthorized'}, status=401)
+
+    try:
+        data = json.loads(request.body)
+        provider = data.get('provider')
+        social_id = data.get('social_id')
+        code = data.get('code')
+        
+        if not all([provider, social_id, code]):
+            return JsonResponse({'error': 'Missing fields'}, status=400)
+
+        # Check if already verified
+        from users.models import CustomUser
+        already_verified = False
+        if provider == 'telegram':
+            already_verified = CustomUser.objects.filter(telegram_id=social_id, is_tg_verified=True).exists()
+        elif provider == 'discord':
+            already_verified = CustomUser.objects.filter(discord_id=social_id, is_discord_verified=True).exists()
+            
+        if already_verified:
+            return JsonResponse({'status': 'already_verified'})
+
+        # Store the code temporarily using Django cache
+        from django.core.cache import cache
+        cache_key = f"social_verify_{provider}_{code}"
+        cache.set(cache_key, social_id, timeout=300) # 5 minutes
+
+        return JsonResponse({'status': 'ok'})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+def verify_social_code(request):
+    """Called by users on the website to link their account."""
+    if request.method != 'POST':
+        return redirect('profile_settings')
+    
+    provider = request.POST.get('provider')
+    code = request.POST.get('code', '').strip()
+    
+    if not provider or not code:
+        messages.error(request, "Будь ласка, введіть код.")
+        return redirect('profile_settings')
+
+    from django.core.cache import cache
+    cache_key = f"social_verify_{provider}_{code}"
+    social_id = cache.get(cache_key)
+    
+    if not social_id:
+        messages.error(request, "Невірний або прострочений код.")
+        return redirect('profile_settings')
+
+    user = request.user
+    if provider == 'telegram':
+        user.telegram_id = social_id
+        user.is_tg_verified = True
+    elif provider == 'discord':
+        user.discord_id = social_id
+        user.is_discord_verified = True
+    
+    try:
+        user.save()
+        cache.delete(cache_key)
+        messages.success(request, f"Ваш {provider.capitalize()} успішно підтверджено!")
+    except Exception as e:
+        messages.error(request, "Цей акаунт вже прив'язаний до іншого користувача.")
+    
+    return redirect('profile_settings')

@@ -6,8 +6,27 @@ from django.utils import timezone
 from .submission_formats import build_submission_response_items
 
 
+class School(models.Model):
+    name = models.CharField(max_length=500, unique=True, verbose_name="Назва навчального закладу")
+    short_name = models.CharField(max_length=500, blank=True, verbose_name="Скорочена назва (опціонально)")
+    city = models.CharField(max_length=500, blank=True, verbose_name="Місто/Населений пункт")
+
+    class Meta:
+        ordering = ["name"]
+        verbose_name = "Навчальний заклад"
+        verbose_name_plural = "Навчальні заклади"
+
+    def __str__(self):
+        parts = [self.name]
+        if self.short_name:
+            parts.append(f"({self.short_name})")
+        if self.city:
+            parts.append(f"м. {self.city}")
+        return " ".join(parts)
+
+
 class Tournament(models.Model):
-    DEFAULT_CONTACT_METHODS = ["telegram", "discord", "viber"]
+    DEFAULT_CONTACT_METHODS = ["telegram", "discord"]
 
     name = models.CharField(max_length=255, verbose_name="Назва")
     description = models.TextField(verbose_name="Опис")
@@ -213,11 +232,15 @@ class TournamentScheduleItem(models.Model):
         return f"{self.title} ({self.tournament.name})"
 
 
+def validate_team_school(value):
+    from .validators import validate_school_name
+    return validate_school_name(value)
+
+
 class Team(models.Model):
     class ContactMethod(models.TextChoices):
         TELEGRAM = "telegram", "Телеграм"
         DISCORD = "discord", "Діскорд"
-        VIBER = "viber", "Вайбер"
 
     captain_user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -229,10 +252,11 @@ class Team(models.Model):
     captain_name = models.CharField(max_length=255, verbose_name="Ім'я контактної особи")
     captain_email = models.EmailField(verbose_name="Email контактної особи")
     school = models.CharField(
-        max_length=255,
+        max_length=500,
         null=True,
         blank=True,
         verbose_name="Школа",
+        validators=[validate_team_school]
     )
     preferred_contact_method = models.CharField(
         max_length=20,
@@ -259,12 +283,6 @@ class Team(models.Model):
         blank=True,
         verbose_name="Діскорд",
     )
-    viber = models.CharField(
-        max_length=255,
-        null=True,
-        blank=True,
-        verbose_name="Вайбер",
-    )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата створення")
 
     class Meta:
@@ -284,7 +302,7 @@ class Team(models.Model):
 
     @property
     def members_count(self):
-        return 1 + self.participants.count()
+        return 1 + self.participants.count() + self.invitations.count()
 
     @property
     def effective_contact_method(self):

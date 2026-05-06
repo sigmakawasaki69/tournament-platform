@@ -241,6 +241,7 @@ def build_team_quick_overview(team):
         "latest_submission": latest_submission,
         "tasks_total": len(tasks),
         "submitted_total": len(submissions),
+        "members_count": 1 + active_registration.members.count(),
     }
 
 

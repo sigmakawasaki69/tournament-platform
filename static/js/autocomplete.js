@@ -31,13 +31,31 @@ class Autocomplete {
         this.container.className = 'autocomplete-dropdown';
         wrapper.appendChild(this.container);
 
-        this.input.addEventListener('input', () => this.handleInput());
+        if (this.input.value.trim().length > 0) {
+            this.input.dataset.selected = "true";
+        }
+
+        this.input.addEventListener('input', () => {
+            this.input.dataset.selected = "false";
+            this.handleInput();
+        });
         this.input.addEventListener('keydown', (e) => this.handleKeydown(e));
         
         // Close on blur, but delay to allow clicks
         this.input.addEventListener('blur', () => {
-            setTimeout(() => this.close(), 200);
+            setTimeout(() => {
+                this.close();
+                this.validate();
+            }, 200);
         });
+    }
+
+    validate() {
+        if (this.input.dataset.selected !== "true" && this.input.value.trim().length > 0) {
+            this.input.classList.add('autocomplete-invalid');
+        } else {
+            this.input.classList.remove('autocomplete-invalid');
+        }
     }
 
     handleInput() {
@@ -123,6 +141,8 @@ class Autocomplete {
 
     select(item) {
         this.input.value = item;
+        this.input.dataset.selected = "true";
+        this.input.classList.remove('autocomplete-invalid');
         this.onSelect(item);
         this.close();
     }

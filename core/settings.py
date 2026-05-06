@@ -111,7 +111,7 @@ if 'collectstatic' in sys.argv or os.getenv('RAILWAY_ENVIRONMENT_NAME') is None 
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': ':memory:',  # Тимчасова база в оперативці
+            'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
 else:
@@ -144,10 +144,7 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+        "NAME": "users.validators.CustomSimplePasswordValidator",
     },
 ]
 
@@ -248,3 +245,10 @@ CSRF_COOKIE_SECURE = not DEBUG
 SECURE_HSTS_SECONDS = 31536000 if not DEBUG else 0
 SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG
 SECURE_HSTS_PRELOAD = not DEBUG
+
+# Bot Settings
+TELEGRAM_BOT_TOKEN = env("TELEGRAM_BOT_TOKEN")
+TELEGRAM_BOT_USERNAME = env("TELEGRAM_BOT_USERNAME", "Tournament_manager_bot")
+BOT_API_TOKEN = env("BOT_API_TOKEN", "ad0209")
+DISCORD_BOT_TOKEN = env("DISCORD_BOT_TOKEN")
+DISCORD_INVITE_URL = env("DISCORD_INVITE_URL", "")

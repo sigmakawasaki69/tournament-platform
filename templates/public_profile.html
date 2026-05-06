@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}{{ target_user.username }} — Профіль{% endblock %}
+
+{% block content %}
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-kicker" data-i18n="public_profile.hero.kicker">Профіль користувача</div>
+            <div style="display: flex; align-items: center; gap: 18px; margin-bottom: 8px;">
+                {% if target_user.avatar %}
+                    <img src="{{ target_user.avatar.url }}" alt="Avatar"
+                         style="width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(255,255,255,0.25); box-shadow: 0 4px 16px rgba(0,0,0,0.18);">
+                {% else %}
+                    <div class="profile-avatar-placeholder profile-avatar-placeholder--hero">{{ target_user.username|first }}</div>
+                {% endif %}
+                <div>
+                    <h1 style="margin: 0;">{{ target_user.username }}</h1>
+                    <span class="status-badge status-{{ target_user.role }}" data-i18n="role.{{ target_user.role }}">{{ target_user.get_role_display }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="hero-side">
+            {% if target_user.role == 'participant' %}
+                <div class="hero-stat"><strong>{{ participated_tournaments|length }}</strong><span data-i18n="public_profile.stat.tournaments">Турнірів</span></div>
+                <div class="hero-stat"><strong>{{ teams|length }}</strong><span data-i18n="public_profile.stat.teams">Команд</span></div>
+            {% elif target_user.role == 'jury' %}
+                <div class="hero-stat"><strong>{{ jury_tournaments_count }}</strong><span data-i18n="public_profile.stat.jury_tournaments">Турнірів (журі)</span></div>
+                <div class="hero-stat"><strong>{{ jury_evaluations_count }}</strong><span data-i18n="public_profile.stat.evaluations">Оцінок</span></div>
+            {% elif target_user.role == 'organizer' or target_user.role == 'admin' %}
+                <div class="hero-stat"><strong>{{ tournaments_created_count }}</strong><span data-i18n="public_profile.stat.created">Створено турнірів</span></div>
+            {% endif %}
+        </div>
+    </section>
+
+    {% if target_user.role == 'participant' and participated_tournaments %}
+    <section class="section">
+        <div class="section-head">
+            <div>
+                <h2 class="section-title" data-i18n="public_profile.tournaments.title">Участь у турнірах</h2>
+                <div class="section-note" data-i18n="public_profile.tournaments.note">Турніри, в яких цей користувач брав участь.</div>
+            </div>
+        </div>
+        <div class="list spacer-top">
+            {% for item in participated_tournaments %}
+                <div class="item-card">
+                    <div class="section-head">
+                        <div style="display: flex; gap: 16px; align-items: center;">
+                            <img src="{% if item.tournament.banner_image %}{{ item.tournament.banner_image.url }}{% else %}https://placehold.co/100x60?text=No+Banner{% endif %}" 
+                                 class="item-banner-preview" style="width: 80px; height: 50px; border-radius: 8px; object-fit: cover;">
+                            <h3>{{ item.tournament.name }}</h3>
+                        </div>
+                        <span class="status-badge status-{{ item.tournament.lifecycle_status }}" data-i18n="status.{{ item.tournament.lifecycle_status }}">{{ item.tournament.lifecycle_status_label }}</span>
+                    </div>
+                    <div class="meta-list spacer-top">
+                        <div class="meta-item">
+                            <span data-i18n="common.team_name">Назва команди</span>: 
+                            <a href="{% url 'team_detail' item.team.id %}" class="btn-text" style="font-weight: 600;">{{ item.team.name }}</a>
+                        </div>
+                        <div class="meta-item" style="font-size: 13px; color: var(--muted); margin-top: 4px;">
+                            {% if item.tournament.start_date %}
+                            <span data-i18n="profile.tournaments.start">Початок</span>: {{ item.tournament.start_date|date:"d.m.Y" }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="toolbar spacer-top">
+                        <a class="button-secondary" href="{% url 'public_tournament_detail' item.tournament.id %}" data-i18n="profile.tournaments.page">Сторінка турніру</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    {% if teams %}
+    <section class="section">
+        <div class="section-head">
+            <div>
+                <h2 class="section-title" data-i18n="public_profile.teams.title">Команди</h2>
+                <div class="section-note" data-i18n="public_profile.teams.note">Команди, в яких бере участь цей користувач.</div>
+            </div>
+        </div>
+        <div class="list spacer-top">
+            {% for team in teams %}
+                <div class="item-card">
+                    <div class="section-head">
+                        <div style="display: flex; gap: 16px; align-items: center;">
+                            <div class="profile-avatar-placeholder profile-avatar-placeholder--compact" style="width: 48px; height: 48px; font-size: 18px;">{{ team.name|first }}</div>
+                            <h3>{{ team.name }}</h3>
+                        </div>
+                    </div>
+                    <div class="meta-list spacer-top">
+                        <div class="meta-item">
+                            <span data-i18n="home.team_block.captain">Контактна особа (капітан)</span>: {{ team.captain_name }}
+                        </div>
+                        <div class="meta-item">
+                            <span data-i18n="team.hero.members_count">Учасників</span>: {{ team.total_members }}
+                        </div>
+                    </div>
+                    <div class="toolbar spacer-top">
+                        <a class="button-secondary" href="{% url 'team_detail' team.id %}" data-i18n="admin.teams.open">Профіль команди</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    {% if target_user.role == 'organizer' or target_user.role == 'admin' %}
+        {% if tournaments_created_count > 0 %}
+        <section class="section">
+            <div class="section-head">
+                <div>
+                    <h2 class="section-title" data-i18n="public_profile.organized.title">Організовані турніри</h2>
+                    <div class="section-note" data-i18n="public_profile.organized.note">Ці турніри створені цим користувачем.</div>
+                </div>
+            </div>
+            <div class="list spacer-top">
+                {% for tournament in organized_tournaments %}
+                    <div class="item-card">
+                        <div class="section-head">
+                            <div style="display: flex; gap: 16px; align-items: center;">
+                                <img src="{% if tournament.banner_image %}{{ tournament.banner_image.url }}{% else %}https://placehold.co/100x60?text=No+Banner{% endif %}" 
+                                     class="item-banner-preview" style="width: 80px; height: 50px; border-radius: 8px; object-fit: cover;">
+                                <h3>{{ tournament.name }}</h3>
+                            </div>
+                            <span class="status-badge status-{{ tournament.lifecycle_status }}" data-i18n="status.{{ tournament.lifecycle_status }}">{{ tournament.lifecycle_status_label }}</span>
+                        </div>
+                        <div class="toolbar spacer-top">
+                            <a class="button-secondary" href="{% url 'public_tournament_detail' tournament.id %}" data-i18n="profile.tournaments.page">Сторінка турніру</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+    {% endif %}
+{% endblock %}

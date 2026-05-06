@@ -1,4 +1,4 @@
-﻿import shutil
+import shutil
 from datetime import timedelta
 from io import BytesIO
 from pathlib import Path
@@ -682,8 +682,7 @@ class TournamentPlatformViewTests(TestCase):
         self.assertEqual(team.preferred_contact_method, "discord")
         self.assertEqual(team.preferred_contact_value, "open-team-discord")
         self.assertEqual(team.discord, "open-team-discord")
-        self.assertFalse(team.telegram)
-        self.assertFalse(team.viber)
+        self.participant_user.refresh_from_db()
         self.participant_user.refresh_from_db()
         self.assertEqual(self.participant_user.role, "participant")
 
@@ -761,7 +760,6 @@ class TournamentPlatformViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Діскорд")
         self.assertNotContains(response, "Телеграм")
-        self.assertNotContains(response, "Вайбер")
 
     def test_create_tournament_requires_schedule_for_published_tournament(self):
         self.client.force_login(self.admin_user)

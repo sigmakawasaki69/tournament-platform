@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ tournament.name }}{% endblock %}
+
+{% block content %}
+    <div class="wrap" style="max-width: 1200px; margin: 0 auto;">
+        <div class="hero spacer-top">
+        <div class="hero-content">
+            <div class="hero-kicker" data-i18n="public_tournament.hero_kicker">Турнір</div>
+            <h1 data-i18n-message>{{ tournament.name }}</h1>
+            <p data-i18n-message>{{ tournament.description|default:"Опис турніру ще не додано." }}</p>
+            
+            <div class="toolbar spacer-top" style="color: rgba(255,255,255,0.9); font-size: 14px;">
+                <div class="meta-item">
+                    <span data-i18n="public_tournament.start_date">Старт</span>: <strong>{{ tournament.start_date|date:"d.m.Y H:i" }}</strong>
+                </div>
+                <div class="meta-item">
+                    <span data-i18n="public_tournament.reg_end">Реєстрація до</span>: <strong>{{ tournament.registration_end|date:"d.m.Y H:i" }}</strong>
+                </div>
+            </div>
+        </div>
+        </div>

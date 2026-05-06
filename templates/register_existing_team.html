@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Реєстрація існуючої команди - {{ tournament.name }}{% endblock %}
+
+{% block content %}
+<div class="wrap" style="max-width: 600px; margin: 0 auto; padding-top: 4rem; padding-bottom: 4rem;">
+    <div class="spacer-bottom">
+        <a href="{% url 'tournament_registration_options' tournament.id %}" class="btn-text" data-i18n="common.back">← Назад</a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <h1 class="h2" data-i18n="registration.existing.title">Реєстрація існуючої команди</h1>
+            <p class="p-small text-secondary spacer-bottom" data-i18n="registration.existing.subtitle">
+                Оберіть одну з ваших команд для участі в турнірі.
+            </p>
+
+            {% if errors %}
+                <div class="message-box error spacer-bottom">
+                    <ul style="margin: 0; padding-left: 1.25rem;">
+                        {% for error in errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label class="form-label" for="team_id" data-i18n="registration.existing.select_team">Оберіть команду</label>
+                    <select name="team_id" id="team_id" class="input-field" required>
+                        <option value="" disabled selected>---</option>
+                        {% for team in captain_teams %}
+                            <option value="{{ team.id }}" {% if selected_team_id == team.id %}selected{% endif %}>
+                                {{ team.name }} ({{ team.members_count }} учасн.)
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="spacer-top">
+                    <div class="message-box info p-tiny spacer-bottom">
+                        <strong data-i18n="register_team.size">Вимоги до команди:</strong><br>
+                        <span data-i18n="register_team.size_min">від</span> {{ tournament.min_team_members|default:1 }} 
+                        <span data-i18n="register_team.size_max">до</span> {{ tournament.max_team_members|default:"∞" }} 
+                        <span data-i18n="register_team.size_note">людей разом із контактною особою (капітаном).</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="button primary full-width" data-i18n="registration.existing.btn_submit">
+                    Зареєструвати команду
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

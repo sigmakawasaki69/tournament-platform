@@ -44,32 +44,67 @@
         </div>
     </section>
 
-    {% if profile_user.role == 'participant' and not profile_user.is_superuser %}
+    {% if pending_invitations %}
     <section class="section">
         <div class="section-head">
             <div>
-                <h2 class="section-title" data-i18n="profile.team.title">Моя команда</h2>
-                <div class="section-note" data-i18n="profile.team.note">Команда, у якій ви є контактною особою (капітаном) або учасником.</div>
+                <h2 class="section-title" style="color: #d97706;">🔔 Запрошення в команду</h2>
+                <div class="section-note">Вас запросили стати учасником наступних команд. Підтвердіть участь, щоб з'явитися у списку команди.</div>
             </div>
         </div>
-
-        {% if my_team %}
-            <div class="list spacer-top">
-                <div class="item-card">
-                    <h3>{{ my_team.name }}</h3>
-                    <div class="meta-list spacer-top"><span data-i18n="profile.team.captain">Контактна особа (капітан)</span>: {{ my_team.captain_name }}</div>
-                    <div class="toolbar spacer-top">
-                        <a class="button" href="{% url 'team_detail' my_team.id %}" data-i18n="profile.team.open">Відкрити</a>
-                        <a class="button-secondary" href="{% url 'team_results' my_team.id %}" data-i18n="profile.team.results">Результати</a>
+        <div class="list spacer-top">
+            {% for invitation in pending_invitations %}
+                <div class="item-card" style="border-left: 4px solid #d97706; background: rgba(245, 158, 11, 0.05);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                        <div>
+                            <h3 style="margin: 0;">{{ invitation.team.name }}</h3>
+                            <div class="meta-list" style="margin-top: 4px;">Запросив: {{ invitation.team.captain_name }}</div>
+                        </div>
+                        <div class="toolbar" style="margin: 0;">
+                            <a class="button-success" href="{% url 'confirm_team_invitation' invitation.token %}">Прийняти запрошення</a>
+                        </div>
                     </div>
                 </div>
-            </div>
-        {% else %}
-            <p class="empty spacer-top" data-i18n="profile.team.empty">У вас ще немає команди.</p>
-            <a class="button-success spacer-top" href="{% url 'create_team' %}" data-i18n="profile.team.create">Створити команду</a>
-        {% endif %}
+            {% endfor %}
+        </div>
     </section>
     {% endif %}
+
+    <section class="section">
+        <div class="section-head">
+            <div>
+                <h2 class="section-title" data-i18n="profile.team.title">Мої команди</h2>
+                <div class="section-note" data-i18n="profile.team.note">Команди, у яких ви є контактною особою (капітаном) або учасником.</div>
+            </div>
+            {% if profile_user.role == 'participant' %}
+                <a class="button-success" href="{% url 'create_team' %}" data-i18n="profile.team.create">Створити команду</a>
+            {% endif %}
+        </div>
+
+        <div class="list spacer-top">
+            {% for team in my_teams %}
+                <div class="item-card">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div>
+                            <h3 style="margin: 0;">{{ team.name }}</h3>
+                            <div class="meta-list" style="margin-top: 8px;">
+                                <span data-i18n="profile.team.captain">Контактна особа (капітан)</span>: {{ team.captain_name }}
+                                {% if team.captain_user == profile_user %}
+                                    <span class="status-badge status-upcoming" style="font-size: 10px; margin-left: 8px;">ВИ КАПІТАН</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="toolbar" style="margin: 0;">
+                            <a class="button" href="{% url 'team_detail' team.id %}" data-i18n="profile.team.open">Відкрити</a>
+                            <a class="button-secondary" href="{% url 'team_results' team.id %}" data-i18n="profile.team.results">Результати</a>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <p class="empty" data-i18n="profile.team.empty">У вас ще немає жодної команди.</p>
+            {% endfor %}
+        </div>
+    </section>
 
     {% if profile_user.role == 'jury' %}
     <section class="section auto-shrink">
@@ -103,7 +138,7 @@
     </section>
     {% endif %}
 
-    {% if profile_user.role == 'participant' %}
+    {% if profile_user.role == 'participant' or tournaments_with_state %}
     <section class="section">
         <div class="section-head">
             <div>
@@ -152,7 +187,7 @@
     {% endif %}
 
     <section class="grid-2 auto-shrink">
-        {% if profile_user.role == 'participant' %}
+        {% if profile_user.role == 'participant' or certificates %}
         <div class="card auto-shrink">
             <div class="section-head">
                 <div>

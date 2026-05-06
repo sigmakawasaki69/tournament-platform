@@ -55,10 +55,29 @@
                     {% if form.preferred_contact_method.errors %}<div class="field-errors" data-i18n-message>{{ form.preferred_contact_method.errors|join:", " }}</div>{% endif %}
                 </div>
 
-                <div class="field-group">
+                <div class="field-group" id="contact-value-group">
                     <label for="{{ form.preferred_contact_value.id_for_label }}" data-i18n="common.contact_value">Контакт для зв'язку</label>
                     {{ form.preferred_contact_value }}
                     {% if form.preferred_contact_value.errors %}<div class="field-errors" data-i18n-message>{{ form.preferred_contact_value.errors|join:", " }}</div>{% endif %}
+                </div>
+            </div>
+
+            <div id="verification-notice" class="spacer-top" style="display: none;">
+                <div id="tg-notice" class="notice" style="display: none; border-color: #3b82f6; background: #eff6ff; color: #1e40af;">
+                    {% if request.user.is_tg_verified %}
+                        <span style="color: #059669;">✅ Telegram підтверджено</span>
+                    {% else %}
+                        <span style="color: #dc2626;">❌ Telegram не підтверджено.</span> 
+                        <a href="{% url 'profile_settings' %}" style="color: #2563eb; font-weight: 700;">Перейти до підтвердження</a>
+                    {% endif %}
+                </div>
+                <div id="discord-notice" class="notice" style="display: none; border-color: #3b82f6; background: #eff6ff; color: #1e40af;">
+                    {% if request.user.is_discord_verified %}
+                        <span style="color: #059669;">✅ Discord підтверджено</span>
+                    {% else %}
+                        <span style="color: #dc2626;">❌ Discord не підтверджено.</span>
+                        <a href="{% url 'profile_settings' %}" style="color: #2563eb; font-weight: 700;">Перейти до підтвердження</a>
+                    {% endif %}
                 </div>
             </div>
 
@@ -76,7 +95,7 @@
     <script src="{% static 'js/autocomplete.js' %}"></script>
     <script>
         (function () {
-            initAutocomplete('input[name="school"]', {
+            const schoolAutocomplete = initAutocomplete('input[name="school"]', {
                 endpoint: '/api/schools/autocomplete/',
                 minLength: 2
             });
@@ -85,6 +104,62 @@
                 endpoint: '/api/contacts/autocomplete/',
                 minLength: 1
             });
+
+            // Contact verification toggle
+            const methodField = document.querySelector('select[name="preferred_contact_method"]');
+            const noticeContainer = document.getElementById('verification-notice');
+            const tgNotice = document.getElementById('tg-notice');
+            const discordNotice = document.getElementById('discord-notice');
+            const contactValueGroup = document.getElementById('contact-value-group');
+
+            function updateNotices() {
+                const val = methodField.value;
+                noticeContainer.style.display = 'none';
+                tgNotice.style.display = 'none';
+                discordNotice.style.display = 'none';
+                contactValueGroup.style.display = 'block';
+
+                if (val === 'telegram') {
+                    noticeContainer.style.display = 'block';
+                    tgNotice.style.display = 'block';
+                    contactValueGroup.style.display = 'none';
+                } else if (val === 'discord') {
+                    noticeContainer.style.display = 'block';
+                    discordNotice.style.display = 'block';
+                    contactValueGroup.style.display = 'none';
+                }
+            }
+            
+            if (methodField) {
+                methodField.addEventListener('change', updateNotices);
+                updateNotices();
+            }
+
+            // Form submission validation
+            const form = document.querySelector('form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    const schoolInput = form.querySelector('input[name="school"]');
+                    if (schoolInput && schoolInput.value.trim().length > 0 && schoolInput.dataset.selected !== "true") {
+                        // Check if the current value exactly matches any of the already loaded options 
+                        // (This is a fallback in case they typed correctly but didn't click)
+                        // But for now, let's just force the click for 100% certainty.
+                        
+                        e.preventDefault();
+                        schoolInput.classList.add('autocomplete-invalid');
+                        schoolInput.focus();
+                        
+                        let errorDiv = form.querySelector('.school-error-msg');
+                        if (!errorDiv) {
+                            errorDiv = document.createElement('div');
+                            errorDiv.className = 'field-errors school-error-msg';
+                            errorDiv.style.marginTop = '8px';
+                            errorDiv.textContent = 'Будь ласка, оберіть школу зі списку.';
+                            schoolInput.parentNode.appendChild(errorDiv);
+                        }
+                    }
+                });
+            }
         })();
     </script>
 {% endblock %}
