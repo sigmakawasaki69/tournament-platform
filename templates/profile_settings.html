@@ -169,7 +169,7 @@
             <div class="settings-card">
                 <h3 data-i18n="settings.social.title">Соціальні мережі</h3>
                 <div class="section-note" data-i18n="settings.social.note">Прив'яжіть Telegram або Discord для отримання сповіщень та підтвердження особи.</div>
-                
+
                 <div style="display: flex; flex-direction: column; gap: 20px;">
                     <!-- Telegram -->
                     <div style="padding: 16px; border: 1px solid var(--border); border-radius: 12px; background: rgba(0, 136, 204, 0.05);">
@@ -186,7 +186,7 @@
                                 <span class="badge-warn" style="font-size: 12px;" data-i18n="settings.social.not_linked">Не прив'язано</span>
                             {% endif %}
                         </div>
-                        
+
                         {% if not profile_user.is_tg_verified %}
                             <div class="section-note" style="font-size: 13px; margin-bottom: 12px;">
                                 <span data-i18n="settings.social.tg_instruction">Перейдіть до бота, натисніть "Підтвердити" та введіть отриманий код нижче:</span><br>
@@ -218,7 +218,7 @@
                                 <span class="badge-warn" style="font-size: 12px;" data-i18n="settings.social.not_linked">Не прив'язано</span>
                             {% endif %}
                         </div>
-                        
+
                         {% if not profile_user.is_discord_verified %}
                             <div class="section-note" style="font-size: 13px; margin-bottom: 12px;">
                                 <span data-i18n="settings.social.discord_instruction">Зайдіть до бота та напишіть команду <b>!verify</b>, щоб отримати код:</span><br>
@@ -239,6 +239,49 @@
                         {% endif %}
                     </div>
                 </div>
+            </div>
+
+
+
+            <!-- Password -->
+            <div class="settings-card">
+                <h3 data-i18n="settings.password.title">Зміна пароля</h3>
+                <div class="section-note" data-i18n="settings.password.note">Введіть поточний пароль та задайте новий (мінімум 8 символів).</div>
+                <form method="post" id="password-change-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="change_password">
+                    <div class="settings-field">
+                        <label data-i18n="settings.password.current">Поточний пароль</label>
+                        <div class="password-field-wrapper">
+                            <input type="password" name="old_password" required>
+                            <button type="button" class="password-toggle" tabindex="-1">
+                                <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                <svg class="eye-off-icon hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="settings-field">
+                        <label data-i18n="settings.password.new">Новий пароль</label>
+                        <div class="password-field-wrapper">
+                            <input type="password" name="new_password" required minlength="8">
+                            <button type="button" class="password-toggle" tabindex="-1">
+                                <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                <svg class="eye-off-icon hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="settings-field">
+                        <label data-i18n="settings.password.confirm">Підтвердження нового пароля</label>
+                        <div class="password-field-wrapper">
+                            <input type="password" name="new_password_confirm" required minlength="8">
+                            <button type="button" class="password-toggle" tabindex="-1">
+                                <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                <svg class="eye-off-icon hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="submit" class="button" data-i18n="settings.password.save">Змінити пароль</button>
+                </form>
             </div>
 
         </div>

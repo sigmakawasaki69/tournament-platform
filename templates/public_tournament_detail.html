@@ -4,8 +4,7 @@
 {% block title %}{{ tournament.name }}{% endblock %}
 
 {% block content %}
-    <div class="wrap" style="max-width: 1200px; margin: 0 auto;">
-        <div class="hero spacer-top">
+    <div class="hero">
         <div class="hero-content">
             <div class="hero-kicker" data-i18n="public_tournament.hero_kicker">Турнір</div>
             <h1 data-i18n-message>{{ tournament.name }}</h1>
@@ -67,15 +66,9 @@
                 <h2 class="section-title" data-i18n="public_tournament.registration_title">Реєстрація</h2>
                 
                 {% if existing_registration and existing_registration.status == "approved" %}
-                    <div class="message-box success spacer-top">
-                        <span data-i18n="public_tournament.reg_approved">Вашу заявку вже схвалено. Ви можете знайти цей турнір у своєму профілі.</span><br>
-                        Ви зареєстровані за команду <strong>{{ existing_registration.team.name }}</strong>.
-                    </div>
+                    <div class="message-box success spacer-top" data-i18n="public_tournament.reg_approved">Вашу заявку вже схвалено. Ви можете знайти цей турнір у своєму профілі.</div>
                 {% elif existing_registration and existing_registration.status == "pending" %}
-                    <div class="message-box warn spacer-top">
-                        <span data-i18n="public_tournament.reg_pending">Ваша заявка знаходиться на розгляді у організатора.</span><br>
-                        Ви подали заявку від команди <strong>{{ existing_registration.team.name }}</strong>.
-                    </div>
+                    <div class="message-box warn spacer-top" data-i18n="public_tournament.reg_pending">Ваша заявка знаходиться на розгляді у організатора.</div>
                 {% elif existing_registration and existing_registration.status == "rejected" %}
                     <div class="message-box error spacer-top" data-i18n="public_tournament.reg_rejected">Вашу попередню заявку було відхилено. Ви можете спробувати подати її ще раз.</div>
                 {% endif %}
@@ -90,19 +83,77 @@
                             <a class="button-secondary" href="{{ register_url }}" data-i18n="public_tournament.register_cta">Зареєструватися</a>
                         </div>
                     </div>
+                    {% if registration_form %}
+                        <div class="stack-sm spacer-top">
+                            {% for field in registration_form %}
+                                <div class="surface-muted">
+                                    <strong>{{ field.label }}</strong>
+                                    <div class="section-note">
+                                        {% if field.field.required %}Обов'язкове поле{% else %}Необов'язкове поле{% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
                 {% elif not viewer_can_register %}
                     <div class="message-box warn spacer-top" data-i18n="public_tournament.reg_permission_denied">У вас немає прав для подачі заявки на цей турнір.</div>
-                {% elif not existing_registration %}
-                    <div class="card spacer-top">
-                        <div class="card-body text-center" style="padding: 2rem;">
-                            <p class="p-medium text-secondary spacer-bottom" data-i18n="public_tournament.reg_form_note_short">
-                                Оберіть існуючу команду або створіть нову для участі у цьому турнірі.
-                            </p>
-                            <a href="{% url 'tournament_registration_options' tournament.id %}" class="button primary" data-i18n="public_tournament.register_cta">
-                                Зареєструватися
-                            </a>
+                {% elif registration_form %}
+                    <form method="post" id="registration-form" class="spacer-top">
+                        {% csrf_token %}
+                        <div class="form-grid">
+                            <div class="field-group">
+                                <label for="{{ registration_form.team_name.id_for_label }}" data-i18n="common.team_name">Назва команди</label>
+                                {{ registration_form.team_name }}
+                            </div>
+                            <div class="grid-2">
+                                <div class="field-group">
+                                    <label for="{{ registration_form.captain_name.id_for_label }}" data-i18n="public_reg.participant_name">Ім'я капітана</label>
+                                    {{ registration_form.captain_name }}
+                                </div>
+                                <div class="field-group">
+                                    <label for="{{ registration_form.captain_email.id_for_label }}" data-i18n="public_reg.participant_email">Email капітана</label>
+                                    {{ registration_form.captain_email }}
+                                </div>
+                            </div>
+                            <div class="field-group">
+                                <label for="{{ registration_form.school.id_for_label }}" data-i18n="common.school">Навчальний заклад</label>
+                                {{ registration_form.school }}
+                            </div>
+                            <div class="grid-2">
+                                <div class="field-group">
+                                    <label for="{{ registration_form.preferred_contact_method.id_for_label }}" data-i18n="common.contact_method">Спосіб зв'язку</label>
+                                    {{ registration_form.preferred_contact_method }}
+                                </div>
+                                <div class="field-group">
+                                    <label for="{{ registration_form.preferred_contact_value.id_for_label }}" data-i18n="common.contact_value">Логін / Номер</label>
+                                    {{ registration_form.preferred_contact_value }}
+                                </div>
+                            </div>
+
+                            {% for field in registration_form %}
+                                {% if field.name not in "team_name captain_name captain_email school preferred_contact_method preferred_contact_value" %}
+                                    <div class="card spacer-top">
+                                        <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span style="color:var(--danger);">*</span>{% endif %}</label>
+                                        {% if field.field.widget.attrs.data_field_type == "participants" %}
+                                            {{ field }}
+                                            <div class="participants-wrap" data-target-id="{{ field.auto_id }}">
+                                                <div class="section-note spacer-bottom" data-i18n="public_reg.participant_summary">Додайте інших учасників команди (капітан вже врахований).</div>
+                                                <div class="participants-list"></div>
+                                                <button type="button" class="button-secondary add-participant-btn spacer-top" data-i18n="public_reg.add_participant">+ Додати учасника</button>
+                                            </div>
+                                        {% else %}
+                                            {{ field }}
+                                        {% endif %}
+                                        {% if field.errors %}<div class="field-errors">{{ field.errors|join:", " }}</div>{% endif %}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
                         </div>
-                    </div>
+
+                        <div class="toolbar spacer-top">
+                            <button class="button" type="submit" data-i18n="public_reg.submit">Надіслати заявку</button>
+                        </div>
+                    </form>
                 {% endif %}
             </section>
         </div>
@@ -145,43 +196,6 @@
                     <p class="empty spacer-top" data-i18n="public_tournament.leaderboard_note">Рейтинг буде доступний після завершення етапу.</p>
                 {% endif %}
             </section>
-
-            <section class="card">
-                <h2 class="section-title" data-i18n="public_tournament.organizer_title">Організатор</h2>
-                <a href="{% url 'public_profile' tournament.created_by.id %}" class="user-profile-link spacer-top">
-                    {% if tournament.created_by.avatar %}
-                        <img src="{{ tournament.created_by.avatar.url }}" alt="" class="user-profile-link__avatar">
-                    {% else %}
-                        <div class="user-profile-link__avatar user-profile-link__avatar--placeholder">{{ tournament.created_by.username|first }}</div>
-                    {% endif %}
-                    <div class="user-profile-link__info">
-                        <strong>{{ tournament.created_by.username }}</strong>
-                        <span class="user-profile-link__role" data-i18n="role.{{ tournament.created_by.role }}">{{ tournament.created_by.get_role_display }}</span>
-                    </div>
-                </a>
-            </section>
-
-            {% if jury_users %}
-            <section class="card">
-                <h2 class="section-title" data-i18n="public_tournament.jury_title">Журі</h2>
-                <div class="section-note" data-i18n="public_tournament.jury_note">Ці члени журі оцінюють роботи учасників турніру.</div>
-                <div class="list spacer-top">
-                    {% for jury in jury_users %}
-                        <a href="{% url 'public_profile' jury.id %}" class="user-profile-link">
-                            {% if jury.avatar %}
-                                <img src="{{ jury.avatar.url }}" alt="" class="user-profile-link__avatar">
-                            {% else %}
-                                <div class="user-profile-link__avatar user-profile-link__avatar--placeholder">{{ jury.username|first }}</div>
-                            {% endif %}
-                            <div class="user-profile-link__info">
-                                <strong>{{ jury.username }}</strong>
-                                <span class="user-profile-link__role" data-i18n="role.jury">Журі</span>
-                            </div>
-                        </a>
-                    {% endfor %}
-                </div>
-            </section>
-            {% endif %}
         </div>
     </div>
 
@@ -205,27 +219,60 @@
 {% block extra_scripts %}
 
     <script src="{% static 'js/autocomplete.js' %}"></script>
-    <script rendered="true">
-        (function() {
-            // Placeholder for any specific logic if needed
+    <script>
+
+        (function () {
+            const template = document.getElementById("participant-row-template");
+            function syncParticipants(container) {
+                const hiddenInput = document.getElementById(container.dataset.targetId);
+                const rows = container.querySelectorAll(".participant-row");
+                const payload = Array.from(rows).map((row) => ({
+                    full_name: row.querySelector(".participant-name").value.trim(),
+                    email: row.querySelector(".participant-email").value.trim(),
+                })).filter((item) => item.full_name || item.email);
+                hiddenInput.value = JSON.stringify(payload);
+            }
+            function addRow(container, data = {}) {
+                const fragment = template.content.cloneNode(true);
+                const row = fragment.querySelector(".participant-row");
+                const nameInput = row.querySelector(".participant-name");
+                const emailInput = row.querySelector(".participant-email");
+                const removeButton = row.querySelector(".remove-participant-btn");
+                nameInput.value = data.full_name || "";
+                emailInput.value = data.email || "";
+                nameInput.addEventListener("input", () => syncParticipants(container));
+                emailInput.addEventListener("input", () => syncParticipants(container));
+                removeButton.addEventListener("click", () => {
+                    row.remove();
+                    syncParticipants(container);
+                });
+                container.querySelector(".participants-list").appendChild(row);
+                syncParticipants(container);
+            }
+            document.querySelectorAll(".participants-wrap").forEach((container) => {
+                const addButton = container.querySelector(".add-participant-btn");
+                const hiddenInput = document.getElementById(container.dataset.targetId);
+                let initialPayload = [];
+                if (hiddenInput.value) {
+                    try { initialPayload = JSON.parse(hiddenInput.value); } catch (e) {}
+                }
+                if (initialPayload.length) {
+                    initialPayload.forEach((item) => addRow(container, item));
+                }
+
+                addButton.addEventListener("click", () => addRow(container));
+            });
+
+            // Initialize autocompletes
+            initAutocomplete('input[name="school"]', {
+                endpoint: '/api/schools/autocomplete/',
+                minLength: 2
+            });
+
+            initAutocomplete('input[name="preferred_contact_value"]', {
+                endpoint: '/api/contacts/autocomplete/',
+                minLength: 1
+            });
         })();
     </script>
-    <style>
-    .animate-in {
-        animation: fadeIn 0.5s ease-out;
-    }
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes pulse-error {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.02); border-color: #dc2626; box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.2); }
-        100% { transform: scale(1); }
-    }
-    .autocomplete-invalid {
-        border-color: #dc2626 !important;
-        background-color: #fff1f2 !important;
-    }
-    </style>
 {% endblock %}

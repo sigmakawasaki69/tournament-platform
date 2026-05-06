@@ -4,14 +4,10 @@
 
 {% block auth_content %}
     <div class="auth-card">
-        <h1 class="page-title" style="text-align:center;" data-i18n="register.title">Реєстрація</h1>
+        <h1 class="page-title register-title-centered" data-i18n="register.title">Реєстрація</h1>
         <p class="section-note" style="text-align:center; margin-top:10px;" data-i18n="register.subtitle">
             Створіть акаунт учасника, щоб подавати заявки на турніри.
         </p>
-
-        <div class="message-box info spacer-top" data-i18n="register.notice">
-            Після реєстрації ми надішлемо лист із посиланням для підтвердження електронної пошти. Увійти на сайт можна буде після переходу за цим посиланням.
-        </div>
 
         {% if form.non_field_errors %}
             <div class="message-box error" data-i18n-message>{{ form.non_field_errors|join:", " }}</div>
