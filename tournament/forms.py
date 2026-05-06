@@ -460,6 +460,7 @@ class TeamForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['preferred_contact_method'].required = False
         self.fields['preferred_contact_value'].required = False
+        self.fields['school'].required = True
         if self.instance and self.instance.pk:
             if not self.initial.get('preferred_contact_method'):
                 self.initial['preferred_contact_method'] = self.instance.effective_contact_method
@@ -480,10 +481,30 @@ class TeamForm(forms.ModelForm):
 
         preferred_contact_method = cleaned_data.get('preferred_contact_method') or ''
         preferred_contact_value = cleaned_data.get('preferred_contact_value') or ''
+
+        # Verification and auto-fill logic
+        user = self.instance.captain_user if self.instance and self.instance.pk else None
+        
+        if preferred_contact_method in [Team.ContactMethod.TELEGRAM, Team.ContactMethod.DISCORD]:
+            if user:
+                if preferred_contact_method == Team.ContactMethod.TELEGRAM:
+                    if user.is_tg_verified:
+                        cleaned_data['preferred_contact_value'] = str(user.telegram_id)
+                        preferred_contact_value = str(user.telegram_id)
+                    else:
+                        self.add_error('preferred_contact_method', "Ви повинні підтвердити свій Telegram у налаштуваннях профілю.")
+                elif preferred_contact_method == Team.ContactMethod.DISCORD:
+                    if user.is_discord_verified:
+                        cleaned_data['preferred_contact_value'] = str(user.discord_id)
+                        preferred_contact_value = str(user.discord_id)
+                    else:
+                        self.add_error('preferred_contact_method', "Ви повинні підтвердити свій Discord у налаштуваннях профілю.")
+
         if not preferred_contact_method:
             self.add_error('preferred_contact_method', "Оберіть зручний спосіб зв'язку.")
-        if not preferred_contact_value:
+        if not preferred_contact_value and preferred_contact_method not in [Team.ContactMethod.TELEGRAM, Team.ContactMethod.DISCORD]:
             self.add_error('preferred_contact_value', "Вкажіть контакт для зв'язку.")
+
         return cleaned_data
 
     def save(self, commit=True):
@@ -494,7 +515,6 @@ class TeamForm(forms.ModelForm):
         instance.preferred_contact_value = preferred_contact_value or None
         instance.telegram = preferred_contact_value if preferred_contact_method == Team.ContactMethod.TELEGRAM else None
         instance.discord = preferred_contact_value if preferred_contact_method == Team.ContactMethod.DISCORD else None
-        instance.viber = preferred_contact_value if preferred_contact_method == Team.ContactMethod.VIBER else None
         if commit:
             instance.save()
             self.save_m2m()
@@ -570,7 +590,7 @@ class TournamentRegistrationForm(forms.Form):
             widget=forms.EmailInput(attrs={'class': 'form-input'}),
         )
         self.fields['school'] = forms.CharField(
-            required=False,
+            required=True,
             label='Школа',
             widget=forms.TextInput(attrs={'class': 'form-input'}),
         )
@@ -614,6 +634,16 @@ class TournamentRegistrationForm(forms.Form):
         elif user is not None:
             self.fields['captain_name'].initial = user.username
             self.fields['captain_email'].initial = user.email
+
+        has_participants_field = any(f.get('type') == 'participants' for f in (self.tournament.registration_fields_config if self.tournament else []))
+        
+        if not has_participants_field and self.tournament and (self.tournament.max_team_members or 2) > 1:
+            self.fields['field_participants_auto'] = self.build_dynamic_field({
+                'key': 'participants_auto',
+                'type': 'participants',
+                'label': 'Склад команди (учасники)',
+                'required': (self.tournament.min_team_members or 1) > 1
+            })
 
         for field_config in (self.tournament.registration_fields_config if self.tournament else []):
             self.fields[self.answer_field_name(field_config['key'])] = self.build_dynamic_field(field_config)
@@ -682,10 +712,34 @@ class TournamentRegistrationForm(forms.Form):
             self.add_error('school', exc)
         if not cleaned_data['preferred_contact_method']:
             self.add_error('preferred_contact_method', "Оберіть зручний спосіб зв'язку.")
-        if not cleaned_data['preferred_contact_value']:
+        
+        # Auto-fill social contact value from verified user
+        if self.user:
+            method = cleaned_data.get('preferred_contact_method')
+            if method == Team.ContactMethod.TELEGRAM:
+                if self.user.is_tg_verified:
+                    cleaned_data['preferred_contact_value'] = str(self.user.telegram_id)
+                else:
+                    self.add_error('preferred_contact_method', "Будь ласка, підтвердіть свій Telegram у профілі.")
+            elif method == Team.ContactMethod.DISCORD:
+                if self.user.is_discord_verified:
+                    cleaned_data['preferred_contact_value'] = str(self.user.discord_id)
+                else:
+                    self.add_error('preferred_contact_method', "Будь ласка, підтвердіть свій Discord у профілі.")
+
+        if not cleaned_data.get('preferred_contact_value') and cleaned_data.get('preferred_contact_method') not in [Team.ContactMethod.TELEGRAM, Team.ContactMethod.DISCORD]:
             self.add_error('preferred_contact_value', "Вкажіть контакт для зв'язку.")
 
-        for field_config in (self.tournament.registration_fields_config if self.tournament else []):
+        # Збираємо всі конфігурації полів, включаючи автоматичне поле учасників якщо воно є
+        configs = list(self.tournament.registration_fields_config if self.tournament else [])
+        if 'field_participants_auto' in self.fields:
+             configs.append({
+                 'key': 'participants_auto', 
+                 'type': 'participants', 
+                 'required': (self.tournament.min_team_members or 1) > 1
+             })
+
+        for field_config in configs:
             if field_config['type'] != 'participants':
                 continue
 
@@ -778,6 +832,8 @@ class TournamentRegistrationForm(forms.Form):
         return answers
 
     def cleaned_participants(self):
+        if 'field_participants_auto' in self.cleaned_data:
+            return self.cleaned_data['field_participants_auto']
         for field_config in (self.tournament.registration_fields_config if self.tournament else []):
             if field_config['type'] == 'participants':
                 return self.cleaned_data.get(self.answer_field_name(field_config['key']), [])

@@ -10,6 +10,7 @@ from .views import (
     redirect_by_role,
     public_tournament_detail,
     profile_view,
+    public_profile,
     profile_settings,
     messages_view,
     certificates_view,
@@ -51,6 +52,8 @@ from .views import (
     participant_dashboard,
     create_team,
     register_team_for_tournament,
+    tournament_registration_options,
+    register_existing_team,
     team_detail,
     edit_team,
     team_participants,
@@ -67,6 +70,11 @@ from .views import (
     password_reset_verify_view,
     password_reset_confirm_view,
     delete_announcement,
+    school_autocomplete,
+    contact_autocomplete,
+    api_register_social_code,
+    verify_social_code,
+    set_primary_team,
 )
 
 urlpatterns = [
@@ -79,6 +87,7 @@ urlpatterns = [
     path('logout/', logout_view, name='logout'),
     path('redirect/', redirect_by_role, name='redirect_by_role'),
     path('profile/', profile_view, name='profile'),
+    path('profile/<int:user_id>/', public_profile, name='public_profile'),
     path('profile/settings/', profile_settings, name='profile_settings'),
     path('messages/', messages_view, name='messages'),
     path('certificates/', certificates_view, name='certificates'),
@@ -126,10 +135,14 @@ urlpatterns = [
     path('participant-dashboard/', participant_dashboard, name='participant_dashboard'),
     path('create-team/', create_team, name='create_team'),
     path('register-team-for-tournament/<int:tournament_id>/', register_team_for_tournament, name='register_team_for_tournament'),
+    path('tournament/<int:tournament_id>/registration-options/', tournament_registration_options, name='tournament_registration_options'),
+    path('tournament/<int:tournament_id>/register-existing/', register_existing_team, name='register_existing_team'),
 
     path('team/<int:team_id>/', team_detail, name='team_detail'),
     path('team/<int:team_id>/edit/', edit_team, name='edit_team'),
     path('team/<int:team_id>/participants/', team_participants, name='team_participants'),
+    path('api/social/register-code/', api_register_social_code, name='api_register_social_code'),
+    path('verify-social-code/', verify_social_code, name='verify_social_code'),
     path('team/<int:team_id>/add-participant/', add_participant, name='add_participant'),
     path('team/<int:team_id>/participant/<int:participant_id>/delete/', delete_participant, name='delete_participant'),
     path('team/<int:team_id>/delete/', delete_team, name='delete_team'),
@@ -143,4 +156,9 @@ urlpatterns = [
     path('password-reset/verify/', password_reset_verify_view, name='password_reset_verify'),
     path('password-reset/confirm/', password_reset_confirm_view, name='password_reset_confirm'),
     path('delete-announcement/<int:announcement_id>/', delete_announcement, name='delete_announcement'),
+    
+    # API endpoints
+    path('api/schools/autocomplete/', school_autocomplete, name='school_autocomplete'),
+    path('api/contacts/autocomplete/', contact_autocomplete, name='contact_autocomplete'),
+    path('set-primary-team/', set_primary_team, name='set_primary_team'),
 ]

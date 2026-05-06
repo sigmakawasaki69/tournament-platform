@@ -1,3 +1,5 @@
+import json
+import secrets
 from datetime import timedelta
 from typing import Any, Dict, Iterable
 
@@ -7,8 +9,9 @@ from django.db import models, transaction
 from django.utils import timezone
 
 from users.models import CustomUser
+from users.platform_services import send_team_invitation_email
 
-from .models import RegistrationMember, Team, Tournament, TournamentRegistration
+from .models import RegistrationMember, Team, Tournament, TournamentRegistration, TeamInvitation
 from .validators import validate_school_name
 
 
@@ -67,19 +70,48 @@ class RegistrationService:
         if conflicting_registrations.exists():
             raise ValidationError("Один email не може бути у двох командах цього турніру.")
 
+        # Перевірка на перетин у часі з іншими турнірами
+        # Учасник не може бути у двох турнірах, які проходять одночасно
+        overlapping_tournaments = Tournament.objects.filter(
+            is_draft=False,
+            start_date__lte=tournament.end_date,
+            end_date__gte=tournament.start_date,
+        ).exclude(id=tournament.id)
+
+        if overlapping_tournaments.exists():
+            conflicting_other_registrations = TournamentRegistration.objects.filter(
+                tournament__in=overlapping_tournaments,
+                status__in=active_statuses,
+            ).filter(
+                models.Q(team__captain_email__in=emails_to_check)
+                | models.Q(members__email__in=emails_to_check)
+            ).select_related('tournament', 'team').distinct()
+
+            if conflicting_other_registrations.exists():
+                conflict = conflicting_other_registrations.first()
+                raise ValidationError(
+                    f"Учасники вашої команди вже зареєстровані на турнір '{conflict.tournament.name}', "
+                    f"який перетинається за часом із цим турніром. Одночасна участь у декількох турнірах заборонена."
+                )
+
     @staticmethod
     @transaction.atomic
     def submit_registration(
         *,
+        request=None,
         tournament: Tournament,
         registered_by: CustomUser,
         captain_user: CustomUser,
         team_data: Dict[str, Any],
         form_answers: Dict[str, Any],
         roster: Iterable[Dict[str, Any]] | None = None,
+        team: Team | None = None,
     ) -> TournamentRegistration:
         tournament = Tournament.objects.select_for_update().get(pk=tournament.pk)
-        team = Team.objects.select_for_update().filter(captain_user=captain_user).first()
+        
+        # Якщо команду не передано явно, ми її створимо нижче
+        if team:
+            team = Team.objects.select_for_update().get(pk=team.pk)
 
         if tournament.is_draft or not tournament.is_registration_open:
             raise ValidationError("Реєстрація на турнір зараз закрита.")
@@ -97,7 +129,6 @@ class RegistrationService:
         preferred_contact_value = (team_data.get("preferred_contact_value") or "").strip()
         telegram = preferred_contact_value if preferred_contact_method == Team.ContactMethod.TELEGRAM else ""
         discord = preferred_contact_value if preferred_contact_method == Team.ContactMethod.DISCORD else ""
-        viber = preferred_contact_value if preferred_contact_method == Team.ContactMethod.VIBER else ""
 
         if not team_name:
             raise ValidationError("Вкажіть назву команди.")
@@ -130,7 +161,6 @@ class RegistrationService:
                 preferred_contact_value=preferred_contact_value or None,
                 telegram=telegram or None,
                 discord=discord or None,
-                viber=viber or None,
             )
         else:
             team.name = team_name
@@ -141,7 +171,6 @@ class RegistrationService:
             team.preferred_contact_value = preferred_contact_value or None
             team.telegram = telegram or None
             team.discord = discord or None
-            team.viber = viber or None
             team.save(update_fields=[
                 "name",
                 "captain_name",
@@ -151,7 +180,6 @@ class RegistrationService:
                 "preferred_contact_value",
                 "telegram",
                 "discord",
-                "viber",
             ])
 
         if TournamentRegistration.objects.filter(
@@ -209,15 +237,47 @@ class RegistrationService:
         )
 
         if normalized_roster:
-            RegistrationMember.objects.bulk_create([
-                RegistrationMember(
+            # Створюємо записи учасників у заявці (знімок на момент подачі)
+            members = []
+            for item in normalized_roster:
+                members.append(RegistrationMember(
                     registration=registration,
                     user=CustomUser.objects.filter(email__iexact=item["email"]).first(),
                     full_name=item["full_name"],
                     email=item["email"],
-                )
-                for item in normalized_roster
-            ])
+                ))
+            RegistrationMember.objects.bulk_create(members)
+
+            # Логіка запрошень: якщо людини ще немає в команді, створюємо запрошення
+            existing_participant_emails = set(
+                team.participants.values_list('email', flat=True)
+            )
+            
+            for item in normalized_roster:
+                email = item["email"]
+                if email.lower() not in {e.lower() for e in existing_participant_emails}:
+                    # Створюємо або оновлюємо запрошення
+                    invitation, created = TeamInvitation.objects.get_or_create(
+                        team=team,
+                        email=email,
+                        defaults={
+                            'full_name': item["full_name"],
+                            'token': secrets.token_hex(32)
+                        }
+                    )
+                    # Якщо запрошення вже було, оновлюємо ім'я та токен (щоб було нове)
+                    if not created:
+                        invitation.full_name = item["full_name"]
+                        invitation.token = secrets.token_hex(32)
+                        invitation.save()
+                    
+                    # Відправляємо пошту якщо є request
+                    if request:
+                        try:
+                            send_team_invitation_email(request, invitation=invitation)
+                        except Exception as e:
+                            import logging
+                            logging.error(f"Failed to send invitation email to {email}: {e}")
 
         return registration
 

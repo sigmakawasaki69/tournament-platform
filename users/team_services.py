@@ -58,16 +58,9 @@ class TeamManagementService:
                 field="email",
                 message="Запрошення цьому учаснику вже надіслано.",
             )
-        if Team.objects.filter(captain_email__iexact=participant_email).exclude(id=team.id).exists():
-            return TeamParticipantActionResult(
-                field="email",
-                message="Цей учасник уже зареєстрований в іншій команді.",
-            )
-        if Participant.objects.filter(email__iexact=participant_email).exclude(team=team).exists():
-            return TeamParticipantActionResult(
-                field="email",
-                message="Цей учасник уже зареєстрований в іншій команді.",
-            )
+        # Учасник може бути в декількох командах одночасно.
+        # Обмеження на унікальність email тепер перевіряється на рівні ТУРНІРУ при реєстрації.
+        pass
 
         if not email_delivery_ready():
             return TeamParticipantActionResult(

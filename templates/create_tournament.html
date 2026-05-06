@@ -440,5 +440,68 @@
                 });
             }
         })();
+
+        // Unsaved changes & Auto-save
+        (function() {
+            const form = document.getElementById('tournament-form');
+            let isDirty = false;
+            
+            const markDirty = () => { isDirty = true; };
+            form.querySelectorAll('input, textarea, select').forEach(el => {
+                el.addEventListener('input', markDirty);
+                el.addEventListener('change', markDirty);
+            });
+
+            window.addEventListener('beforeunload', (e) => {
+                if (isDirty) {
+                    e.preventDefault();
+                    e.returnValue = '';
+                }
+            });
+
+            form.addEventListener('submit', () => { isDirty = false; });
+
+            const storageKey = `tournament_draft_${window.location.pathname}`;
+            const saveDraft = () => {
+                const data = new FormData(form);
+                const draft = {};
+                for (let [key, value] of data.entries()) {
+                    if (key !== 'csrfmiddlewaretoken' && !(value instanceof File)) {
+                        draft[key] = value;
+                    }
+                }
+                localStorage.setItem(storageKey, JSON.stringify(draft));
+            };
+
+            const loadDraft = () => {
+                const saved = localStorage.getItem(storageKey);
+                if (!saved) return;
+                const draft = JSON.parse(saved);
+                const lang = document.documentElement.lang || 'uk';
+                const msg = lang === 'en' ? 'Found an unsaved draft. Restore?' : 'Знайдено незбережену чернетку. Відновити?';
+                
+                if (confirm(msg)) {
+                    for (let key in draft) {
+                        const el = form.querySelector(`[name="${key}"]`);
+                        if (el) {
+                            if (el.type === 'checkbox') el.checked = !!draft[key];
+                            else el.value = draft[key];
+                        }
+                    }
+                    // Trigger custom builders to re-render
+                    window.dispatchEvent(new Event('load')); 
+                    isDirty = true;
+                } else {
+                    localStorage.removeItem(storageKey);
+                }
+            };
+
+            setInterval(() => { if (isDirty) saveDraft(); }, 5000);
+            loadDraft();
+
+            form.addEventListener('submit', () => {
+                localStorage.removeItem(storageKey);
+            });
+        })();
     </script>
 {% endblock %}

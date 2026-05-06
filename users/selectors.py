@@ -19,11 +19,11 @@ from .models import CustomUser
 from .policies import is_participant_user
 
 
-def get_primary_team_with_quick_overview(user):
+def get_primary_team_with_quick_overview(user, primary_team_id=None):
     if not getattr(user, "is_authenticated", False):
-        return None, None
+        return None, None, []
 
-    teams = (
+    teams = list(
         Team.objects.filter(Q(captain_user=user) | Q(participants__email=user.email))
         .select_related("captain_user")
         .prefetch_related("participants", "registrations__tournament")
@@ -31,17 +31,28 @@ def get_primary_team_with_quick_overview(user):
         .order_by("name")
     )
 
-    fallback_team = None
-    fallback_overview = None
-    for team in teams:
-        overview = build_team_quick_overview(team)
-        if fallback_team is None:
-            fallback_team = team
-            fallback_overview = overview
-        if overview is not None:
-            return team, overview
+    if not teams:
+        return None, None, []
 
-    return fallback_team, fallback_overview
+    # If primary_team_id is provided, try to find that team first
+    if primary_team_id:
+        for team in teams:
+            if str(team.id) == str(primary_team_id):
+                return team, build_team_quick_overview(team), teams
+
+    # Default logic: prefer team with an active overview
+    fallback_team = teams[0]
+    fallback_overview = build_team_quick_overview(fallback_team)
+    
+    if fallback_overview:
+        return fallback_team, fallback_overview, teams
+
+    for team in teams[1:]:
+        overview = build_team_quick_overview(team)
+        if overview is not None:
+            return team, overview, teams
+
+    return fallback_team, fallback_overview, teams
 
 
 def build_public_announcements():
@@ -241,6 +252,7 @@ def build_team_quick_overview(team):
         "latest_submission": latest_submission,
         "tasks_total": len(tasks),
         "submitted_total": len(submissions),
+        "members_count": 1 + active_registration.members.count(),
     }
 
 

@@ -1,17 +1,17 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}{% if mode == 'edit' %}Редагувати команду{% else %}Створити команду{% endif %}{% endblock %}
+{% block title %}{% if mode == 'edit' %}Р РµРґР°РіСѓРІР°С‚Рё РєРѕРјР°РЅРґСѓ{% else %}РЎС‚РІРѕСЂРёС‚Рё РєРѕРјР°РЅРґСѓ{% endif %}{% endblock %}
 
 {% block content %}
     <section class="section" style="max-width: 820px; margin: 0 auto;">
         <div class="section-head">
             <div>
                 <h1 class="page-title">
-                    {% if mode == 'edit' %}<span data-i18n="create_team.title.edit">Редагувати команду</span>{% else %}<span data-i18n="create_team.title.create">Створити команду</span>{% endif %}
+                    {% if mode == 'edit' %}<span data-i18n="create_team.title.edit">Р РµРґР°РіСѓРІР°С‚Рё РєРѕРјР°РЅРґСѓ</span>{% else %}<span data-i18n="create_team.title.create">РЎС‚РІРѕСЂРёС‚Рё РєРѕРјР°РЅРґСѓ</span>{% endif %}
                 </h1>
                 <div class="section-note" data-i18n="create_team.note">
-                    Заповніть базові дані команди та вкажіть один зручний спосіб зв'язку з контактною особою (капітаном).
+                    Р—Р°РїРѕРІРЅС–С‚СЊ Р±Р°Р·РѕРІС– РґР°РЅС– РєРѕРјР°РЅРґРё С‚Р° РІРєР°Р¶С–С‚СЊ РѕРґРёРЅ Р·СЂСѓС‡РЅРёР№ СЃРїРѕСЃС–Р± Р·РІ'СЏР·РєСѓ Р· РєРѕРЅС‚Р°РєС‚РЅРѕСЋ РѕСЃРѕР±РѕСЋ (РєР°РїС–С‚Р°РЅРѕРј).
                 </div>
             </div>
         </div>
@@ -23,50 +23,69 @@
             {% endif %}
 
             <div class="field-group">
-                <label for="{{ form.name.id_for_label }}" data-i18n="common.team_name">Назва команди</label>
+                <label for="{{ form.name.id_for_label }}" data-i18n="common.team_name">РќР°Р·РІР° РєРѕРјР°РЅРґРё</label>
                 {{ form.name }}
                 {% if form.name.errors %}<div class="field-errors" data-i18n-message>{{ form.name.errors|join:", " }}</div>{% endif %}
             </div>
 
             <div class="form-grid form-grid-2 spacer-top">
                 <div class="field-group">
-                    <label for="{{ form.captain_name.id_for_label }}" data-i18n="public_reg.participant_name">Ім'я контактної особи (капітан)</label>
+                    <label for="{{ form.captain_name.id_for_label }}" data-i18n="public_reg.participant_name">Р†Рј'СЏ РєРѕРЅС‚Р°РєС‚РЅРѕС— РѕСЃРѕР±Рё (РєР°РїС–С‚Р°РЅ)</label>
                     {{ form.captain_name }}
                     {% if form.captain_name.errors %}<div class="field-errors" data-i18n-message>{{ form.captain_name.errors|join:", " }}</div>{% endif %}
                 </div>
 
                 <div class="field-group">
-                    <label for="{{ form.captain_email.id_for_label }}" data-i18n="public_reg.participant_email">Електронна пошта контактної особи (капітан)</label>
+                    <label for="{{ form.captain_email.id_for_label }}" data-i18n="public_reg.participant_email">Р•Р»РµРєС‚СЂРѕРЅРЅР° РїРѕС€С‚Р° РєРѕРЅС‚Р°РєС‚РЅРѕС— РѕСЃРѕР±Рё (РєР°РїС–С‚Р°РЅ)</label>
                     {{ form.captain_email }}
                     {% if form.captain_email.errors %}<div class="field-errors" data-i18n-message>{{ form.captain_email.errors|join:", " }}</div>{% endif %}
                 </div>
             </div>
 
             <div class="field-group spacer-top">
-                <label for="{{ form.school.id_for_label }}" data-i18n="common.school">Школа</label>
+                <label for="{{ form.school.id_for_label }}" data-i18n="common.school">РЁРєРѕР»Р°</label>
                 {{ form.school }}
                 {% if form.school.errors %}<div class="field-errors" data-i18n-message>{{ form.school.errors|join:", " }}</div>{% endif %}
             </div>
 
             <div class="form-grid form-grid-2 spacer-top">
                 <div class="field-group">
-                    <label for="{{ form.preferred_contact_method.id_for_label }}" data-i18n="common.contact_method">Зручний спосіб зв'язку</label>
+                    <label for="{{ form.preferred_contact_method.id_for_label }}" data-i18n="common.contact_method">Р—СЂСѓС‡РЅРёР№ СЃРїРѕСЃС–Р± Р·РІ'СЏР·РєСѓ</label>
                     {{ form.preferred_contact_method }}
                     {% if form.preferred_contact_method.errors %}<div class="field-errors" data-i18n-message>{{ form.preferred_contact_method.errors|join:", " }}</div>{% endif %}
                 </div>
 
-                <div class="field-group">
-                    <label for="{{ form.preferred_contact_value.id_for_label }}" data-i18n="common.contact_value">Контакт для зв'язку</label>
+                <div class="field-group" id="contact-value-group">
+                    <label for="{{ form.preferred_contact_value.id_for_label }}" data-i18n="common.contact_value">РљРѕРЅС‚Р°РєС‚ РґР»СЏ Р·РІ'СЏР·РєСѓ</label>
                     {{ form.preferred_contact_value }}
                     {% if form.preferred_contact_value.errors %}<div class="field-errors" data-i18n-message>{{ form.preferred_contact_value.errors|join:", " }}</div>{% endif %}
                 </div>
             </div>
 
+            <div id="verification-notice" class="spacer-top" style="display: none;">
+                <div id="tg-notice" class="notice" style="display: none; border-color: #3b82f6; background: #eff6ff; color: #1e40af;">
+                    {% if request.user.is_tg_verified %}
+                        <span style="color: #059669;">вњ… Telegram РїС–РґС‚РІРµСЂРґР¶РµРЅРѕ</span>
+                    {% else %}
+                        <span style="color: #dc2626;">вќЊ Telegram РЅРµ РїС–РґС‚РІРµСЂРґР¶РµРЅРѕ.</span>
+                        <a href="{% url 'profile_settings' %}" style="color: #2563eb; font-weight: 700;">РџРµСЂРµР№С‚Рё РґРѕ РїС–РґС‚РІРµСЂРґР¶РµРЅРЅСЏ</a>
+                    {% endif %}
+                </div>
+                <div id="discord-notice" class="notice" style="display: none; border-color: #3b82f6; background: #eff6ff; color: #1e40af;">
+                    {% if request.user.is_discord_verified %}
+                        <span style="color: #059669;">вњ… Discord РїС–РґС‚РІРµСЂРґР¶РµРЅРѕ</span>
+                    {% else %}
+                        <span style="color: #dc2626;">вќЊ Discord РЅРµ РїС–РґС‚РІРµСЂРґР¶РµРЅРѕ.</span>
+                        <a href="{% url 'profile_settings' %}" style="color: #2563eb; font-weight: 700;">РџРµСЂРµР№С‚Рё РґРѕ РїС–РґС‚РІРµСЂРґР¶РµРЅРЅСЏ</a>
+                    {% endif %}
+                </div>
+            </div>
+
             <div class="toolbar spacer-top">
                 <button class="button-success" type="submit">
-                    {% if mode == 'edit' %}<span data-i18n="common.save_changes">Зберегти зміни</span>{% else %}<span data-i18n="create_team.title.create">Створити команду</span>{% endif %}
+                    {% if mode == 'edit' %}<span data-i18n="common.save_changes">Р—Р±РµСЂРµРіС‚Рё Р·РјС–РЅРё</span>{% else %}<span data-i18n="create_team.title.create">РЎС‚РІРѕСЂРёС‚Рё РєРѕРјР°РЅРґСѓ</span>{% endif %}
                 </button>
-                <a class="button-secondary" href="{% if next_url %}{{ next_url }}{% else %}{% url 'profile' %}{% endif %}" data-i18n="team.hero.back">Назад</a>
+                <a class="button-secondary" href="{% if next_url %}{{ next_url }}{% else %}{% url 'profile' %}{% endif %}" data-i18n="team.hero.back">РќР°Р·Р°Рґ</a>
             </div>
         </form>
     </section>
@@ -76,7 +95,7 @@
     <script src="{% static 'js/autocomplete.js' %}"></script>
     <script>
         (function () {
-            initAutocomplete('input[name="school"]', {
+            const schoolAutocomplete = initAutocomplete('input[name="school"]', {
                 endpoint: '/api/schools/autocomplete/',
                 minLength: 2
             });
@@ -85,6 +104,62 @@
                 endpoint: '/api/contacts/autocomplete/',
                 minLength: 1
             });
+
+            // Contact verification toggle
+            const methodField = document.querySelector('select[name="preferred_contact_method"]');
+            const noticeContainer = document.getElementById('verification-notice');
+            const tgNotice = document.getElementById('tg-notice');
+            const discordNotice = document.getElementById('discord-notice');
+            const contactValueGroup = document.getElementById('contact-value-group');
+
+            function updateNotices() {
+                const val = methodField.value;
+                noticeContainer.style.display = 'none';
+                tgNotice.style.display = 'none';
+                discordNotice.style.display = 'none';
+                contactValueGroup.style.display = 'block';
+
+                if (val === 'telegram') {
+                    noticeContainer.style.display = 'block';
+                    tgNotice.style.display = 'block';
+                    contactValueGroup.style.display = 'none';
+                } else if (val === 'discord') {
+                    noticeContainer.style.display = 'block';
+                    discordNotice.style.display = 'block';
+                    contactValueGroup.style.display = 'none';
+                }
+            }
+
+            if (methodField) {
+                methodField.addEventListener('change', updateNotices);
+                updateNotices();
+            }
+
+            // Form submission validation
+            const form = document.querySelector('form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    const schoolInput = form.querySelector('input[name="school"]');
+                    if (schoolInput && schoolInput.value.trim().length > 0 && schoolInput.dataset.selected !== "true") {
+                        // Check if the current value exactly matches any of the already loaded options
+                        // (This is a fallback in case they typed correctly but didn't click)
+                        // But for now, let's just force the click for 100% certainty.
+
+                        e.preventDefault();
+                        schoolInput.classList.add('autocomplete-invalid');
+                        schoolInput.focus();
+
+                        let errorDiv = form.querySelector('.school-error-msg');
+                        if (!errorDiv) {
+                            errorDiv = document.createElement('div');
+                            errorDiv.className = 'field-errors school-error-msg';
+                            errorDiv.style.marginTop = '8px';
+                            errorDiv.textContent = 'Р‘СѓРґСЊ Р»Р°СЃРєР°, РѕР±РµСЂС–С‚СЊ С€РєРѕР»Сѓ Р·С– СЃРїРёСЃРєСѓ.';
+                            schoolInput.parentNode.appendChild(errorDiv);
+                        }
+                    }
+                });
+            }
         })();
     </script>
 {% endblock %}

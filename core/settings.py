@@ -9,6 +9,7 @@ from pathlib import Path
 from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
+import sys
 try:
     import dj_database_url
 except ImportError:  # pragma: no cover - local fallback for incomplete environments
@@ -41,7 +42,7 @@ default_allowed_hosts = [
     "localhost",
     "testserver",
     "serverdenis.pp.ua",
-    "tournament-platform-production-5888.up.railway.app",
+    "calculator-112.up.railway.app",
 ]
 if RENDER_EXTERNAL_HOSTNAME:
     default_allowed_hosts.append(RENDER_EXTERNAL_HOSTNAME)
@@ -101,43 +102,34 @@ TEMPLATES = [
 WSGI_APPLICATION = "core.wsgi.application"
 
 
-# Database configuration: prefer DATABASE_URL (Render), then individual vars, then SQLite
-database_url = env("DATABASE_URL")
-db_name = env("DB_NAME")
-db_user = env("DB_USER")
-db_password = env("DB_PASSWORD")
-db_host = env("DB_HOST")
-db_port = env("DB_PORT")
+# Отримуємо URL бази
+DATABASE_URL = os.getenv('DATABASE_URL')
 
-if database_url and dj_database_url:
+# Якщо ми запускаємо collectstatic, нам база не потрібна
+# 'collectstatic' in sys.argv перевіряє, чи ми зараз збираємо статику
+if 'collectstatic' in sys.argv or os.getenv('RAILWAY_ENVIRONMENT_NAME') is None and not DATABASE_URL:
     DATABASES = {
-        "default": dj_database_url.parse(database_url)
-    }
-elif database_url:
-    raise ImproperlyConfigured(
-        "DATABASE_URL задано, але пакет dj-database-url не встановлений."
-    )
-elif all([db_name, db_user, db_password, db_host, db_port]):
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": db_name,
-            "USER": db_user,
-            "PASSWORD": db_password,
-            "HOST": db_host,
-            "PORT": db_port,
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
 else:
     DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
+        'default': dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+        )
     }
 
 
+
 AUTH_USER_MODEL = "users.CustomUser"
+
+AUTHENTICATION_BACKENDS = [
+    "users.backends.EmailOrUsernameModelBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
 
 LOGIN_URL = "/login/"
 LOGIN_REDIRECT_URL = "/redirect/"
@@ -152,10 +144,7 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+        "NAME": "users.validators.CustomSimplePasswordValidator",
     },
 ]
 
@@ -256,3 +245,10 @@ CSRF_COOKIE_SECURE = not DEBUG
 SECURE_HSTS_SECONDS = 31536000 if not DEBUG else 0
 SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG
 SECURE_HSTS_PRELOAD = not DEBUG
+
+# Bot Settings
+TELEGRAM_BOT_TOKEN = env("TELEGRAM_BOT_TOKEN")
+TELEGRAM_BOT_USERNAME = env("TELEGRAM_BOT_USERNAME", "Tournament_manager_bot")
+BOT_API_TOKEN = env("BOT_API_TOKEN", "ad0209")
+DISCORD_BOT_TOKEN = env("DISCORD_BOT_TOKEN")
+DISCORD_INVITE_URL = env("DISCORD_INVITE_URL", "")

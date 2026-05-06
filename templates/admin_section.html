@@ -31,6 +31,33 @@
             border-radius: 8px;
             border: 1px solid var(--border);
         }
+        .filter-toggle {
+            display: inline-flex;
+            gap: 0;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md, 8px);
+            overflow: hidden;
+        }
+        .filter-toggle button {
+            padding: 6px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            border: none;
+            background: transparent;
+            color: var(--muted);
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+        }
+        .filter-toggle button:not(:last-child) {
+            border-right: 1px solid var(--border);
+        }
+        .filter-toggle button.active {
+            background: var(--accent, #6366f1);
+            color: #fff;
+        }
+        .filter-toggle button:hover:not(.active) {
+            background: var(--surface-strong);
+        }
     </style>
 {% endblock %}
 
@@ -259,7 +286,11 @@
                     {% for user in pending_users %}
                         <div class="item-card">
                             <div class="section-head">
-                                <h3>{{ user.username }}</h3>
+                                <h3>
+                                    <a href="{% url 'public_profile' user.id %}" class="user-profile-link user-profile-link--inline user-profile-link--compact" style="padding:0;">
+                                        {{ user.username }}
+                                    </a>
+                                </h3>
                                 <span class="status-badge status-pending" data-i18n="role.{{ user.role }}">{{ user.get_role_display }}</span>
                             </div>
                             <div class="section-note">{{ user.email|default:"-" }}</div>
@@ -283,7 +314,11 @@
                     {% for user in all_users %}
                         <div class="item-card">
                             <div class="section-head">
-                                <h3>{{ user.username }}</h3>
+                                <h3>
+                                    <a href="{% url 'public_profile' user.id %}" class="user-profile-link user-profile-link--inline user-profile-link--compact" style="padding:0;">
+                                        {{ user.username }}
+                                    </a>
+                                </h3>
                                 <div class="toolbar">
                                     <span class="status-badge status-registration" data-i18n="role.{{ user.role }}">{{ user.get_role_display }}</span>
                                     {% if not user.is_approved %}<span class="status-badge status-pending" data-i18n="admin.users.status_pending">очікує</span>{% endif %}
@@ -291,7 +326,19 @@
                             </div>
                             <div class="section-note">{{ user.email|default:"-" }}</div>
                             <div class="toolbar spacer-top" style="gap: 8px; flex-wrap: wrap;">
-                                {% if user.id != request.user.id %}
+                                {% if user.id == request.user.id %}
+                                    <span class="section-note" data-i18n="admin.users.current_user">Ви (поточний користувач)</span>
+                                {% elif user.role == 'admin' and not request.user.is_superuser or user.is_superuser and not request.user.is_superuser %}
+                                    <form style="display:flex; gap:6px; align-items: center; flex: 1; min-width: 200px;">
+                                        <select name="role" class="button-compact" style="font-size:12px; height: 36px; flex: 1; opacity: 0.5; cursor: not-allowed;" disabled>
+                                            {% for value, label in role_choices %}
+                                                <option value="{{ value }}"{% if user.role == value %} selected{% endif %}>{{ label }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <button class="button" type="button" disabled style="height: 36px; padding: 0 12px; white-space: nowrap; opacity: 0.5; cursor: not-allowed;" data-i18n="admin.users.save_role" title="Тільки суперкористувач може змінювати роль адміністраторів">Зберегти роль</button>
+                                    </form>
+                                    <button class="button-danger" type="button" disabled style="height: 36px; width: 36px; display: flex; align-items: center; justify-content: center; opacity: 0.5; cursor: not-allowed;" title="Тільки суперкористувач може видаляти адміністраторів" data-i18n="admin.users.delete">×</button>
+                                {% else %}
                                     <form method="post" action="{% url 'update_user_role' user.id %}" style="display:flex; gap:6px; align-items: center; flex: 1; min-width: 200px;">
                                         {% csrf_token %}
                                         <select name="role" class="button-compact" style="font-size:12px; height: 36px; flex: 1;">
@@ -305,8 +352,6 @@
                                         {% csrf_token %}
                                         <button class="button-danger" type="submit" data-i18n="admin.users.delete" style="height: 36px; width: 36px; display: flex; align-items: center; justify-content: center;">×</button>
                                     </form>
-                                {% else %}
-                                    <span class="section-note" data-i18n="admin.users.current_user">Ви (поточний користувач)</span>
                                 {% endif %}
                             </div>
                         </div>
@@ -318,11 +363,17 @@
         <section class="section">
             <div class="section-head">
                 <h2 class="section-title" data-i18n="admin.hero.all_tournaments.title">Всі турніри</h2>
-                <a class="button" href="{% url 'create_tournament' %}" data-i18n="admin.sidebar.create_tournament">+ Створити турнир</a>
+                <div class="toolbar" style="gap: 8px;">
+                    <div class="filter-toggle" data-filter-target="all-tournaments-list">
+                        <button class="active" data-filter="all" data-i18n="admin.filter.all">Усі</button>
+                        <button data-filter="mine" data-i18n="admin.filter.mine">Мої</button>
+                    </div>
+                    <a class="button" href="{% url 'create_tournament' %}" data-i18n="admin.sidebar.create_tournament">+ Створити турнир</a>
+                </div>
             </div>
-            <div class="list spacer-top">
+            <div class="list spacer-top" id="all-tournaments-list">
                 {% for tournament in tournaments %}
-                    <div class="item-card">
+                    <div class="item-card" data-owner="{% if tournament.created_by_id == request.user.id %}mine{% else %}other{% endif %}">
                         <div class="section-head">
                             <div style="display:flex; gap:16px; align-items:center;">
                                 <img src="{% if tournament.banner_image %}{{ tournament.banner_image.url }}{% else %}https://placehold.co/100x60?text=No+Banner{% endif %}" class="item-banner-preview" alt="">
@@ -346,16 +397,23 @@
                     <p class="empty" data-i18n="admin.tournaments.empty">Турнірів ще не створено.</p>
                 {% endfor %}
             </div>
+            <p class="empty" id="all-tournaments-empty" style="display:none;" data-i18n="admin.tournaments.filter_empty">Немає турнірів за цим фільтром.</p>
         </section>
     {% elif current_section == 'active_tournaments' %}
         <section class="section">
             <div class="section-head">
                 <h2 class="section-title" data-i18n="admin.tournaments.active.title">Активні турнири</h2>
-                <a class="button" href="{% url 'create_tournament' %}" data-i18n="admin.sidebar.create_tournament">+ Створити турнир</a>
+                <div class="toolbar" style="gap: 8px;">
+                    <div class="filter-toggle" data-filter-target="active-tournaments-list">
+                        <button class="active" data-filter="all" data-i18n="admin.filter.all">Усі</button>
+                        <button data-filter="mine" data-i18n="admin.filter.mine">Мої</button>
+                    </div>
+                    <a class="button" href="{% url 'create_tournament' %}" data-i18n="admin.sidebar.create_tournament">+ Створити турнир</a>
+                </div>
             </div>
-            <div class="list spacer-top">
+            <div class="list spacer-top" id="active-tournaments-list">
                 {% for tournament in active_tournaments %}
-                    <div class="item-card">
+                    <div class="item-card" data-owner="{% if tournament.created_by_id == request.user.id %}mine{% else %}other{% endif %}">
                         <div class="section-head">
                             <div style="display:flex; gap:16px; align-items:center;">
                                 <img src="{% if tournament.banner_image %}{{ tournament.banner_image.url }}{% else %}https://placehold.co/100x60?text=No+Banner{% endif %}" class="item-banner-preview" alt="">
@@ -377,6 +435,7 @@
                     </div>
                 {% endfor %}
             </div>
+            <p class="empty" id="active-tournaments-empty" style="display:none;" data-i18n="admin.tournaments.filter_empty">Немає турнірів за цим фільтром.</p>
         </section>
     {% elif current_section == 'teams' %}
         <section class="section">
@@ -588,6 +647,46 @@
                     draftField.disabled = false;
                 });
             }
+        })();
+
+        /* ── Tournament filter toggle (Усі / Мої) ── */
+        (function() {
+            document.querySelectorAll('.filter-toggle').forEach(function(toggle) {
+                var targetId = toggle.getAttribute('data-filter-target');
+                var list = document.getElementById(targetId);
+                if (!list) return;
+                var emptyEl = document.getElementById(targetId.replace('-list', '-empty'));
+                var buttons = toggle.querySelectorAll('button[data-filter]');
+
+                buttons.forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        buttons.forEach(function(b) { b.classList.remove('active'); });
+                        btn.classList.add('active');
+
+                        var filter = btn.getAttribute('data-filter');
+                        var cards = list.querySelectorAll('.item-card[data-owner]');
+                        var visibleCount = 0;
+
+                        cards.forEach(function(card) {
+                            if (filter === 'all') {
+                                card.style.display = '';
+                                visibleCount++;
+                            } else if (filter === 'mine') {
+                                if (card.getAttribute('data-owner') === 'mine') {
+                                    card.style.display = '';
+                                    visibleCount++;
+                                } else {
+                                    card.style.display = 'none';
+                                }
+                            }
+                        });
+
+                        if (emptyEl) {
+                            emptyEl.style.display = visibleCount === 0 ? '' : 'none';
+                        }
+                    });
+                });
+            });
         })();
     </script>
 {% endblock %}

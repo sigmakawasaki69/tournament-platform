@@ -25,3 +25,17 @@ desktop.ini
 .railway/
 venv/
 env/
+# Медиа-файлы и тестовые папки
+test_media_root/
+media/
+tournament-media-*/
+
+# Временные скрипты и кэш
+patch_html.py
+__pycache__/
+*.py[cod]
+
+# Окружение и секреты (на всякий случай, если еще нет)
+.env
+venv/
+env/
