@@ -470,7 +470,7 @@ class Task(models.Model):
         default=list,
         verbose_name="Формат відповіді",
     )
-    is_draft = models.BooleanField(default=True, verbose_name="Чернетка")
+    is_draft = models.BooleanField(default=False, verbose_name="Чернетка")
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,

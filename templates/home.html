@@ -24,9 +24,24 @@
     {% if home_team %}
         <section class="section">
             <div class="section-head">
-                <div>
-                    <h2 class="section-title" data-i18n="home.team_block.title">Швидкий блок команди</h2>
-                    <div class="section-note" data-i18n="home.team_block.note">З головної сторінки можна одразу перейти у свою команду, на турнір, до завдань і результатів.</div>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap;">
+                    <div>
+                        <h2 class="section-title" data-i18n="home.team_block.title">Швидкий блок команди</h2>
+                        <div class="section-note" data-i18n="home.team_block.note">З головної сторінки можна одразу перейти у свою команду, на турнір, до завдань і результатів.</div>
+                    </div>
+                    {% if my_teams|length > 1 %}
+                    <form action="{% url 'set_primary_team' %}" method="post" class="team-switcher-form">
+                        {% csrf_token %}
+                        <div class="field-group" style="margin: 0;">
+                            <label style="font-size: 11px; margin-bottom: 4px; text-transform: uppercase; color: var(--muted); font-weight: 800;">Виберіть команду</label>
+                            <select name="team_id" onchange="this.form.submit()" class="form-input" style="min-width: 200px; padding: 8px 12px; font-size: 13px;">
+                                {% for t in my_teams %}
+                                    <option value="{{ t.id }}" {% if t.id == home_team.id %}selected{% endif %}>{{ t.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </form>
+                    {% endif %}
                 </div>
             </div>
             <div class="quick-grid">
