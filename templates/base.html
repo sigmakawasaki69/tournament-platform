@@ -7,8 +7,10 @@
     <script>
         (function () {
             try {
-                const savedTheme = localStorage.getItem("tp-theme") || "light";
-                const savedLanguage = localStorage.getItem("tp-language") || "uk";
+                const savedTheme = "light";
+                localStorage.setItem("tp-theme", savedTheme);
+                const savedLanguage = "uk";
+                localStorage.setItem("tp-language", savedLanguage);
                 document.documentElement.dataset.theme = savedTheme;
                 document.documentElement.lang = savedLanguage;
             } catch (error) {
@@ -22,6 +24,19 @@
     {% block extra_head %}{% endblock %}
 </head>
 <body>
+    <div class="cinema-video-stage" aria-hidden="true">
+        <video
+            id="cinema-bg-video"
+            class="cinema-bg-video"
+            muted
+            playsinline
+            preload="auto"
+        >
+            <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260328_083109_283f3553-e28f-428b-a723-d639c617eb2b.mp4" type="video/mp4">
+        </video>
+        <div class="cinema-video-gradient"></div>
+    </div>
+
     <div id="sidebar-drawer" class="drawer">
         <div class="drawer-header">
             <div class="drawer-title" data-i18n="nav.management.title">Меню навігації</div>
@@ -89,22 +104,21 @@
                     <span class="bar"></span>
                 </button>
                 
-                <div class="topbar-prefs">
-                    <button type="button" class="btn-icon secondary" data-theme-option="light" title="Light">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-                    </button>
-                    <button type="button" class="btn-icon secondary" data-theme-option="dark" title="Dark">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
-                    </button>
-                    <div class="v-divider"></div>
-                    <button type="button" class="btn-text p-small" data-language-option="uk">UA</button>
-                    <button type="button" class="btn-text p-small" data-language-option="en">EN</button>
-                </div>
-
                 <a href="{% url 'home' %}" class="topbar-logo-link">
-                    <div class="topbar-title" data-i18n="brand.title">Турнірна платформа</div>
+                    <div class="topbar-mark" aria-hidden="true">TP</div>
+                    <div class="topbar-title">Турнірна платформа<sup>®</sup></div>
                 </a>
             </div>
+
+            <nav class="topbar-nav" aria-label="Головна навігація">
+                <a href="{% url 'home' %}">Головна</a>
+                <a href="{% url 'home' %}#tournaments">Турніри</a>
+                <a href="{% url 'messages' %}">Оновлення</a>
+                <a href="{% url 'certificates' %}">Сертифікати</a>
+                {% if request.user.is_authenticated %}
+                    <a href="{% url 'profile' %}">Профіль</a>
+                {% endif %}
+            </nav>
 
             <div class="topbar-right">
                 {% if request.user.is_authenticated %}
@@ -135,6 +149,158 @@
     </div>
 
     <script src="{% static 'js/ui_preferences.js' %}"></script>
+    <script>
+        (function () {
+            const video = document.getElementById('cinema-bg-video');
+            if (!video) {
+                return;
+            }
+
+            const fadeDuration = 0.5;
+            let rafId = null;
+
+            function setOpacity(value) {
+                video.style.opacity = String(Math.max(0, Math.min(1, value)));
+            }
+
+            function monitorVideo() {
+                const duration = video.duration || 0;
+                const currentTime = video.currentTime || 0;
+
+                if (duration > fadeDuration) {
+                    if (currentTime < fadeDuration) {
+                        setOpacity(currentTime / fadeDuration);
+                    } else if (duration - currentTime < fadeDuration) {
+                        setOpacity((duration - currentTime) / fadeDuration);
+                    } else {
+                        setOpacity(1);
+                    }
+                }
+
+                rafId = window.requestAnimationFrame(monitorVideo);
+            }
+
+            function playFromStart() {
+                setOpacity(0);
+                window.setTimeout(function () {
+                    video.currentTime = 0;
+                    const playPromise = video.play();
+                    if (playPromise && typeof playPromise.catch === 'function') {
+                        playPromise.catch(function () {});
+                    }
+                }, 100);
+            }
+
+            video.addEventListener('ended', playFromStart);
+            video.addEventListener('loadedmetadata', function () {
+                playFromStart();
+                if (!rafId) {
+                    monitorVideo();
+                }
+            });
+
+            if (video.readyState >= 1) {
+                playFromStart();
+                monitorVideo();
+            } else {
+                video.load();
+            }
+        }());
+    </script>
+    <script>
+        (function () {
+            const revealItems = Array.from(document.querySelectorAll(
+                '.reveal, .page-shell > .section, .page-shell > .card, .auth-card, .hero, .admin-hero'
+            ));
+            if (!revealItems.length) {
+                return;
+            }
+
+            const observer = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.16, rootMargin: '0px 0px -8% 0px' });
+
+            revealItems.forEach(function (item, index) {
+                item.classList.add('reveal');
+                if (!item.style.getPropertyValue('--reveal-delay')) {
+                    item.style.setProperty('--reveal-delay', Math.min(index * 45, 280) + 'ms');
+                }
+                observer.observe(item);
+            });
+        }());
+    </script>
+    <script>
+        (function () {
+            const buttons = Array.from(document.querySelectorAll(
+                '.button, .button-secondary, .button-compact, .btn-text, .chip, .t-nav-btn, .carousel-btn'
+            ));
+
+            if (!buttons.length || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                return;
+            }
+
+            buttons.forEach(function (button) {
+                button.classList.add('magnetic-button');
+                const state = {
+                    currentX: 0,
+                    currentY: 0,
+                    targetX: 0,
+                    targetY: 0,
+                    rafId: null,
+                };
+
+                function render() {
+                    state.currentX += (state.targetX - state.currentX) * 0.16;
+                    state.currentY += (state.targetY - state.currentY) * 0.16;
+
+                    if (
+                        Math.abs(state.targetX - state.currentX) < 0.03 &&
+                        Math.abs(state.targetY - state.currentY) < 0.03
+                    ) {
+                        state.currentX = state.targetX;
+                        state.currentY = state.targetY;
+                    }
+
+                    button.style.setProperty('--magnetic-x', state.currentX.toFixed(2) + 'px');
+                    button.style.setProperty('--magnetic-y', state.currentY.toFixed(2) + 'px');
+
+                    if (state.currentX !== state.targetX || state.currentY !== state.targetY) {
+                        state.rafId = window.requestAnimationFrame(render);
+                    } else {
+                        state.rafId = null;
+                    }
+                }
+
+                function startRender() {
+                    if (!state.rafId) {
+                        state.rafId = window.requestAnimationFrame(render);
+                    }
+                }
+
+                button.addEventListener('mousemove', function (event) {
+                    const rect = button.getBoundingClientRect();
+                    const x = event.clientX - rect.left - rect.width / 2;
+                    const y = event.clientY - rect.top - rect.height / 2;
+                    const strength = button.classList.contains('button') ? 0.26 : 0.18;
+
+                    state.targetX = x * strength;
+                    state.targetY = y * strength;
+                    startRender();
+                });
+
+                button.addEventListener('mouseleave', function () {
+                    state.targetX = 0;
+                    state.targetY = 0;
+                    startRender();
+                });
+            });
+        }());
+    </script>
     <script rendered="true">
         (function() {
             // Drawer logic
