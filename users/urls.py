@@ -74,6 +74,7 @@ from .views import (
     contact_autocomplete,
     api_register_social_code,
     verify_social_code,
+    set_primary_team,
 )
 
 urlpatterns = [
@@ -159,4 +160,5 @@ urlpatterns = [
     # API endpoints
     path('api/schools/autocomplete/', school_autocomplete, name='school_autocomplete'),
     path('api/contacts/autocomplete/', contact_autocomplete, name='contact_autocomplete'),
+    path('set-primary-team/', set_primary_team, name='set_primary_team'),
 ]

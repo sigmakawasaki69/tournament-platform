@@ -430,7 +430,8 @@ def home(request):
     tournament_rows = build_public_tournament_rows(leaderboard_builder=build_tournament_leaderboard)
     announcements = build_public_announcements()
     notification_context = build_notification_nav_context(request.user)
-    home_team, home_team_quick_overview = get_primary_team_with_quick_overview(request.user)
+    primary_team_id = request.session.get('primary_team_id')
+    home_team, home_team_quick_overview, my_teams = get_primary_team_with_quick_overview(request.user, primary_team_id=primary_team_id)
     filter_status = request.GET.get('status', 'all')
     filter_options = {'all', 'registration', 'running', 'finished', 'scheduled'}
     if filter_status not in filter_options:
@@ -509,6 +510,7 @@ def home(request):
         'announcements': announcements,
         'home_team': home_team,
         'home_team_quick_overview': home_team_quick_overview,
+        'my_teams': my_teams,
         **notification_context,
     })
 
@@ -1673,6 +1675,9 @@ def profile_view(request):
         Q(team__captain_user=request.user) | Q(members__user=request.user)
     ).distinct())
 
+    primary_team_id = request.session.get('primary_team_id')
+    active_team, _, _ = get_primary_team_with_quick_overview(request.user, primary_team_id=primary_team_id)
+
     involved_tournament_ids = [reg.tournament_id for reg in my_registrations]
 
     visible_tournaments = list(
@@ -1744,6 +1749,7 @@ def profile_view(request):
     return render(request, 'profile.html', {
         'profile_user': request.user,
         'my_teams': my_teams,
+        'active_team': active_team,
         'tournaments_with_state': tournaments_with_state,
         'announcements': announcements,
         'certificates': certificates,
@@ -1922,13 +1928,34 @@ def profile_settings(request):
 
 
 @login_required
+def set_primary_team(request):
+    if request.method == 'POST':
+        team_id = request.POST.get('team_id')
+        if team_id:
+            request.session['primary_team_id'] = team_id
+            messages.success(request, 'Активну команду змінено.')
+    
+    # Redirect back to where the user came from or to profile
+    return redirect(request.META.get('HTTP_REFERER', reverse('profile')))
+
+
+@login_required
 def my_team_view(request):
     if not is_participant_user(request.user) and not request.user.is_superuser:
         return redirect('redirect_by_role')
 
-    team = Team.objects.filter(
+    primary_team_id = request.session.get('primary_team_id')
+    teams = Team.objects.filter(
         Q(captain_user=request.user) | Q(participants__email=request.user.email)
-    ).order_by('name').first()
+    ).distinct()
+
+    team = None
+    if primary_team_id:
+        team = teams.filter(id=primary_team_id).first()
+    
+    if not team:
+        team = teams.order_by('name').first()
+
     if team is not None:
         return redirect('team_detail', team_id=team.id)
     return redirect('create_team')
