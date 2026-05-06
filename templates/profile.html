@@ -162,9 +162,15 @@
                     </div>
 
                     {% if item.my_registration and item.my_registration.status == "approved" %}
-                        <div class="message-box success spacer-top" data-i18n="profile.tournaments.status_approved">Заявку схвалено. Команда допущена до турніру.</div>
+                        <div class="message-box success spacer-top">
+                            <span data-i18n="profile.tournaments.status_approved">Заявку схвалено. Команда допущена до турніру.</span><br>
+                            Ви зареєстровані за команду <strong>{{ item.my_registration.team.name }}</strong>.
+                        </div>
                     {% elif item.my_registration and item.my_registration.status == "pending" %}
-                        <div class="message-box warn spacer-top" data-i18n="profile.tournaments.status_pending">Заявку подано. Очікується рішення організатора.</div>
+                        <div class="message-box warn spacer-top">
+                            <span data-i18n="profile.tournaments.status_pending">Заявку подано. Очікується рішення організатора.</span><br>
+                            Ви подали заявку від команди <strong>{{ item.my_registration.team.name }}</strong>.
+                        </div>
                     {% elif item.my_registration and item.my_registration.status == "rejected" %}
                         <div class="message-box error spacer-top" data-i18n="profile.tournaments.status_rejected">Попередню заявку відхилено.</div>
                     {% endif %}

@@ -67,9 +67,15 @@
                 <h2 class="section-title" data-i18n="public_tournament.registration_title">Реєстрація</h2>
                 
                 {% if existing_registration and existing_registration.status == "approved" %}
-                    <div class="message-box success spacer-top" data-i18n="public_tournament.reg_approved">Вашу заявку вже схвалено. Ви можете знайти цей турнір у своєму профілі.</div>
+                    <div class="message-box success spacer-top">
+                        <span data-i18n="public_tournament.reg_approved">Вашу заявку вже схвалено. Ви можете знайти цей турнір у своєму профілі.</span><br>
+                        Ви зареєстровані за команду <strong>{{ existing_registration.team.name }}</strong>.
+                    </div>
                 {% elif existing_registration and existing_registration.status == "pending" %}
-                    <div class="message-box warn spacer-top" data-i18n="public_tournament.reg_pending">Ваша заявка знаходиться на розгляді у організатора.</div>
+                    <div class="message-box warn spacer-top">
+                        <span data-i18n="public_tournament.reg_pending">Ваша заявка знаходиться на розгляді у організатора.</span><br>
+                        Ви подали заявку від команди <strong>{{ existing_registration.team.name }}</strong>.
+                    </div>
                 {% elif existing_registration and existing_registration.status == "rejected" %}
                     <div class="message-box error spacer-top" data-i18n="public_tournament.reg_rejected">Вашу попередню заявку було відхилено. Ви можете спробувати подати її ще раз.</div>
                 {% endif %}
