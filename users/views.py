@@ -799,9 +799,10 @@ def public_tournament_detail(request, tournament_id):
     )
 
     if request.user.is_authenticated:
+        from django.db.models import Q
         existing_registration = TournamentRegistration.objects.filter(
-            tournament=tournament,
-            team__captain_user=request.user,
+            Q(tournament=tournament) & 
+            (Q(team__captain_user=request.user) | Q(members__user=request.user)),
             status__in=[
                 TournamentRegistration.Status.PENDING,
                 TournamentRegistration.Status.APPROVED,
@@ -2003,9 +2004,10 @@ def register_team_for_tournament(request, tournament_id):
     if not tournament.is_registration_open:
         return redirect('public_tournament_detail', tournament_id=tournament.id)
 
+    from django.db.models import Q
     already_registered = TournamentRegistration.objects.filter(
-        tournament=tournament,
-        team__captain_user=request.user,
+        Q(tournament=tournament) & 
+        (Q(team__captain_user=request.user) | Q(members__user=request.user)),
         status__in=[
             TournamentRegistration.Status.PENDING,
             TournamentRegistration.Status.APPROVED,
@@ -2078,9 +2080,10 @@ def tournament_registration_options(request, tournament_id):
         return redirect('public_tournament_detail', tournament_id=tournament.id)
     
     # Check if already registered
+    from django.db.models import Q
     existing_registration = TournamentRegistration.objects.filter(
-        tournament=tournament,
-        team__captain_user=request.user,
+        Q(tournament=tournament) & 
+        (Q(team__captain_user=request.user) | Q(members__user=request.user)),
         status__in=[
             TournamentRegistration.Status.PENDING,
             TournamentRegistration.Status.APPROVED,
