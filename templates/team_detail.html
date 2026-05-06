@@ -208,6 +208,37 @@
         {% endif %}
     </section>
 
+    {% if tournament_history %}
+    <section class="section">
+        <div class="section-head">
+            <div>
+                <h2 class="section-title" data-i18n="team.history.title">Історія турнірів команди</h2>
+                <div class="section-note" data-i18n="team.history.note">Турніри, у яких команда брала участь або бере участь зараз.</div>
+            </div>
+        </div>
+        <div class="list spacer-top">
+            {% for reg in tournament_history %}
+                <div class="item-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                        <div>
+                            <h3 style="margin: 0;">{{ reg.tournament.name }}</h3>
+                            <div class="meta-list">
+                                <span data-i18n="home.team_block.status">Статус</span>: 
+                                <span class="status-badge status-{{ reg.tournament.lifecycle_status }}" data-i18n-message>{{ reg.tournament.lifecycle_status_label }}</span>
+                                <br>
+                                <span data-i18n="admin.tournaments.start_date">Дата початку</span>: {{ reg.tournament.start_date|date:"d.m.Y" }}
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <a href="{% url 'public_tournament_detail' reg.tournament.id %}" class="button-compact" data-i18n="common.view">Переглянути</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
     <section class="grid-2">
         <div class="card">
             <div class="section-head">

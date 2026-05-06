@@ -128,6 +128,11 @@ def build_team_detail_context(request, team, participant_form=None):
         for participant in participants:
             participant.linked_user = users_by_email.get(participant.email.lower())
 
+    # Tournament history
+    tournament_history = team.registrations.filter(
+        status=TournamentRegistration.Status.APPROVED
+    ).select_related('tournament').order_by('-tournament__start_date')
+
     return {
         'team': team,
         'annotated_participants': participants,
@@ -135,6 +140,7 @@ def build_team_detail_context(request, team, participant_form=None):
         'participants_count': team.members_count,
         'submissions': submissions,
         'quick_overview': quick_overview,
+        'tournament_history': tournament_history,
         'participant_form': participant_form or ParticipantForm(),
         'can_manage_team': request.user.is_superuser or team.captain_user_id == request.user.id,
         'can_manage_roster': request.user.is_superuser or (
