@@ -248,7 +248,7 @@ class Team(models.Model):
         related_name="captain_teams",
         verbose_name="Прив'язаний користувач",
     )
-    name = models.CharField(max_length=255, verbose_name="Назва команди")
+    name = models.CharField(max_length=255, unique=True, verbose_name="Назва команди")
     captain_name = models.CharField(max_length=255, verbose_name="Ім'я контактної особи")
     captain_email = models.EmailField(verbose_name="Email контактної особи")
     school = models.CharField(

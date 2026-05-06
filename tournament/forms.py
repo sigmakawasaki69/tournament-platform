@@ -467,6 +467,21 @@ class TeamForm(forms.ModelForm):
             if not self.initial.get('preferred_contact_value'):
                 self.initial['preferred_contact_value'] = self.instance.effective_contact_value
 
+    def clean_name(self):
+        name = self.cleaned_data.get('name', '').strip()
+        if not name:
+            return name
+        
+        # Case-insensitive check
+        queryset = Team.objects.filter(name__iexact=name)
+        if self.instance and self.instance.pk:
+            queryset = queryset.exclude(pk=self.instance.pk)
+        
+        if queryset.exists():
+            raise ValidationError("Команда з такою назвою вже існує. Виберіть іншу назву.")
+        
+        return name
+
     def clean(self):
         cleaned_data = super().clean()
         cleaned_data['captain_name'] = (cleaned_data.get('captain_name') or '').strip()
