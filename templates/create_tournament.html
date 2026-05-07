@@ -127,6 +127,10 @@
                             <label data-i18n="admin.tournaments.label_banner_template">Або оберіть готовий шаблон банера</label>
                             {{ form.banner_template }}
                             {% if form.banner_template.errors %}<div class="field-errors">{{ form.banner_template.errors }}</div>{% endif %}
+                            <div id="banner-template-preview" style="margin-top:12px; {% if not form.instance.banner_template %}display:none;{% endif %}">
+                                <img id="template-preview-img" src="{% if form.instance.banner_template %}{{ form.instance.banner_template.image.url }}{% endif %}" alt="Template Preview" style="max-width:300px; border-radius:12px; display:block; border: 1px solid var(--border);">
+                                <small class="section-note" data-i18n="create_tournament.label.banner_template_preview">Попередній перегляд шаблону</small>
+                            </div>
                             <p class="section-note" data-i18n="create_tournament.label.banner_template_note">Якщо завантажено власний банер, він буде пріоритетним.</p>
                         </div>
                         <div class="field-group span-2">
@@ -443,6 +447,30 @@
                     const lang = document.documentElement.lang || 'uk';
                     const msg = lang === 'en' ? 'Banner will be removed after saving the form.' : 'Банер буде видалено після збереження форми.';
                     alert(msg);
+                });
+            }
+        })();
+
+        // Banner Template Preview
+        (function() {
+            const bannerTemplates = {
+                {% for t in banner_templates %}
+                    "{{ t.id }}": "{{ t.image.url }}",
+                {% endfor %}
+            };
+            const templateSelect = document.getElementById('{{ form.banner_template.id_for_label }}');
+            const templatePreviewWrap = document.getElementById('banner-template-preview');
+            const templatePreviewImg = document.getElementById('template-preview-img');
+
+            if (templateSelect && templatePreviewWrap && templatePreviewImg) {
+                templateSelect.addEventListener('change', function() {
+                    const val = this.value;
+                    if (val && bannerTemplates[val]) {
+                        templatePreviewImg.src = bannerTemplates[val];
+                        templatePreviewWrap.style.display = 'block';
+                    } else {
+                        templatePreviewWrap.style.display = 'none';
+                    }
                 });
             }
         })();

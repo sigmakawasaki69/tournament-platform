@@ -60,6 +60,7 @@ from tournament.models import (
     TeamInvitation,
     Tournament,
     TournamentRegistration,
+    BannerTemplate,
 )
 from tournament.services import RegistrationService, TournamentLifecycleService
 
@@ -1211,6 +1212,7 @@ def create_tournament(request):
             'form': form,
             'mode': 'create',
             'dashboard_url': dashboard_url,
+            'banner_templates': BannerTemplate.objects.all(),
         },
     )
 
@@ -1240,6 +1242,7 @@ def edit_tournament(request, tournament_id):
         'tournament': tournament,
         'tasks': tournament.tasks.all(),
         'dashboard_url': reverse('admin_active_tournaments') if is_admin_user(request.user) else get_dashboard_url_for_user(request.user),
+        'banner_templates': BannerTemplate.objects.all(),
     })
 
 
