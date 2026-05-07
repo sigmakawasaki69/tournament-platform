@@ -2239,7 +2239,21 @@
     };
 
     function initPasswordToggles() {
+        function syncPasswordToggleIcon(button, input) {
+            const eyeIcon = button.querySelector(".eye-icon");
+            const eyeOffIcon = button.querySelector(".eye-off-icon");
+            const isHidden = input.type === "password";
+
+            if (eyeIcon) eyeIcon.classList.toggle("hidden", isHidden);
+            if (eyeOffIcon) eyeOffIcon.classList.toggle("hidden", !isHidden);
+            button.setAttribute("aria-pressed", isHidden ? "false" : "true");
+        }
+
         document.querySelectorAll(".password-toggle").forEach(function (button) {
+            const wrapper = button.closest(".password-field-wrapper");
+            const initialInput = wrapper ? wrapper.querySelector("input") : null;
+            if (initialInput) syncPasswordToggleIcon(button, initialInput);
+
             button.addEventListener("click", function () {
                 const wrapper = button.closest(".password-field-wrapper");
                 if (!wrapper) return;
@@ -2249,17 +2263,7 @@
 
                 const isPassword = input.type === "password";
                 input.type = isPassword ? "text" : "password";
-
-                const eyeIcon = button.querySelector(".eye-icon");
-                const eyeOffIcon = button.querySelector(".eye-off-icon");
-
-                if (isPassword) {
-                    if (eyeIcon) eyeIcon.classList.add("hidden");
-                    if (eyeOffIcon) eyeOffIcon.classList.remove("hidden");
-                } else {
-                    if (eyeIcon) eyeIcon.classList.remove("hidden");
-                    if (eyeOffIcon) eyeOffIcon.classList.add("hidden");
-                }
+                syncPasswordToggleIcon(button, input);
             });
         });
     }
