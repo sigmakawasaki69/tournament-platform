@@ -443,7 +443,14 @@ class EvaluationAdmin(admin.ModelAdmin):
         "total_score",
         "evaluated_at",
     )
-    readonly_fields = ("assignment", "evaluated_at")
+    readonly_fields = ("evaluated_at",)  # assignment is no longer readonly by default to allow adding
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "assignment":
+            if is_jury(request.user):
+                # Jury members only see their own assignments
+                kwargs["queryset"] = JuryAssignment.objects.filter(jury_user=request.user)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -469,11 +476,25 @@ class EvaluationAdmin(admin.ModelAdmin):
         return obj in self.get_queryset(request)
 
     def has_change_permission(self, request, obj=None):
-        # Only admins/organizers may edit evaluations.
-        return is_super_admin(request.user) or is_admin_user(request.user) or is_organizer_user(request.user)
+        # Admins, organizers can edit all; Jury can edit their own.
+        if is_super_admin(request.user) or is_admin_user(request.user) or is_organizer_user(request.user):
+            return True
+        if is_jury(request.user):
+            if obj is None:
+                return True
+            return obj.assignment.jury_user_id == request.user.id
+        return False
 
     def has_add_permission(self, request):
-        return is_super_admin(request.user) or is_admin_user(request.user) or is_organizer_user(request.user)
+        return (
+            is_super_admin(request.user)
+            or is_admin_user(request.user)
+            or is_organizer_user(request.user)
+            or is_jury(request.user)
+        )
 
     def has_delete_permission(self, request, obj=None):
-        return self.has_change_permission(request, obj)
+        # Jury cannot delete evaluations (only admins/organizers).
+        if is_super_admin(request.user) or is_admin_user(request.user) or is_organizer_user(request.user):
+            return True
+        return False
