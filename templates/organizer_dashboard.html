@@ -36,7 +36,7 @@
                         <span class="status-badge status-{{ tournament.lifecycle_status }}" data-i18n="status.{{ tournament.lifecycle_status }}">{{ tournament.lifecycle_status_label }}</span>
                     </div>
                     <div class="section-note spacer-top">
-                        <span data-i18n="organizer.label.registration">Реєстрація</span>: {{ tournament.registration_start|date:"d.m.Y H:i"|default:"-" }} - {{ tournament.registration_end|date:"d.m.Y H:i"|default:"-" }} | <span data-i18n="organizer.label.tournament">Турнір</span>: {{ tournament.start_date|date:"d.m.Y H:i"|default:"-" }} - {{ tournament.end_date|date:"d.m.Y H:i"|default:"-" }}
+                        <span data-i18n="organizer.label.registration">Реєстрація</span>: <span data-timestamp="{{ tournament.registration_start.timestamp }}">{{ tournament.registration_start|date:"d.m.Y H:i"|default:"-" }}</span> - <span data-timestamp="{{ tournament.registration_end.timestamp }}">{{ tournament.registration_end|date:"d.m.Y H:i"|default:"-" }}</span> | <span data-i18n="organizer.label.tournament">Турнір</span>: <span data-timestamp="{{ tournament.start_date.timestamp }}">{{ tournament.start_date|date:"d.m.Y H:i"|default:"-" }}</span> - <span data-timestamp="{{ tournament.end_date.timestamp }}">{{ tournament.end_date|date:"d.m.Y H:i"|default:"-" }}</span>
                     </div>
                     <div class="toolbar spacer-top">
                         <a class="button" href="{% url 'edit_tournament' tournament.id %}" data-i18n="organizer.action.edit">Редагувати</a>
@@ -68,9 +68,9 @@
                         <span class="status-badge status-{{ reg.status }}" data-i18n="status.{{ reg.status }}">{{ reg.get_status_display }}</span>
                     </div>
                     <div class="section-note spacer-top">
-                        <strong>Контактна особа:</strong> {{ reg.team.captain_name }} ({{ reg.team.captain_email }})
+                        <strong data-i18n="Контактна особа">Контактна особа</strong>: {{ reg.team.captain_name }} ({{ reg.team.captain_email }})
                         {% if reg.members.all %}
-                            <br><strong>Учасники:</strong>
+                            <br><strong data-i18n="Учасники">Учасники</strong>:
                             {% for m in reg.members.all %}
                                 {{ m.full_name }}{% if not forloop.last %}, {% endif %}
                             {% endfor %}

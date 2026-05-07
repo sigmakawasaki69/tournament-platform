@@ -61,8 +61,8 @@
 <section class="section">
     <div class="section-head">
         <div>
-            <h2 class="section-title" style="color: #d97706;">🔔 Запрошення в команду</h2>
-            <div class="section-note">Вас запросили стати учасником наступних команд. Підтвердіть участь, щоб з'явитися
+            <h2 class="section-title" style="color: #d97706;"><span data-i18n="profile.invitations.title">🔔 Запрошення в команду</span></h2>
+            <div class="section-note" data-i18n="profile.invitations.note">Вас запросили стати учасником наступних команд. Підтвердіть участь, щоб з'явитися
                 у списку команди.</div>
         </div>
     </div>
@@ -72,11 +72,11 @@
             <div
                 style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
                 <div>
-                    <h3 style="margin: 0;">{{ invitation.team.name }}</h3>
-                    <div class="meta-list" style="margin-top: 4px;">Запросив: {{ invitation.team.captain_name }}</div>
+                    <h3 style="margin: 0;" data-i18n-message>{{ invitation.team.name }}</h3>
+                    <div class="meta-list" style="margin-top: 4px;"><span data-i18n="common.created_by">Запросив</span>: {{ invitation.team.captain_name }}</div>
                 </div>
                 <div class="toolbar" style="margin: 0;">
-                    <a class="button-success" href="{% url 'confirm_team_invitation' invitation.token %}">Прийняти
+                    <a class="button-success" href="{% url 'confirm_team_invitation' invitation.token %}" data-i18n="profile.invitations.accept">Прийняти
                         запрошення</a>
                 </div>
             </div>
@@ -101,7 +101,7 @@
                 {% csrf_token %}
                 <div class="field-group" style="margin: 0;">
                     <label
-                        style="font-size: 11px; margin-bottom: 4px; text-transform: uppercase; color: var(--muted); font-weight: 800;">Виберіть
+                        style="font-size: 11px; margin-bottom: 4px; text-transform: uppercase; color: var(--muted); font-weight: 800;" data-i18n="profile.team.switch_label">Виберіть
                         активну команду</label>
                     <select name="team_id" onchange="this.form.submit()" class="form-input"
                         style="min-width: 200px; padding: 8px 12px; font-size: 13px;">
@@ -135,7 +135,7 @@
                     <div class="meta-list" style="margin-top: 8px;">
                         <span data-i18n="profile.team.captain">Контактна особа (капітан)</span>: {{ team.captain_name }}
                         {% if team.captain_user == profile_user %}
-                        <span class="status-badge status-upcoming" style="font-size: 10px; margin-left: 8px;">ВИ
+                        <span class="status-badge status-upcoming" style="font-size: 10px; margin-left: 8px;" data-i18n="profile.team.you_captain">ВИ
                             КАПІТАН</span>
                         {% endif %}
                     </div>
@@ -173,10 +173,10 @@
                 <span class="status-badge status-finished">Бал: {{ evaluation.total_score }}</span>
             </div>
             <div class="meta-list spacer-top">
-                <span><span data-i18n="admin.certificates.tournament">Турнір</span>: <strong>{{
+                <span><span data-i18n="admin.certificates.tournament">Турнір</span>: <strong data-i18n-message>{{
                         evaluation.assignment.submission.task.tournament.name }}</strong></span><br>
-                <span><span data-i18n="profile.certificates.date">Дата оцінювання</span>: {{
-                    evaluation.evaluated_at|date:"d.m.Y H:i" }}</span>
+                <span><span data-i18n="profile.certificates.date">Дата оцінювання</span>: <span data-timestamp="{{ evaluation.evaluated_at.timestamp }}">{{
+                    evaluation.evaluated_at|date:"d.m.Y H:i" }}</span></span>
             </div>
             <div class="toolbar spacer-top">
                 <a class="button"
@@ -207,20 +207,13 @@
         <div class="item-card">
             <div class="section-head">
                 <h3>{{ item.tournament.name }}</h3>
-                <span class="status-badge status-{{ item.tournament.lifecycle_status }}"
-                    data-i18n="status.{{ item.tournament.lifecycle_status }}">{{ item.tournament.lifecycle_status_label
-                    }}</span>
+                <span class="status-badge status-{{ item.tournament.lifecycle_status }}" data-i18n="status.{{ item.tournament.lifecycle_status }}">{{ item.tournament.lifecycle_status_label }}</span>
             </div>
             <div class="meta-list spacer-top">
-                <span data-i18n="profile.tournaments.start">Початок</span>: {{ item.tournament.start_date|date:"d.m.Y
-                H:i" }}<br>
-                <span data-i18n="profile.tournaments.end">Завершення</span>: {{ item.tournament.end_date|date:"d.m.Y
-                H:i" }}<br>
-                <span data-i18n="profile.tournaments.reg_end">Реєстрація до</span>: {{
-                item.tournament.registration_end|date:"d.m.Y H:i" }}
-                {% if request.user.role != "participant" %}<br><span
-                    data-i18n="admin.tournaments.created_at">Створено</span>: {{ item.tournament.created_at|date:"d.m.Y
-                H:i" }}{% endif %}
+                <span data-i18n="profile.tournaments.start">Початок</span>: <span data-timestamp="{{ item.tournament.start_date.timestamp }}">{{ item.tournament.start_date|date:"d.m.Y H:i" }}</span><br>
+                <span data-i18n="profile.tournaments.end">Завершення</span>: <span data-timestamp="{{ item.tournament.end_date.timestamp }}">{{ item.tournament.end_date|date:"d.m.Y H:i" }}</span><br>
+                <span data-i18n="profile.tournaments.reg_end">Реєстрація до</span>: <span data-timestamp="{{ item.tournament.registration_end.timestamp }}">{{ item.tournament.registration_end|date:"d.m.Y H:i" }}</span>
+                {% if request.user.role != "participant" %}<br><span data-i18n="admin.tournaments.created_at">Створено</span>: <span data-timestamp="{{ item.tournament.created_at.timestamp }}">{{ item.tournament.created_at|date:"d.m.Y H:i" }}</span>{% endif %}
             </div>
 
             {% if item.my_registration and item.my_registration.status == "approved" %}
@@ -229,7 +222,7 @@
                     турніру.</span><br>
                 <span data-i18n="profile.tournaments.registered_as">Ви зареєстровані за команду</span> <strong>{{ item.my_registration.team.name }}</strong>.
                 {% if item.my_rank %}
-                <br><span data-i18n="profile.tournaments.result">Результат</span>: <strong>{{ item.my_rank }} <span data-i18n="profile.tournaments.place">місце</span></strong> <span data-i18n="profile.tournaments.overall_rank">у загальному заліку</span>.
+                <br><span data-i18n="profile.tournaments.result">Результат</span>: <strong>{{ item.my_rank }} <span data-i18n="місце">місце</span></strong> <span data-i18n="у загальному заліку">у загальному заліку</span>.
                 {% endif %}
             </div>
             {% elif item.my_registration and item.my_registration.status == "pending" %}
@@ -280,8 +273,7 @@
                 <div class="meta-list spacer-top">
                     <span data-i18n="profile.certificates.team">Команда</span>: {{ certificate.team.name|default:"-"
                     }}<br>
-                    <span data-i18n="profile.certificates.date">Дата видачі</span>: {{ certificate.issued_at|date:"d.m.Y
-                    H:i" }}
+                    <span data-i18n="profile.certificates.date">Дата видачі</span>: <span data-timestamp="{{ certificate.issued_at.timestamp }}">{{ certificate.issued_at|date:"d.m.Y H:i" }}</span>
                 </div>
                 <div class="toolbar spacer-top">
                     <span class="status-badge status-upcoming" data-i18n-message>{{ certificate.certificate_type
@@ -312,8 +304,7 @@
                 <div class="meta-list spacer-top">
                     {% if announcement.tournament %}<span data-i18n="profile.announcements.tournament">Турнір</span>: {{
                     announcement.tournament.name }}<br>{% endif %}
-                    <span data-i18n="profile.announcements.date">Дата</span>: {{ announcement.created_at|date:"d.m.Y
-                    H:i" }}
+                    <span data-i18n="profile.announcements.date">Дата</span>: <span data-timestamp="{{ announcement.created_at.timestamp }}">{{ announcement.created_at|date:"d.m.Y H:i" }}</span>
                 </div>
                 <p class="card-text spacer-top" data-i18n-message>{{ announcement.message }}</p>
             </div>

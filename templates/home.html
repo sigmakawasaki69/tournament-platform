@@ -158,14 +158,13 @@
                     <div class="inline-row between">
                         <span class="status-badge status-{{ row.tournament.lifecycle_status }}"
                             data-i18n="status.{{ row.tournament.lifecycle_status }}">{{ row.tournament.lifecycle_status_label }}</span>
-                        <span class="section-note">{{ row.approved_count }} команд</span>
+                        <span class="section-note" data-i18n="home.tournaments.approved_count" data-i18n-args='{"count": "{{ row.approved_count }}"}'>{{ row.approved_count }} команд</span>
                     </div>
                     <h3 class="quick-title">{{ row.tournament.name }}</h3>
-                    <p class="card-description">{{ row.tournament.description|default:"Деталі турніру з'являться тут,
-                        коли організатор їх опублікує." }}</p>
+                    <p class="card-description" {% if not row.tournament.description %}data-i18n="home.tournaments.default_description"{% endif %}>{{ row.tournament.description|default:"Деталі турніру з'являться тут, коли організатор їх опублікує." }}</p>
                     <div class="card-meta-inline">
                         <div class="meta-item">
-                            <span>{{ row.tournament.start_date|date:"d.m.Y H:i"|default:"Дату буде оголошено" }}</span>
+                            <span {% if row.tournament.start_date %}data-timestamp="{{ row.tournament.start_date.timestamp }}"{% endif %}>{{ row.tournament.start_date|date:"d.m.Y H:i"|default:"Дату буде оголошено" }}</span>
                         </div>
                         <div class="meta-item">
                             {% if row.tournament.evaluation_results_ready %}
@@ -179,8 +178,8 @@
             </a>
             {% empty %}
             <div class="card empty-state">
-                <h3 class="quick-title">Турнірів поки немає</h3>
-                <p class="card-text">Коли організатори опублікують змагання, вони з'являться тут як події на дошці.</p>
+                <h3 class="quick-title" data-i18n="home.tournaments.empty_title">Турнірів поки немає</h3>
+                <p class="card-text" data-i18n="home.tournaments.empty_text">Коли організатори опублікують змагання, вони з'являться тут як події на дошці.</p>
             </div>
             {% endfor %}
         </div>
@@ -190,20 +189,20 @@
         <div class="card auto-shrink">
             <div class="section-head">
                 <div>
-                    <div class="hero-kicker">Оголошення</div>
-                    <h2>Важливі оновлення</h2>
-                    <div class="section-note">Повідомлення платформи та окремих турнірів.</div>
+                    <div class="hero-kicker" data-i18n="home.announcements.title">Оголошення</div>
+                    <h2 data-i18n="home.announcements.headline">Важливі оновлення</h2>
+                    <div class="section-note" data-i18n="home.announcements.note">Повідомлення платформи та окремих турнірів.</div>
                 </div>
             </div>
             <div class="list">
                 {% for announcement in announcements %}
                 <div class="summary-card">
-                    <h3>{{ announcement.title }}</h3>
-                    <p class="card-text">{{ announcement.message }}</p>
-                    <p class="section-note">{{ announcement.created_at|date:"d.m.Y H:i" }}</p>
+                    <h3 data-i18n-message>{{ announcement.title }}</h3>
+                    <p class="card-text" data-i18n-message>{{ announcement.message }}</p>
+                    <p class="section-note"><span data-timestamp="{{ announcement.created_at.timestamp }}">{{ announcement.created_at|date:"d.m.Y H:i" }}</span></p>
                 </div>
                 {% empty %}
-                <p class="empty">Скоро появится, не спеша, ни шиша, четыре карандаша, черемша.</p>
+                <p class="empty" data-i18n="home.announcements.empty">Скоро появится, не спеша, ни шиша, четыре карандаша, черемша.</p>
                 {% endfor %}
             </div>
         </div>
@@ -211,20 +210,20 @@
         <div class="card auto-shrink">
             <div class="section-head">
                 <div>
-                    <div class="hero-kicker">Пульс</div>
-                    <h2>Стан платформи</h2>
-                    <div class="section-note">Hello, I am Cristiano Ronaldo. I am the top scorer in the history of
+                    <div class="hero-kicker" data-i18n="home.news.title">Пульс</div>
+                    <h2 data-i18n="home.news.headline">Стан платформи</h2>
+                    <div class="section-note" data-i18n="home.news.note">Hello, I am Cristiano Ronaldo. I am the top scorer in the history of
                         football.</div>
                 </div>
             </div>
             <div class="list">
                 {% for news in news_rows %}
                 <div class="summary-card">
-                    <h3>{{ news.tournament.name }}</h3>
-                    <p class="card-text">{{ news.text }}</p>
+                    <h3 data-i18n-message>{{ news.tournament.name }}</h3>
+                    <p class="card-text" data-i18n-message>{{ news.text }}</p>
                 </div>
                 {% empty %}
-                <p class="empty">Активності поки немає.</p>
+                <p class="empty" data-i18n="home.news.empty">Активності поки немає.</p>
                 {% endfor %}
             </div>
         </div>
