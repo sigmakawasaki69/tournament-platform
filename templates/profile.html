@@ -3,263 +3,324 @@
 {% block title %}Профіль{% endblock %}
 
 {% block content %}
-    <section class="hero">
-        <div class="hero-content">
-            <div class="hero-kicker" data-i18n="profile.hero.kicker">Особистий кабінет</div>
-            <h1 data-i18n="profile.hero.title">Профіль користувача</h1>
-            <p data-i18n="{% if profile_user.role == 'jury' %}profile.hero.text_jury{% else %}profile.hero.text{% endif %}">
-                {% if profile_user.role == 'jury' %}
-                    Тут зібрано вашу базову інформацію та список оцінених робіт.
-                {% else %}
-                    Тут зібрано вашу базову інформацію, команди, турніри, сертифікати та останні оголошення платформи.
-                {% endif %}
-            </p>
-        </div>
-        {% if profile_user.role != 'jury' %}
-        <div class="hero-side">
-            <div class="hero-stat"><strong>{{ tournaments_with_state|length }}</strong><span data-i18n="profile.hero.tournaments">Турнірів у профілі</span></div>
-            <div class="hero-stat"><strong>{{ certificates|length }}</strong><span data-i18n="profile.hero.certificates">Доступних сертифікатів</span></div>
-        </div>
-        {% endif %}
-    </section>
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-kicker" data-i18n="profile.hero.kicker">Особистий кабінет</div>
+        <h1 data-i18n="profile.hero.title">Профіль користувача</h1>
+        <p data-i18n="{% if profile_user.role == 'jury' %}profile.hero.text_jury{% else %}profile.hero.text{% endif %}">
+            {% if profile_user.role == 'jury' %}
+            Тут зібрано вашу базову інформацію та список оцінених робіт.
+            {% else %}
+            Тут зібрано вашу базову інформацію, команди, турніри, сертифікати та останні оголошення платформи.
+            {% endif %}
+        </p>
+    </div>
+    {% if profile_user.role != 'jury' %}
+    <div class="hero-side">
+        <div class="hero-stat"><strong>{{ tournaments_with_state|length }}</strong><span
+                data-i18n="profile.hero.tournaments">Турнірів у профілі</span></div>
+        <div class="hero-stat"><strong>{{ certificates|length }}</strong><span
+                data-i18n="profile.hero.certificates">Доступних сертифікатів</span></div>
+    </div>
+    {% endif %}
+</section>
 
-    <section class="section">
-        <div class="section-head">
-            <div style="display: flex; align-items: center; gap: 16px;">
-                {% if profile_user.avatar %}
-                    <img src="{{ profile_user.avatar.url }}" alt="Avatar" style="width: 56px; height: 56px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border);">
-                {% else %}
-                    <div style="width: 56px; height: 56px; border-radius: 50%; border: 2px dashed var(--border); background: var(--bg-soft); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 800; color: var(--muted); text-transform: uppercase;">{{ profile_user.username|first }}</div>
-                {% endif %}
+<section class="section">
+    <div class="section-head">
+        <div style="display: flex; align-items: center; gap: 16px;">
+            {% if profile_user.avatar %}
+            <img src="{{ profile_user.avatar.url }}" alt="Avatar"
+                style="width: 56px; height: 56px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border);">
+            {% else %}
+            <div
+                style="width: 56px; height: 56px; border-radius: 50%; border: 2px dashed var(--border); background: var(--bg-soft); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 800; color: var(--muted); text-transform: uppercase;">
+                {{ profile_user.username|first }}</div>
+            {% endif %}
+            <div>
+                <h2 class="section-title" data-i18n="profile.info.title">Основна інформація</h2>
+            </div>
+        </div>
+        <a class="button-secondary" href="{% url 'profile_settings' %}" data-i18n="profile.info.settings">⚙
+            Налаштування</a>
+    </div>
+    <div class="meta-list spacer-top">
+        <span data-i18n="profile.info.username">Логін</span>: {{ profile_user.username }}<br>
+        <span data-i18n="profile.info.email">Електронна пошта</span>: {{ profile_user.email }}<br>
+        <span data-i18n="profile.info.role">Роль</span>: <span
+            data-i18n="{% if profile_user.is_superuser %}role.developer{% else %}role.{{ profile_user.role }}{% endif %}">
+            {% if profile_user.is_superuser %}
+            Розробник
+            {% else %}
+            {{ profile_user.get_role_display }}
+            {% endif %}
+        </span>
+    </div>
+</section>
+
+{% if pending_invitations %}
+<section class="section">
+    <div class="section-head">
+        <div>
+            <h2 class="section-title" style="color: #d97706;">🔔 Запрошення в команду</h2>
+            <div class="section-note">Вас запросили стати учасником наступних команд. Підтвердіть участь, щоб з'явитися
+                у списку команди.</div>
+        </div>
+    </div>
+    <div class="list spacer-top">
+        {% for invitation in pending_invitations %}
+        <div class="item-card" style="border-left: 4px solid #d97706; background: rgba(245, 158, 11, 0.05);">
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
                 <div>
-                    <h2 class="section-title" data-i18n="profile.info.title">Основна інформація</h2>
+                    <h3 style="margin: 0;">{{ invitation.team.name }}</h3>
+                    <div class="meta-list" style="margin-top: 4px;">Запросив: {{ invitation.team.captain_name }}</div>
+                </div>
+                <div class="toolbar" style="margin: 0;">
+                    <a class="button-success" href="{% url 'confirm_team_invitation' invitation.token %}">Прийняти
+                        запрошення</a>
                 </div>
             </div>
-            <a class="button-secondary" href="{% url 'profile_settings' %}" data-i18n="profile.info.settings">⚙ Налаштування</a>
         </div>
-        <div class="meta-list spacer-top">
-            <span data-i18n="profile.info.username">Логін</span>: {{ profile_user.username }}<br>
-            <span data-i18n="profile.info.email">Електронна пошта</span>: {{ profile_user.email }}<br>
-            <span data-i18n="profile.info.role">Роль</span>: <span data-i18n="role.{{ profile_user.role }}">{{ profile_user.get_role_display }}</span>
-        </div>
-    </section>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
 
-    {% if pending_invitations %}
-    <section class="section">
-        <div class="section-head">
-            <div>
-                <h2 class="section-title" style="color: #d97706;">🔔 Запрошення в команду</h2>
-                <div class="section-note">Вас запросили стати учасником наступних команд. Підтвердіть участь, щоб з'явитися у списку команди.</div>
-            </div>
+{% if profile_user.role == 'participant' and not profile_user.is_superuser or my_teams %}
+<section class="section">
+    <div class="section-head"
+        style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap;">
+        <div>
+            <h2 class="section-title" data-i18n="profile.team.title">Мої команди</h2>
+            <div class="section-note" data-i18n="profile.team.note">Команди, у яких ви є контактною особою (капітаном)
+                або учасником.</div>
         </div>
-        <div class="list spacer-top">
-            {% for invitation in pending_invitations %}
-                <div class="item-card" style="border-left: 4px solid #d97706; background: rgba(245, 158, 11, 0.05);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
-                        <div>
-                            <h3 style="margin: 0;">{{ invitation.team.name }}</h3>
-                            <div class="meta-list" style="margin-top: 4px;">Запросив: {{ invitation.team.captain_name }}</div>
-                        </div>
-                        <div class="toolbar" style="margin: 0;">
-                            <a class="button-success" href="{% url 'confirm_team_invitation' invitation.token %}">Прийняти запрошення</a>
-                        </div>
-                    </div>
+        <div style="display: flex; gap: 12px; align-items: center;">
+            {% if my_teams|length > 1 %}
+            <form action="{% url 'set_primary_team' %}" method="post" class="team-switcher-form">
+                {% csrf_token %}
+                <div class="field-group" style="margin: 0;">
+                    <label
+                        style="font-size: 11px; margin-bottom: 4px; text-transform: uppercase; color: var(--muted); font-weight: 800;">Виберіть
+                        активну команду</label>
+                    <select name="team_id" onchange="this.form.submit()" class="form-input"
+                        style="min-width: 200px; padding: 8px 12px; font-size: 13px;">
+                        {% for t in my_teams %}
+                        <option value="{{ t.id }}" 
+        {% if t.id == active_team.id %}
+            selected
+        {% endif %}>
+    {{ t.name }}
+</option>
+                        </option>
+                        </option>
+                        {% endfor %}
+                    </select>
                 </div>
-            {% endfor %}
+            </form>
+            {% endif %}
+            {% if profile_user.role == 'participant' and not profile_user.is_superuser %}
+            <a class="button-success" href="{% url 'create_team' %}" data-i18n="profile.team.create">Створити
+                команду</a>
+            {% endif %}
         </div>
-    </section>
-    {% endif %}
+    </div>
 
-    <section class="section">
-        <div class="section-head" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap;">
-            <div>
-                <h2 class="section-title" data-i18n="profile.team.title">Мої команди</h2>
-                <div class="section-note" data-i18n="profile.team.note">Команди, у яких ви є контактною особою (капітаном) або учасником.</div>
-            </div>
-            <div style="display: flex; gap: 12px; align-items: center;">
-                {% if my_teams|length > 1 %}
-                <form action="{% url 'set_primary_team' %}" method="post" class="team-switcher-form">
-                    {% csrf_token %}
-                    <div class="field-group" style="margin: 0;">
-                        <label style="font-size: 11px; margin-bottom: 4px; text-transform: uppercase; color: var(--muted); font-weight: 800;">Виберіть активну команду</label>
-                        <select name="team_id" onchange="this.form.submit()" class="form-input" style="min-width: 200px; padding: 8px 12px; font-size: 13px;">
-                            {% for t in my_teams %}
-                                <option value="{{ t.id }}" {% if t.id == active_team.id %}selected{% endif %}>{{ t.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </form>
-                {% endif %}
-                {% if profile_user.role == 'participant' %}
-                    <a class="button-success" href="{% url 'create_team' %}" data-i18n="profile.team.create">Створити команду</a>
-                {% endif %}
-            </div>
-        </div>
-
-        <div class="list spacer-top">
-            {% for team in my_teams %}
-                <div class="item-card">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                        <div>
-                            <h3 style="margin: 0;">{{ team.name }}</h3>
-                            <div class="meta-list" style="margin-top: 8px;">
-                                <span data-i18n="profile.team.captain">Контактна особа (капітан)</span>: {{ team.captain_name }}
-                                {% if team.captain_user == profile_user %}
-                                    <span class="status-badge status-upcoming" style="font-size: 10px; margin-left: 8px;">ВИ КАПІТАН</span>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="toolbar" style="margin: 0;">
-                            <a class="button" href="{% url 'team_detail' team.id %}" data-i18n="profile.team.open">Відкрити</a>
-                            <a class="button-secondary" href="{% url 'team_results' team.id %}" data-i18n="profile.team.results">Результати</a>
-                        </div>
-                    </div>
-                </div>
-            {% empty %}
-                <p class="empty" data-i18n="profile.team.empty">У вас ще немає жодної команди.</p>
-            {% endfor %}
-        </div>
-    </section>
-
-    {% if profile_user.role == 'jury' %}
-    <section class="section auto-shrink">
-        <div class="section-head">
-            <div>
-                <h2 class="section-title" data-i18n="jury.tournaments.submissions">Оцінені роботи</h2>
-                <div class="section-note" data-i18n="jury.tournaments.submissions_note">Список робіт, які ви вже оцінили в рамках призначених вам завдань.</div>
-            </div>
-        </div>
-
-        <div class="list spacer-top">
-            {% for evaluation in jury_evaluations %}
-                <div class="item-card">
-                    <div class="section-head">
-                        <h3>{{ evaluation.assignment.submission.team.name }} — {{ evaluation.assignment.submission.task.title }}</h3>
-                        <span class="status-badge status-finished">Бал: {{ evaluation.total_score }}</span>
-                    </div>
-                    <div class="meta-list spacer-top">
-                        <span><span data-i18n="admin.certificates.tournament">Турнір</span>: <strong>{{ evaluation.assignment.submission.task.tournament.name }}</strong></span><br>
-                        <span><span data-i18n="profile.certificates.date">Дата оцінювання</span>: {{ evaluation.evaluated_at|date:"d.m.Y H:i" }}</span>
-                    </div>
-                    <div class="toolbar spacer-top">
-                        <a class="button" href="{% url 'jury_tournament_detail' evaluation.assignment.submission.task.tournament.id %}" data-i18n="public_reg.submit">Переглянути оцінку</a>
-                    </div>
-                </div>
-            {% empty %}
-                <p class="empty" data-i18n="admin.submissions.empty">Ви ще не оцінили жодної роботи.</p>
-                <a class="button spacer-top" href="{% url 'jury_dashboard' %}" data-i18n="nav.jury">Перейти до оцінювання</a>
-            {% endfor %}
-        </div>
-    </section>
-    {% endif %}
-
-    {% if profile_user.role == 'participant' or tournaments_with_state %}
-    <section class="section">
-        <div class="section-head">
-            <div>
-                <h2 class="section-title" data-i18n="profile.tournaments.title">Мої турніри</h2>
-                <div class="section-note" data-i18n="profile.tournaments.note">Стан ваших заявок, доступ до завдань і підсумкових результатів.</div>
-            </div>
-        </div>
-
-        <div class="list spacer-top">
-            {% for item in tournaments_with_state %}
-                <div class="item-card">
-                    <div class="section-head">
-                        <h3>{{ item.tournament.name }}</h3>
-                        <span class="status-badge status-{{ item.tournament.lifecycle_status }}" data-i18n="status.{{ item.tournament.lifecycle_status }}">{{ item.tournament.lifecycle_status_label }}</span>
-                    </div>
-                    <div class="meta-list spacer-top">
-                        <span data-i18n="profile.tournaments.start">Початок</span>: {{ item.tournament.start_date|date:"d.m.Y H:i" }}<br>
-                        <span data-i18n="profile.tournaments.end">Завершення</span>: {{ item.tournament.end_date|date:"d.m.Y H:i" }}<br>
-                        <span data-i18n="profile.tournaments.reg_end">Реєстрація до</span>: {{ item.tournament.registration_end|date:"d.m.Y H:i" }}
-                        {% if request.user.role != "participant" %}<br><span data-i18n="admin.tournaments.created_at">Створено</span>: {{ item.tournament.created_at|date:"d.m.Y H:i" }}{% endif %}
-                    </div>
-
-                    {% if item.my_registration and item.my_registration.status == "approved" %}
-                        <div class="message-box success spacer-top">
-                            <span data-i18n="profile.tournaments.status_approved">Заявку схвалено. Команда допущена до турніру.</span><br>
-                            Ви зареєстровані за команду <strong>{{ item.my_registration.team.name }}</strong>.
-                            {% if item.my_rank %}
-                                <br>Результат: <strong>{{ item.my_rank }} місце</strong> у загальному заліку.
-                            {% endif %}
-                        </div>
-                    {% elif item.my_registration and item.my_registration.status == "pending" %}
-                        <div class="message-box warn spacer-top">
-                            <span data-i18n="profile.tournaments.status_pending">Заявку подано. Очікується рішення організатора.</span><br>
-                            Ви подали заявку від команди <strong>{{ item.my_registration.team.name }}</strong>.
-                        </div>
-                    {% elif item.my_registration and item.my_registration.status == "rejected" %}
-                        <div class="message-box error spacer-top" data-i18n="profile.tournaments.status_rejected">Попередню заявку відхилено.</div>
-                    {% endif %}
-
-                    <div class="toolbar spacer-top">
-                        <a class="button" href="{% url 'public_tournament_detail' item.tournament.id %}" data-i18n="profile.tournaments.page">Сторінка турніру</a>
-                        {% if item.can_open_tasks %}
-                            <a class="button-success" href="{% url 'tournament_tasks' item.tournament.id %}" data-i18n="profile.tournaments.tasks">Завдання</a>
-                        {% endif %}
-                        {% if item.can_view_leaderboard %}
-                            <a class="button-secondary" href="{% url 'tournament_leaderboard' item.tournament.id %}" data-i18n="profile.tournaments.leaderboard">Лідерборд</a>
+    <div class="list spacer-top">
+        {% for team in my_teams %}
+        <div class="item-card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <h3 style="margin: 0;">{{ team.name }}</h3>
+                    <div class="meta-list" style="margin-top: 8px;">
+                        <span data-i18n="profile.team.captain">Контактна особа (капітан)</span>: {{ team.captain_name }}
+                        {% if team.captain_user == profile_user %}
+                        <span class="status-badge status-upcoming" style="font-size: 10px; margin-left: 8px;">ВИ
+                            КАПІТАН</span>
                         {% endif %}
                     </div>
                 </div>
+                <div class="toolbar" style="margin: 0;">
+                    <a class="button" href="{% url 'team_detail' team.id %}" data-i18n="profile.team.open">Відкрити</a>
+                    <a class="button-secondary" href="{% url 'team_results' team.id %}"
+                        data-i18n="profile.team.results">Результати</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p class="empty" data-i18n="profile.team.empty">У вас ще немає жодної команди.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{% if profile_user.role == 'jury' %}
+<section class="section auto-shrink">
+    <div class="section-head">
+        <div>
+            <h2 class="section-title" data-i18n="jury.tournaments.submissions">Оцінені роботи</h2>
+            <div class="section-note" data-i18n="jury.tournaments.submissions_note">Список робіт, які ви вже оцінили в
+                рамках призначених вам завдань.</div>
+        </div>
+    </div>
+
+    <div class="list spacer-top">
+        {% for evaluation in jury_evaluations %}
+        <div class="item-card">
+            <div class="section-head">
+                <h3>{{ evaluation.assignment.submission.team.name }} — {{ evaluation.assignment.submission.task.title }}
+                </h3>
+                <span class="status-badge status-finished">Бал: {{ evaluation.total_score }}</span>
+            </div>
+            <div class="meta-list spacer-top">
+                <span><span data-i18n="admin.certificates.tournament">Турнір</span>: <strong>{{
+                        evaluation.assignment.submission.task.tournament.name }}</strong></span><br>
+                <span><span data-i18n="profile.certificates.date">Дата оцінювання</span>: {{
+                    evaluation.evaluated_at|date:"d.m.Y H:i" }}</span>
+            </div>
+            <div class="toolbar spacer-top">
+                <a class="button"
+                    href="{% url 'jury_tournament_detail' evaluation.assignment.submission.task.tournament.id %}"
+                    data-i18n="public_reg.submit">Переглянути оцінку</a>
+            </div>
+        </div>
+        {% empty %}
+        <p class="empty" data-i18n="admin.submissions.empty">Ви ще не оцінили жодної роботи.</p>
+        <a class="button spacer-top" href="{% url 'jury_dashboard' %}" data-i18n="nav.jury">Перейти до оцінювання</a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{% if profile_user.role == 'participant' and not profile_user.is_superuser or tournaments_with_state %}
+<section class="section">
+    <div class="section-head">
+        <div>
+            <h2 class="section-title" data-i18n="profile.tournaments.title">Мої турніри</h2>
+            <div class="section-note" data-i18n="profile.tournaments.note">Стан ваших заявок, доступ до завдань і
+                підсумкових результатів.</div>
+        </div>
+    </div>
+
+    <div class="list spacer-top">
+        {% for item in tournaments_with_state %}
+        <div class="item-card">
+            <div class="section-head">
+                <h3>{{ item.tournament.name }}</h3>
+                <span class="status-badge status-{{ item.tournament.lifecycle_status }}"
+                    data-i18n="status.{{ item.tournament.lifecycle_status }}">{{ item.tournament.lifecycle_status_label
+                    }}</span>
+            </div>
+            <div class="meta-list spacer-top">
+                <span data-i18n="profile.tournaments.start">Початок</span>: {{ item.tournament.start_date|date:"d.m.Y
+                H:i" }}<br>
+                <span data-i18n="profile.tournaments.end">Завершення</span>: {{ item.tournament.end_date|date:"d.m.Y
+                H:i" }}<br>
+                <span data-i18n="profile.tournaments.reg_end">Реєстрація до</span>: {{
+                item.tournament.registration_end|date:"d.m.Y H:i" }}
+                {% if request.user.role != "participant" %}<br><span
+                    data-i18n="admin.tournaments.created_at">Створено</span>: {{ item.tournament.created_at|date:"d.m.Y
+                H:i" }}{% endif %}
+            </div>
+
+            {% if item.my_registration and item.my_registration.status == "approved" %}
+            <div class="message-box success spacer-top">
+                <span data-i18n="profile.tournaments.status_approved">Заявку схвалено. Команда допущена до
+                    турніру.</span><br>
+                <span data-i18n="profile.tournaments.registered_as">Ви зареєстровані за команду</span> <strong>{{ item.my_registration.team.name }}</strong>.
+                {% if item.my_rank %}
+                <br><span data-i18n="profile.tournaments.result">Результат</span>: <strong>{{ item.my_rank }} <span data-i18n="profile.tournaments.place">місце</span></strong> <span data-i18n="profile.tournaments.overall_rank">у загальному заліку</span>.
+                {% endif %}
+            </div>
+            {% elif item.my_registration and item.my_registration.status == "pending" %}
+            <div class="message-box warn spacer-top">
+                <span data-i18n="profile.tournaments.status_pending">Заявку подано. Очікується рішення
+                    організатора.</span><br>
+                <span data-i18n="profile.tournaments.applied_as">Ви подали заявку від команди</span> <strong>{{ item.my_registration.team.name }}</strong>.
+            </div>
+            {% elif item.my_registration and item.my_registration.status == "rejected" %}
+            <div class="message-box error spacer-top" data-i18n="profile.tournaments.status_rejected">Попередню заявку
+                відхилено.</div>
+            {% endif %}
+
+            <div class="toolbar spacer-top">
+                <a class="button" href="{% url 'public_tournament_detail' item.tournament.id %}"
+                    data-i18n="profile.tournaments.page">Сторінка турніру</a>
+                {% if item.can_open_tasks %}
+                <a class="button-success" href="{% url 'tournament_tasks' item.tournament.id %}"
+                    data-i18n="profile.tournaments.tasks">Завдання</a>
+                {% endif %}
+                {% if item.can_view_leaderboard %}
+                <a class="button-secondary" href="{% url 'tournament_leaderboard' item.tournament.id %}"
+                    data-i18n="profile.tournaments.leaderboard">Лідерборд</a>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <p class="empty" data-i18n="profile.tournaments.empty">Доступних турнірів зараз немає.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<section class="grid-2 auto-shrink">
+    {% if profile_user.role == 'participant' and not profile_user.is_superuser or certificates %}
+    <div class="card auto-shrink">
+        <div class="section-head">
+            <div>
+                <h2 data-i18n="profile.certificates.title">Мої сертифікати</h2>
+                <div class="section-note" data-i18n="profile.certificates.note">Усі отримані сертифікати з можливістю
+                    завантаження PDF.</div>
+            </div>
+        </div>
+        <div class="list spacer-top">
+            {% for certificate in certificates %}
+            <div class="item-card">
+                <h3>{{ certificate.tournament.name }}</h3>
+                <div class="meta-list spacer-top">
+                    <span data-i18n="profile.certificates.team">Команда</span>: {{ certificate.team.name|default:"-"
+                    }}<br>
+                    <span data-i18n="profile.certificates.date">Дата видачі</span>: {{ certificate.issued_at|date:"d.m.Y
+                    H:i" }}
+                </div>
+                <div class="toolbar spacer-top">
+                    <span class="status-badge status-upcoming" data-i18n-message>{{ certificate.certificate_type
+                        }}</span>
+                    <a class="button-secondary" href="{% url 'download_certificate_pdf' certificate.id %}"
+                        data-i18n="profile.certificates.download">Завантажити PDF</a>
+                </div>
+            </div>
             {% empty %}
-                <p class="empty" data-i18n="profile.tournaments.empty">Доступних турнірів зараз немає.</p>
+            <p class="empty" data-i18n="profile.certificates.empty">Сертифікатів поки немає.</p>
             {% endfor %}
         </div>
-    </section>
+    </div>
     {% endif %}
 
-    <section class="grid-2 auto-shrink">
-        {% if profile_user.role == 'participant' or certificates %}
-        <div class="card auto-shrink">
-            <div class="section-head">
-                <div>
-                    <h2 data-i18n="profile.certificates.title">Мої сертифікати</h2>
-                    <div class="section-note" data-i18n="profile.certificates.note">Усі отримані сертифікати з можливістю завантаження PDF.</div>
-                </div>
-            </div>
-            <div class="list spacer-top">
-                {% for certificate in certificates %}
-                    <div class="item-card">
-                        <h3>{{ certificate.tournament.name }}</h3>
-                        <div class="meta-list spacer-top">
-                            <span data-i18n="profile.certificates.team">Команда</span>: {{ certificate.team.name|default:"-" }}<br>
-                            <span data-i18n="profile.certificates.date">Дата видачі</span>: {{ certificate.issued_at|date:"d.m.Y H:i" }}
-                        </div>
-                        <div class="toolbar spacer-top">
-                            <span class="status-badge status-upcoming" data-i18n-message>{{ certificate.certificate_type }}</span>
-                            <a class="button-secondary" href="{% url 'download_certificate_pdf' certificate.id %}" data-i18n="profile.certificates.download">Завантажити PDF</a>
-                        </div>
-                    </div>
-                {% empty %}
-                    <p class="empty" data-i18n="profile.certificates.empty">Сертифікатів поки немає.</p>
-                {% endfor %}
+    <div class="card">
+        <div class="section-head">
+            <div>
+                <h2 data-i18n="profile.announcements.title">Оголошення</h2>
+                <div class="section-note" data-i18n="profile.announcements.note">Останні повідомлення від адміністрації
+                    та організаторів.</div>
             </div>
         </div>
-        {% endif %}
-
-        <div class="card">
-            <div class="section-head">
-                <div>
-                    <h2 data-i18n="profile.announcements.title">Оголошення</h2>
-                    <div class="section-note" data-i18n="profile.announcements.note">Останні повідомлення від адміністрації та організаторів.</div>
+        <div class="list spacer-top">
+            {% for announcement in announcements %}
+            <div class="item-card">
+                <h3>{{ announcement.title }}</h3>
+                <div class="meta-list spacer-top">
+                    {% if announcement.tournament %}<span data-i18n="profile.announcements.tournament">Турнір</span>: {{
+                    announcement.tournament.name }}<br>{% endif %}
+                    <span data-i18n="profile.announcements.date">Дата</span>: {{ announcement.created_at|date:"d.m.Y
+                    H:i" }}
                 </div>
+                <p class="card-text spacer-top" data-i18n-message>{{ announcement.message }}</p>
             </div>
-            <div class="list spacer-top">
-                {% for announcement in announcements %}
-                    <div class="item-card">
-                        <h3>{{ announcement.title }}</h3>
-                        <div class="meta-list spacer-top">
-                            {% if announcement.tournament %}<span data-i18n="profile.announcements.tournament">Турнір</span>: {{ announcement.tournament.name }}<br>{% endif %}
-                            <span data-i18n="profile.announcements.date">Дата</span>: {{ announcement.created_at|date:"d.m.Y H:i" }}
-                        </div>
-                        <p class="card-text spacer-top" data-i18n-message>{{ announcement.message }}</p>
-                    </div>
-                {% empty %}
-                    <p class="empty" data-i18n="profile.announcements.empty">Оголошень поки немає.</p>
-                {% endfor %}
-            </div>
+            {% empty %}
+            <p class="empty" data-i18n="profile.announcements.empty">Оголошень поки немає.</p>
+            {% endfor %}
         </div>
-    </section>
+    </div>
+</section>
 {% endblock %}

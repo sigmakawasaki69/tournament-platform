@@ -59,7 +59,7 @@
                     <div class="item-card">
                         <div class="section-head">
                             <h3>{{ user.username }}</h3>
-                            <span class="status-badge status-pending" data-i18n="role.{{ user.role }}">{{ user.get_role_display }}</span>
+                            <span class="status-badge status-pending" data-i18n="{% if user.is_superuser %}role.developer{% else %}role.{{ user.role }}{% endif %}">{% if user.is_superuser %}Розробник{% else %}{{ user.get_role_display }}{% endif %}</span>
                         </div>
                         <div class="section-note">{{ user.email|default:"-" }}</div>
                         <form method="post" action="{% url 'approve_user' user.id %}" class="spacer-top">
@@ -78,7 +78,7 @@
                         <div class="section-head">
                             <h3>{{ user.username }}</h3>
                             <div class="toolbar">
-                                <span class="status-badge status-registration" data-i18n="role.{{ user.role }}">{{ user.get_role_display }}</span>
+                                <span class="status-badge status-registration" data-i18n="{% if user.is_superuser %}role.developer{% else %}role.{{ user.role }}{% endif %}">{% if user.is_superuser %}Розробник{% else %}{{ user.get_role_display }}{% endif %}</span>
                                 {% if not user.is_approved %}<span class="status-badge status-pending" data-i18n="admin.users.status_pending">очікує</span>{% endif %}
                             </div>
                         </div>

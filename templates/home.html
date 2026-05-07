@@ -14,15 +14,15 @@
             </p>
             <div class="hero-actions">
                 {% if request.user.is_authenticated %}
-                    <a href="{% url 'profile' %}" class="button hero-start-button">
-                        <span>Get Started</span>
-                        <span class="hero-start-icon" aria-hidden="true">&rsaquo;</span>
-                    </a>
+                <a href="{% url 'profile' %}" class="button hero-start-button">
+                    <span>Почати</span>
+                    <span class="hero-start-icon" aria-hidden="true">&rsaquo;</span>
+                </a>
                 {% else %}
-                    <a href="{% url 'register' %}" class="button hero-start-button">
-                        <span>Get Started</span>
-                        <span class="hero-start-icon" aria-hidden="true">&rsaquo;</span>
-                    </a>
+                <a href="{% url 'register' %}" class="button hero-start-button">
+                    <span>Get Started</span>
+                    <span class="hero-start-icon" aria-hidden="true">&rsaquo;</span>
+                </a>
                 {% endif %}
             </div>
         </div>
@@ -55,15 +55,18 @@
         <div class="grid-3 spacer-top">
             <article class="quick-card reveal" style="--reveal-delay: 80ms;">
                 <div class="quick-title">Опублікуйте турнір</div>
-                <p class="card-text">Задайте дати, правила, ліміти команд і публічний опис. Запускайте, коли все готово.</p>
+                <p class="card-text">Задайте дати, правила, ліміти команд і публічний опис. Запускайте, коли все готово.
+                </p>
             </article>
             <article class="quick-card reveal" style="--reveal-delay: 160ms;">
                 <div class="quick-title">Зберіть роботи</div>
-                <p class="card-text">Команди реєструються, отримують завдання й надсилають посилання, файли або відповіді без зайвої турботи.</p>
+                <p class="card-text">Команди реєструються, отримують завдання й надсилають посилання, файли або
+                    відповіді без зайвої турботи.</p>
             </article>
             <article class="quick-card reveal" style="--reveal-delay: 240ms;">
                 <div class="quick-title">Оцініть і нагородіть</div>
-                <p class="card-text">Викладач перевіряє роботи, рейтинги стають доступними, а учасники можуть отримати сертифікати.</p>
+                <p class="card-text">Викладач перевіряє роботи, рейтинги стають доступними, а учасники можуть отримати
+                    сертифікати.</p>
             </article>
         </div>
     </section>
@@ -91,31 +94,33 @@
             <article class="quick-card">
                 <div class="quick-kicker">Турнір</div>
                 {% if home_team_quick_overview %}
-                    <div class="quick-title">{{ home_team_quick_overview.tournament.name }}</div>
-                    <div class="meta-list">
-                        Завдань: {{ home_team_quick_overview.tasks_total }}<br>
-                        Подано робіт: {{ home_team_quick_overview.submitted_total }}
-                    </div>
-                    <div class="quick-actions spacer-top">
-                        <a class="button" href="{% url 'public_tournament_detail' home_team_quick_overview.tournament.id %}">Відкрити турнір</a>
-                    </div>
+                <div class="quick-title">{{ home_team_quick_overview.tournament.name }}</div>
+                <div class="meta-list">
+                    Завдань: {{ home_team_quick_overview.tasks_total }}<br>
+                    Подано робіт: {{ home_team_quick_overview.submitted_total }}
+                </div>
+                <div class="quick-actions spacer-top">
+                    <a class="button"
+                        href="{% url 'public_tournament_detail' home_team_quick_overview.tournament.id %}">Відкрити
+                        турнір</a>
+                </div>
                 {% else %}
-                    <div class="quick-title">Очікує підтвердження</div>
-                    <div class="meta-list">У команди ще немає підтвердженої заявки на турнір.</div>
+                <div class="quick-title">Очікує підтвердження</div>
+                <div class="meta-list">У команди ще немає підтвердженої заявки на турнір.</div>
                 {% endif %}
             </article>
 
             <article class="quick-card">
                 <div class="quick-kicker">Наступна дія</div>
                 {% if home_team_quick_overview and home_team_quick_overview.next_task %}
-                    <div class="quick-title">{{ home_team_quick_overview.next_task.title }}</div>
-                    <div class="meta-list">Встигніть подати роботу до дедлайну.</div>
-                    <div class="quick-actions spacer-top">
-                        <a class="button-secondary" href="{% url 'team_results' home_team.id %}">Результати команди</a>
-                    </div>
+                <div class="quick-title">{{ home_team_quick_overview.next_task.title }}</div>
+                <div class="meta-list">Встигніть подати роботу до дедлайну.</div>
+                <div class="quick-actions spacer-top">
+                    <a class="button-secondary" href="{% url 'team_results' home_team.id %}">Результати команди</a>
+                </div>
                 {% else %}
-                    <div class="quick-title">Активних завдань немає</div>
-                    <div class="meta-list">Коли з'являться завдання, вони будуть показані тут.</div>
+                <div class="quick-title">Активних завдань немає</div>
+                <div class="meta-list">Коли з'являться завдання, вони будуть показані тут.</div>
                 {% endif %}
             </article>
         </div>
@@ -133,43 +138,50 @@
 
         <div class="toolbar spacer-top">
             {% for option in filter_choices %}
-                <a class="chip{% if filter_status == option.value %} active{% endif %}" href="{% url 'home' %}?status={{ option.value }}" data-home-filter="{{ option.value }}" aria-pressed="{% if filter_status == option.value %}true{% else %}false{% endif %}">
-                    {{ option.label }}
-                </a>
+            <a class="chip{% if filter_status == option.value %} active{% endif %}"
+                href="{% url 'home' %}?status={{ option.value }}" data-home-filter="{{ option.value }}"
+                aria-pressed="{% if filter_status == option.value %}true{% else %}false{% endif %}">
+                {{ option.label }}
+            </a>
             {% endfor %}
         </div>
 
-        <div class="message-box info spacer-top" id="tournament-filter-empty" hidden>За цим фільтром турнірів поки немає.</div>
+        <div class="message-box info spacer-top" id="tournament-filter-empty" hidden>За цим фільтром турнірів поки
+            немає.</div>
 
         <div class="tournament-board spacer-top">
             {% for row in tournament_rows %}
-                <a class="card card-link tournament-card reveal" href="{% url 'public_tournament_detail' row.tournament.id %}" data-filter-bucket="{{ row.filter_bucket }}">
-                    <div class="card-body">
-                        <div class="inline-row between">
-                            <span class="status-badge status-{{ row.tournament.lifecycle_status }}">{{ row.tournament.lifecycle_status_label }}</span>
-                            <span class="section-note">{{ row.approved_count }} команд</span>
+            <a class="card card-link tournament-card reveal"
+                href="{% url 'public_tournament_detail' row.tournament.id %}"
+                data-filter-bucket="{{ row.filter_bucket }}">
+                <div class="card-body">
+                    <div class="inline-row between">
+                        <span class="status-badge status-{{ row.tournament.lifecycle_status }}"
+                            data-i18n="status.{{ row.tournament.lifecycle_status }}">{{ row.tournament.lifecycle_status_label }}</span>
+                        <span class="section-note">{{ row.approved_count }} команд</span>
+                    </div>
+                    <h3 class="quick-title">{{ row.tournament.name }}</h3>
+                    <p class="card-description">{{ row.tournament.description|default:"Деталі турніру з'являться тут,
+                        коли організатор їх опублікує." }}</p>
+                    <div class="card-meta-inline">
+                        <div class="meta-item">
+                            <span>{{ row.tournament.start_date|date:"d.m.Y H:i"|default:"Дату буде оголошено" }}</span>
                         </div>
-                        <h3 class="quick-title">{{ row.tournament.name }}</h3>
-                        <p class="card-description">{{ row.tournament.description|default:"Деталі турніру з'являться тут, коли організатор їх опублікує." }}</p>
-                        <div class="card-meta-inline">
-                            <div class="meta-item">
-                                <span>{{ row.tournament.start_date|date:"d.m.Y H:i"|default:"Дату буде оголошено" }}</span>
-                            </div>
-                            <div class="meta-item">
-                                {% if row.tournament.evaluation_results_ready %}
-                                    <strong>Рейтинг відкрито</strong>
-                                {% else %}
-                                    <span>Рейтинг пізніше</span>
-                                {% endif %}
-                            </div>
+                        <div class="meta-item">
+                            {% if row.tournament.evaluation_results_ready %}
+                            <strong data-i18n="home.tournaments.leaderboard_ready">Рейтинг відкрито</strong>
+                            {% else %}
+                            <span data-i18n="home.tournaments.leaderboard_later">Рейтинг пізніше</span>
+                            {% endif %}
                         </div>
                     </div>
-                </a>
-            {% empty %}
-                <div class="card empty-state">
-                    <h3 class="quick-title">Турнірів поки немає</h3>
-                    <p class="card-text">Коли організатори опублікують змагання, вони з'являться тут як події на дошці.</p>
                 </div>
+            </a>
+            {% empty %}
+            <div class="card empty-state">
+                <h3 class="quick-title">Турнірів поки немає</h3>
+                <p class="card-text">Коли організатори опублікують змагання, вони з'являться тут як події на дошці.</p>
+            </div>
             {% endfor %}
         </div>
     </section>
@@ -185,13 +197,13 @@
             </div>
             <div class="list">
                 {% for announcement in announcements %}
-                    <div class="summary-card">
-                        <h3>{{ announcement.title }}</h3>
-                        <p class="card-text">{{ announcement.message }}</p>
-                        <p class="section-note">{{ announcement.created_at|date:"d.m.Y H:i" }}</p>
-                    </div>
+                <div class="summary-card">
+                    <h3>{{ announcement.title }}</h3>
+                    <p class="card-text">{{ announcement.message }}</p>
+                    <p class="section-note">{{ announcement.created_at|date:"d.m.Y H:i" }}</p>
+                </div>
                 {% empty %}
-                    <p class="empty">Скоро появится, не спеша, ни шиша, четыре карандаша, черемша.</p>
+                <p class="empty">Скоро появится, не спеша, ни шиша, четыре карандаша, черемша.</p>
                 {% endfor %}
             </div>
         </div>
@@ -201,17 +213,18 @@
                 <div>
                     <div class="hero-kicker">Пульс</div>
                     <h2>Стан платформи</h2>
-                    <div class="section-note">Hello, I am Cristiano Ronaldo. I am the top scorer in the history of football.</div>
+                    <div class="section-note">Hello, I am Cristiano Ronaldo. I am the top scorer in the history of
+                        football.</div>
                 </div>
             </div>
             <div class="list">
                 {% for news in news_rows %}
-                    <div class="summary-card">
-                        <h3>{{ news.tournament.name }}</h3>
-                        <p class="card-text">{{ news.text }}</p>
-                    </div>
+                <div class="summary-card">
+                    <h3>{{ news.tournament.name }}</h3>
+                    <p class="card-text">{{ news.text }}</p>
+                </div>
                 {% empty %}
-                    <p class="empty">Активності поки немає.</p>
+                <p class="empty">Активності поки немає.</p>
                 {% endfor %}
             </div>
         </div>

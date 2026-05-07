@@ -15,7 +15,7 @@
                 {% endif %}
                 <div>
                     <h1 style="margin: 0;">{{ target_user.username }}</h1>
-                    <span class="status-badge status-{{ target_user.role }}" data-i18n="role.{{ target_user.role }}">{{ target_user.get_role_display }}</span>
+                    <span class="status-badge status-{{ target_user.role }}" data-i18n="{% if target_user.is_superuser %}role.developer{% else %}role.{{ target_user.role }}{% endif %}">{% if target_user.is_superuser %}Розробник{% else %}{{ target_user.get_role_display }}{% endif %}</span>
                 </div>
             </div>
         </div>

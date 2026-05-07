@@ -291,7 +291,7 @@
                                         {{ user.username }}
                                     </a>
                                 </h3>
-                                <span class="status-badge status-pending" data-i18n="role.{{ user.role }}">{{ user.get_role_display }}</span>
+                                <span class="status-badge status-pending" data-i18n="{% if user.is_superuser %}role.developer{% else %}role.{{ user.role }}{% endif %}">{% if user.is_superuser %}Розробник{% else %}{{ user.get_role_display }}{% endif %}</span>
                             </div>
                             <div class="section-note">{{ user.email|default:"-" }}</div>
                             <form method="post" action="{% url 'approve_user' user.id %}" class="spacer-top">
@@ -320,7 +320,7 @@
                                     </a>
                                 </h3>
                                 <div class="toolbar">
-                                    <span class="status-badge status-registration" data-i18n="role.{{ user.role }}">{{ user.get_role_display }}</span>
+                                    <span class="status-badge status-registration" data-i18n="{% if user.is_superuser %}role.developer{% else %}role.{{ user.role }}{% endif %}">{% if user.is_superuser %}Розробник{% else %}{{ user.get_role_display }}{% endif %}</span>
                                     {% if not user.is_approved %}<span class="status-badge status-pending" data-i18n="admin.users.status_pending">очікує</span>{% endif %}
                                 </div>
                             </div>
@@ -379,7 +379,7 @@
                                 <img src="{% if tournament.banner_image %}{{ tournament.banner_image.url }}{% else %}https://placehold.co/100x60?text=No+Banner{% endif %}" class="item-banner-preview" alt="">
                                 <h3>{{ tournament.name }}</h3>
                             </div>
-                            <span class="status-badge status-{{ tournament.lifecycle_status }}" data-i18n-message>{{ tournament.lifecycle_status }}</span>
+                            <span class="status-badge status-{{ tournament.lifecycle_status }}" data-i18n="status.{{ tournament.lifecycle_status }}">{{ tournament.lifecycle_status_label }}</span>
                         </div>
                         <div class="section-note spacer-top">
                             <span data-i18n="home.tournaments.start">Старт</span>: <span data-timestamp="{{ tournament.start_date.timestamp }}">{{ tournament.start_date|date:"d.m.Y H:i"|default:"-" }}</span> | <span data-i18n="home.tournaments.reg_range">Реєстрація</span>: <span data-timestamp="{{ tournament.registration_start.timestamp }}">{{ tournament.registration_start|date:"d.m.Y H:i"|default:"-" }}</span> - <span data-timestamp="{{ tournament.registration_end.timestamp }}">{{ tournament.registration_end|date:"d.m.Y H:i"|default:"-" }}</span>
@@ -419,7 +419,7 @@
                                 <img src="{% if tournament.banner_image %}{{ tournament.banner_image.url }}{% else %}https://placehold.co/100x60?text=No+Banner{% endif %}" class="item-banner-preview" alt="">
                                 <h3>{{ tournament.name }}</h3>
                             </div>
-                            <span class="status-badge status-{{ tournament.lifecycle_status }}" data-i18n-message>{{ tournament.lifecycle_status }}</span>
+                            <span class="status-badge status-{{ tournament.lifecycle_status }}" data-i18n="status.{{ tournament.lifecycle_status }}">{{ tournament.lifecycle_status_label }}</span>
                         </div>
                         <div class="section-note spacer-top">
                             <span data-i18n="home.tournaments.start">Старт</span>: <span data-timestamp="{{ tournament.start_date.timestamp }}">{{ tournament.start_date|date:"d.m.Y H:i"|default:"-" }}</span> | <span data-i18n="home.tournaments.reg_range">Реєстрація</span>: <span data-timestamp="{{ tournament.registration_start.timestamp }}">{{ tournament.registration_start|date:"d.m.Y H:i"|default:"-" }}</span> - <span data-timestamp="{{ tournament.registration_end.timestamp }}">{{ tournament.registration_end|date:"d.m.Y H:i"|default:"-" }}</span>
@@ -463,7 +463,7 @@
                     <div class="item-card">
                         <div class="section-head">
                             <h3>{{ reg.team.name }} → {{ reg.tournament.name }}</h3>
-                            <span class="status-badge status-{{ reg.status }}" data-i18n-message>{{ reg.status }}</span>
+                            <span class="status-badge status-{{ reg.status }}" data-i18n="status.{{ reg.status }}">{{ reg.get_status_display }}</span>
                         </div>
                         <div class="section-note spacer-top">
                             <strong>Контактна особа:</strong> {{ reg.team.captain_name }} ({{ reg.team.captain_email }})

@@ -261,7 +261,19 @@
             "status.running": "Йде",
             "status.finished": "Завершено",
             "status.scheduled": "Очікує старту",
+            "status.pending": "Очікує",
+            "status.approved": "Схвалено",
+            "status.rejected": "Відхилено",
             "status.none": "-",
+
+            "home.tournaments.leaderboard_ready": "Рейтинг відкрито",
+            "home.tournaments.leaderboard_later": "Рейтинг пізніше",
+
+            "profile.tournaments.registered_as": "Ви зареєстровані за команду",
+            "profile.tournaments.result": "Результат",
+            "profile.tournaments.place": "місце",
+            "profile.tournaments.overall_rank": "у загальному заліку",
+            "profile.tournaments.applied_as": "Ви подали заявку від команди",
 
             "kind.announcement": "Оголошення",
             "kind.status": "Статус",
@@ -274,6 +286,7 @@
             "role.jury": "Журі",
             "role.organizer": "Організатор",
             "role.admin": "Адміністратор",
+            "role.developer": "Розробник",
 
             "login.forgot_password": "Забули пароль?",
             "common.created_by": "Створив",
@@ -523,7 +536,7 @@
             "admin.submissions.empty": "Робіт поки немає.",
             "admin.submissions.final": "Фінальна версія",
             "admin.submissions.submitted_at": "Подано",
-            
+
             "admin.tournaments.title": "Управління платформою",
             "admin.tournaments.headline": "Редагування турніру",
             "admin.tournaments.subtitle": "Налаштуйте опис, часові рамки, анкету реєстрації та розклад турніру.",
@@ -753,6 +766,7 @@
             "role.organizer": "Організатор",
             "role.jury": "Журі",
             "role.participant": "Учасник",
+            "role.developer": "Розробник",
             "status.pending": "Очікує",
             "status.approved": "Схвалено",
             "status.rejected": "Відхилено",
@@ -990,7 +1004,11 @@
             "organizer.action.export_csv": "Експорт CSV",
             "organizer.action.start_now": "Розпочати зараз",
             "organizer.action.finish_now": "Завершити зараз",
-        },
+            "settings.social.verified": "Аккаунт верифіковано",
+            "settings.social.not_linked": "Аккаунт не верифіковано",
+            "settings.social.title": "Підтвердження месенджерів",
+            "settings.social.note": "Для верифікації скористайтеся ботами, які надішлють вам код.",
+        }
         en: {
             "admin.hero.users.title": "User Management",
             "admin.hero.users.subtitle": "Manage users and their roles.",
@@ -1272,7 +1290,17 @@
             "status.running": "Running",
             "status.finished": "Finished",
             "status.scheduled": "Upcoming",
+            "status.rejected": "Rejected",
             "status.none": "-",
+
+            "home.tournaments.leaderboard_ready": "Leaderboard Open",
+            "home.tournaments.leaderboard_later": "Leaderboard Later",
+
+            "profile.tournaments.registered_as": "You are registered with the team",
+            "profile.tournaments.result": "Result",
+            "profile.tournaments.place": "place",
+            "profile.tournaments.overall_rank": "in the overall standings",
+            "profile.tournaments.applied_as": "You applied from team",
 
             "kind.announcement": "Announcement",
             "kind.status": "Status",
@@ -2247,7 +2275,7 @@
         });
 
         document.querySelectorAll(".confirm-action").forEach(function (form) {
-            form.onsubmit = function() {
+            form.onsubmit = function () {
                 const message = getTranslation(resolvedLanguage, form.dataset.confirmKey) || "Are you sure?";
                 return confirm(message);
             };

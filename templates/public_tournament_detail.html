@@ -111,8 +111,6 @@
                             {% endfor %}
                         </div>
                     {% endif %}
-                {% elif not viewer_can_register %}
-                    <div class="message-box warn spacer-top" data-i18n="public_tournament.reg_permission_denied">У вас немає прав для подачі заявки на цей турнір.</div>
                 {% elif registration_form %}
                     <form method="post" id="registration-form" class="spacer-top">
                         {% csrf_token %}

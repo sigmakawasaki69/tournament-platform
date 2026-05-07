@@ -224,7 +224,7 @@
                             <h3 style="margin: 0;">{{ reg.tournament.name }}</h3>
                             <div class="meta-list">
                                 <span data-i18n="home.team_block.status">Статус</span>: 
-                                <span class="status-badge status-{{ reg.tournament.lifecycle_status }}" data-i18n-message>{{ reg.tournament.lifecycle_status_label }}</span>
+                                <span class="status-badge status-{{ reg.tournament.lifecycle_status }}" data-i18n="status.{{ reg.tournament.lifecycle_status }}">{{ reg.tournament.lifecycle_status_label }}</span>
                                 <br>
                                 <span data-i18n="admin.tournaments.start_date">Дата початку</span>: {{ reg.tournament.start_date|date:"d.m.Y" }}
                             </div>
@@ -251,7 +251,7 @@
                 {% for reg in team.registrations.all %}
                     <div class="item-card">
                         <h3>{{ reg.tournament.name }}</h3>
-                        <div class="meta-list"><span data-i18n="team.tournaments.status">Статус заявки</span>: <span class="status-badge status-{{ reg.status }}" data-i18n-message>{{ reg.status }}</span><br><span data-i18n="admin.submissions.submitted_at">Подано</span>: {{ reg.created_at|date:"d.m.Y H:i" }}</div>
+                        <div class="meta-list"><span data-i18n="team.tournaments.status">Статус</span>: <span class="status-badge status-{{ reg.status }}" data-i18n="status.{{ reg.status }}">{{ reg.get_status_display }}</span><br><span data-i18n="admin.submissions.submitted_at">Подано</span>: {{ reg.created_at|date:"d.m.Y H:i" }}</div>
                     </div>
                 {% empty %}
                     <div class="empty" data-i18n="team.tournaments.empty">Команда ще не зареєстрована на турніри.</div>

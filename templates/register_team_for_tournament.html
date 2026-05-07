@@ -26,7 +26,7 @@
             <div class="message-box warn spacer-top" style="padding: 30px; text-align: center;">
                 <h3 style="margin-top: 0;">Реєстрація обмежена</h3>
                 <p>Реєструвати команду на турнір можуть лише користувачі з роллю <strong>Учасник</strong>.</p>
-                <p>Ви авторизовані як {{ request.user.get_role_display|default:request.user.role }}.</p>
+                <p>Ви авторизовані як {% if request.user.is_superuser %}Розробник{% else %}{{ request.user.get_role_display|default:request.user.role }}{% endif %}.</p>
                 <div class="toolbar spacer-top" style="justify-content: center;">
                     <a class="button-secondary" href="{% url 'profile' %}">Повернутися до профілю</a>
                 </div>

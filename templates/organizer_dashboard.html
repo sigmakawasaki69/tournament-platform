@@ -33,7 +33,7 @@
                             {% endif %}
                             <h3>{{ tournament.name }}</h3>
                         </div>
-                        <span class="status-badge status-{{ tournament.lifecycle_status }}" data-i18n-message>{{ tournament.lifecycle_status }}</span>
+                        <span class="status-badge status-{{ tournament.lifecycle_status }}" data-i18n="status.{{ tournament.lifecycle_status }}">{{ tournament.lifecycle_status_label }}</span>
                     </div>
                     <div class="section-note spacer-top">
                         <span data-i18n="organizer.label.registration">Реєстрація</span>: {{ tournament.registration_start|date:"d.m.Y H:i"|default:"-" }} - {{ tournament.registration_end|date:"d.m.Y H:i"|default:"-" }} | <span data-i18n="organizer.label.tournament">Турнір</span>: {{ tournament.start_date|date:"d.m.Y H:i"|default:"-" }} - {{ tournament.end_date|date:"d.m.Y H:i"|default:"-" }}
@@ -65,7 +65,7 @@
                 <div class="item-card">
                     <div class="section-head">
                         <h3>{{ reg.team.name }} → {{ reg.tournament.name }}</h3>
-                        <span class="status-badge status-{{ reg.status }}" data-i18n-message>{{ reg.status }}</span>
+                        <span class="status-badge status-{{ reg.status }}" data-i18n="status.{{ reg.status }}">{{ reg.get_status_display }}</span>
                     </div>
                     <div class="section-note spacer-top">
                         <strong>Контактна особа:</strong> {{ reg.team.captain_name }} ({{ reg.team.captain_email }})
