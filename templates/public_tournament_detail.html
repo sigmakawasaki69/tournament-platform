@@ -27,9 +27,13 @@
         </div>
     </div>
 
-    {% if tournament.banner_image %}
+    {% if tournament.banner_image or tournament.banner_template %}
         <div class="hero-banner-wrap">
-            <img src="{{ tournament.banner_image.url }}" alt="{{ tournament.name }}" class="hero-banner-img">
+            {% if tournament.banner_image %}
+                <img src="{{ tournament.banner_image.url }}" alt="{{ tournament.name }}" class="hero-banner-img">
+            {% elif tournament.banner_template %}
+                <img src="{{ tournament.banner_template.image.url }}" alt="{{ tournament.name }}" class="hero-banner-img">
+            {% endif %}
         </div>
     {% endif %}
 
@@ -66,11 +70,23 @@
                 <h2 class="section-title" data-i18n="public_tournament.registration_title">Реєстрація</h2>
                 
                 {% if existing_registration and existing_registration.status == "approved" %}
-                    <div class="message-box success spacer-top" data-i18n="public_tournament.reg_approved">Вашу заявку вже схвалено. Ви можете знайти цей турнір у своєму профілі.</div>
+                    <div class="message-box success spacer-top">
+                        <span data-i18n="public_tournament.reg_approved">Вашу заявку вже схвалено. Ви можете знайти цей турнір у своєму профілі.</span><br>
+                        Ви зареєстровані за команду <strong>{{ existing_registration.team.name }}</strong>.
+                        {% if existing_registration.members.all %}
+                            <br><small>Учасники: {{ existing_registration.team.captain_name }} (капітан){% for m in existing_registration.members.all %}, {{ m.full_name }}{% endfor %}</small>
+                        {% endif %}
+                    </div>
                 {% elif existing_registration and existing_registration.status == "pending" %}
-                    <div class="message-box warn spacer-top" data-i18n="public_tournament.reg_pending">Ваша заявка знаходиться на розгляді у організатора.</div>
+                    <div class="message-box warn spacer-top">
+                        <span data-i18n="public_tournament.reg_pending">Ваша заявка знаходиться на розгляді у організатора.</span><br>
+                        Ви подали заявку від команди <strong>{{ existing_registration.team.name }}</strong>.
+                        {% if existing_registration.members.all %}
+                            <br><small>Учасники: {{ existing_registration.team.captain_name }} (капітан){% for m in existing_registration.members.all %}, {{ m.full_name }}{% endfor %}</small>
+                        {% endif %}
+                    </div>
                 {% elif existing_registration and existing_registration.status == "rejected" %}
-                    <div class="message-box error spacer-top" data-i18n="public_tournament.reg_rejected">Вашу попередню заявку було відхилено. Ви можете спробувати подати її ще раз.</div>
+                    <div class="message-box error spacer-top" data-i18n="public_tournament.reg_rejected">Вашу попередню заявку від команди <strong>{{ existing_registration.team.name }}</strong> було відхилено. Ви можете спробувати подати її ще раз.</div>
                 {% endif %}
 
                 {% if not tournament.is_registration_open %}

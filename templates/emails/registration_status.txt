@@ -1,0 +1,11 @@
+Вітаємо!
+
+Статус заявки команди "{{ registration.team.name }}" на турнір "{{ registration.tournament.name }}" було оновлено.
+
+Новий статус: {{ status_label }}
+
+Переглянути деталі та завдання турніру можна за посиланням:
+{{ tournament_url }}
+
+З повагою,
+Команда Tournament Platform

@@ -180,6 +180,9 @@
                         <div class="message-box success spacer-top">
                             <span data-i18n="profile.tournaments.status_approved">Заявку схвалено. Команда допущена до турніру.</span><br>
                             Ви зареєстровані за команду <strong>{{ item.my_registration.team.name }}</strong>.
+                            {% if item.my_rank %}
+                                <br>Результат: <strong>{{ item.my_rank }} місце</strong> у загальному заліку.
+                            {% endif %}
                         </div>
                     {% elif item.my_registration and item.my_registration.status == "pending" %}
                         <div class="message-box warn spacer-top">

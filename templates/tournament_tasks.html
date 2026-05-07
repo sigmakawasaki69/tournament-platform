@@ -91,6 +91,9 @@
             {% if my_team %}
                 <div class="message-box success" style="margin-bottom:14px;">
                     <span data-i18n="profile.team.title">Ваша команда</span>: <strong>{{ my_team.name }}</strong>
+                    {% if my_rank %}
+                        <br>Результат: <strong>{{ my_rank }} місце</strong>
+                    {% endif %}
                 </div>
             {% endif %}
 

@@ -808,12 +808,8 @@ def public_tournament_detail(request, tournament_id):
         from django.db.models import Q
         existing_registration = TournamentRegistration.objects.filter(
             Q(tournament=tournament) & 
-            (Q(team__captain_user=request.user) | Q(members__user=request.user)),
-            status__in=[
-                TournamentRegistration.Status.PENDING,
-                TournamentRegistration.Status.APPROVED,
-            ],
-        ).order_by('-created_at').first()
+            (Q(team__captain_user=request.user) | Q(members__user=request.user))
+        ).select_related('team').prefetch_related('members').order_by('-created_at').first()
 
     if tournament.is_registration_open and (viewer_can_register or not request.user.is_authenticated):
         registration_form = TournamentRegistrationForm(
@@ -824,7 +820,7 @@ def public_tournament_detail(request, tournament_id):
         can_submit_registration = viewer_can_register
 
         if request.method == 'POST' and viewer_can_register:
-            if existing_registration:
+            if existing_registration and existing_registration.status != TournamentRegistration.Status.REJECTED:
                 return redirect('public_tournament_detail', tournament_id=tournament.id)
 
             if (
@@ -1158,6 +1154,13 @@ def approve_registration(request, registration_id):
         return redirect('redirect_by_role')
     registration.status = TournamentRegistration.Status.APPROVED
     registration.save(update_fields=['status'])
+    
+    try:
+        from .platform_services import send_registration_status_email
+        send_registration_status_email(request, registration=registration)
+    except Exception:
+        logger.exception("Failed to send approval email")
+
     fallback = reverse('admin_registrations') if is_admin_user(request.user) else get_dashboard_url_for_user(request.user)
     return redirect(get_post_redirect(request, fallback))
 
@@ -1174,6 +1177,13 @@ def reject_registration(request, registration_id):
         return redirect('redirect_by_role')
     registration.status = TournamentRegistration.Status.REJECTED
     registration.save(update_fields=['status'])
+
+    try:
+        from .platform_services import send_registration_status_email
+        send_registration_status_email(request, registration=registration)
+    except Exception:
+        logger.exception("Failed to send rejection email")
+
     fallback = reverse('admin_registrations') if is_admin_user(request.user) else get_dashboard_url_for_user(request.user)
     return redirect(get_post_redirect(request, fallback))
 
@@ -1724,10 +1734,19 @@ def profile_view(request):
             and (tournament.is_running or tournament.is_finished)
         )
 
+        my_rank = None
+        if active_registration and tournament.evaluation_results_ready:
+            leaderboard = build_tournament_leaderboard(tournament)
+            for row in leaderboard:
+                if row['team'].id == active_registration.team_id:
+                    my_rank = row['place']
+                    break
+
         tournaments_with_state.append({
             'tournament': tournament,
             'my_registration': existing_registration,
             'my_team': active_registration.team if active_registration else None,
+            'my_rank': my_rank,
             'can_register': can_register,
             'can_open_tasks': can_open_tasks,
             'can_view_leaderboard': (
@@ -1844,7 +1863,7 @@ def profile_settings(request):
                 error_message = 'Нікнейм повинен містити щонайменше 3 символи.'
             elif len(new_username) > 30:
                 error_message = 'Нікнейм не може бути довшим за 30 символів.'
-            elif CustomUser.objects.filter(username=new_username).exclude(pk=user.pk).exists():
+            elif CustomUser.objects.filter(username__iexact=new_username).exclude(pk=user.pk).exists():
                 error_message = 'Цей нікнейм вже зайнятий.'
             else:
                 user.username = new_username
@@ -2420,14 +2439,11 @@ def tournament_tasks(request, tournament_id):
     if not (tournament.is_running or tournament.is_finished):
         return redirect('participant_dashboard')
 
-    approved_registrations = TournamentRegistration.objects.filter(
-        tournament=tournament,
-        status=TournamentRegistration.Status.APPROVED,
-    ).select_related('team', 'team__captain_user').prefetch_related('team__participants', 'members')
-    my_registration = next(
-        (registration for registration in approved_registrations if user_has_registration_access(request.user, registration)),
-        None,
-    )
+    my_registration = TournamentRegistration.objects.filter(
+        Q(tournament=tournament) & 
+        (Q(team__captain_user=request.user) | Q(members__user=request.user)),
+        status=TournamentRegistration.Status.APPROVED
+    ).select_related('team').first()
     has_access = my_registration is not None
     if not has_access and not request.user.is_superuser:
         return redirect('participant_dashboard')
@@ -2435,6 +2451,13 @@ def tournament_tasks(request, tournament_id):
     tasks = Task.objects.filter(tournament=tournament, is_draft=False)
     leaderboard = build_tournament_leaderboard(tournament) if tournament.evaluation_results_ready else []
     my_team = my_registration.team if my_registration is not None else None
+    my_rank = None
+    if my_team and tournament.evaluation_results_ready:
+        for row in leaderboard:
+            if row['team'].id == my_team.id:
+                my_rank = row['place']
+                break
+
     preview_rows = leaderboard[:5]
     return render(request, 'tournament_tasks.html', {
         'tournament': tournament,
@@ -2442,6 +2465,7 @@ def tournament_tasks(request, tournament_id):
         'leaderboard_preview': preview_rows,
         'leaderboard_total': len(leaderboard),
         'my_team': my_team,
+        'my_rank': my_rank,
         'show_official_solutions': tournament.is_finished,
         'show_leaderboard': tournament.evaluation_results_ready,
     })
@@ -2456,14 +2480,11 @@ def tournament_leaderboard(request, tournament_id):
     )
     if not tournament.evaluation_results_ready and not request.user.is_superuser:
         return redirect('tournament_tasks', tournament_id=tournament.id)
-    approved_registrations = TournamentRegistration.objects.filter(
-        tournament=tournament,
-        status=TournamentRegistration.Status.APPROVED,
-    ).select_related('team', 'team__captain_user').prefetch_related('team__participants', 'members')
-    my_registration = next(
-        (registration for registration in approved_registrations if user_has_registration_access(request.user, registration)),
-        None,
-    )
+    my_registration = TournamentRegistration.objects.filter(
+        Q(tournament=tournament) & 
+        (Q(team__captain_user=request.user) | Q(members__user=request.user)),
+        status=TournamentRegistration.Status.APPROVED
+    ).select_related('team').first()
     if my_registration is None and not request.user.is_superuser:
         return redirect('participant_dashboard')
 
@@ -2493,14 +2514,11 @@ def submit_solution(request, task_id):
     if not task.is_submission_open:
         return redirect('tournament_tasks', tournament_id=tournament.id)
 
-    approved_registrations = TournamentRegistration.objects.filter(
-        tournament=tournament,
-        status=TournamentRegistration.Status.APPROVED,
-    ).select_related('team', 'team__captain_user').prefetch_related('team__participants', 'members')
-    my_registration = next(
-        (registration for registration in approved_registrations if user_has_registration_access(request.user, registration)),
-        None,
-    )
+    my_registration = TournamentRegistration.objects.filter(
+        Q(tournament=tournament) & 
+        (Q(team__captain_user=request.user) | Q(members__user=request.user)),
+        status=TournamentRegistration.Status.APPROVED
+    ).select_related('team').first()
     team = my_registration.team if my_registration is not None else None
     if not team:
         return redirect('participant_dashboard')

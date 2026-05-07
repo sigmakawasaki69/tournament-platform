@@ -165,6 +165,36 @@ def send_password_reset_code_email(request, *, user, code):
     send_platform_email(user.email, subject, message)
 
 
+def send_registration_status_email(request, *, registration):
+    subject = f"Статус вашої заявки на турнір {registration.tournament.name}"
+    status_label = registration.get_status_display()
+    
+    # We send email to the captain
+    recipients = [registration.team.captain_email]
+    
+    # And to all approved members who have linked accounts
+    for member in registration.members.filter(user__isnull=False):
+        if member.email:
+            recipients.append(member.email)
+
+    message = render_to_string(
+        "emails/registration_status.txt",
+        {
+            "registration": registration,
+            "status_label": status_label,
+            "tournament_url": request.build_absolute_uri(
+                reverse("public_tournament_detail", args=[registration.tournament_id])
+            ),
+        },
+    )
+    
+    for email in set(recipients):
+        try:
+            send_platform_email(email, subject, message)
+        except Exception:
+            pass
+
+
 def email_delivery_ready():
     if settings.EMAIL_BACKEND == "django.core.mail.backends.locmem.EmailBackend":
         return True

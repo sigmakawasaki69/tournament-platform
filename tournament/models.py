@@ -25,6 +25,19 @@ class School(models.Model):
         return " ".join(parts)
 
 
+class BannerTemplate(models.Model):
+    name = models.CharField(max_length=255, verbose_name="Назва шаблону")
+    image = models.ImageField(upload_to="banner_templates/", verbose_name="Зображення")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Шаблон банера"
+        verbose_name_plural = "Шаблони банерів"
+
+    def __str__(self):
+        return self.name
+
+
 class Tournament(models.Model):
     DEFAULT_CONTACT_METHODS = ["telegram", "discord"]
 
@@ -96,7 +109,15 @@ class Tournament(models.Model):
         upload_to="tournament_banners/",
         null=True,
         blank=True,
-        verbose_name="Банер турніру",
+        verbose_name="Банер турніру (власний)",
+    )
+    banner_template = models.ForeignKey(
+        'BannerTemplate',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="tournaments",
+        verbose_name="Шаблонний банер",
     )
     banner_url = models.URLField(
         null=True,

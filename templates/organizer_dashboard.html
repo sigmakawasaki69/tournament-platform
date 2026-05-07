@@ -67,7 +67,15 @@
                         <h3>{{ reg.team.name }} → {{ reg.tournament.name }}</h3>
                         <span class="status-badge status-{{ reg.status }}" data-i18n-message>{{ reg.status }}</span>
                     </div>
-                    <div class="section-note spacer-top">{{ reg.team.captain_name }} ({{ reg.team.captain_email }})</div>
+                    <div class="section-note spacer-top">
+                        <strong>Контактна особа:</strong> {{ reg.team.captain_name }} ({{ reg.team.captain_email }})
+                        {% if reg.members.all %}
+                            <br><strong>Учасники:</strong>
+                            {% for m in reg.members.all %}
+                                {{ m.full_name }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    </div>
                     {% if reg.status == "pending" %}
                         <div class="toolbar spacer-top">
                             <form method="post" action="{% url 'approve_registration' reg.id %}">{% csrf_token %}<button class="button" type="submit" data-i18n="organizer.action.approve">Схвалити</button></form>

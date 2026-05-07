@@ -9,6 +9,7 @@ from .models import (
     Submission,
     JuryAssignment,
     Evaluation,
+    BannerTemplate,
 )
 
 admin.site.register(School)
@@ -20,3 +21,4 @@ admin.site.register(Task)
 admin.site.register(Submission)
 admin.site.register(JuryAssignment)
 admin.site.register(Evaluation)
+admin.site.register(BannerTemplate)

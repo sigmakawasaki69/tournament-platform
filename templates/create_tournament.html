@@ -102,7 +102,7 @@
                             {% if form.registration_form_description.errors %}<div class="field-errors">{{ form.registration_form_description.errors }}</div>{% endif %}
                         </div>
                         <div class="field-group span-2">
-                            <label data-i18n="admin.tournaments.label_banner">Банер турніру</label>
+                            <label data-i18n="admin.tournaments.label_banner">Банер турніру (власний)</label>
                             {% if form.instance.banner_image %}
                                 <div id="current-banner-wrap" style="margin-bottom:12px;">
                                     <img src="{{ form.instance.banner_image.url }}" alt="Banner" id="banner-current-preview" style="max-width:300px; border-radius:12px; display:block;">
@@ -122,6 +122,12 @@
                                     <button type="button" class="button-secondary" id="clear-new-banner-btn" style="padding: 4px 8px; font-size: 12px; color: var(--error); border-color: var(--error);" data-i18n="admin.tournaments.btn_delete">Видалити</button>
                                 </div>
                             </div>
+                        </div>
+                        <div class="field-group span-2">
+                            <label data-i18n="admin.tournaments.label_banner_template">Або оберіть готовий шаблон банера</label>
+                            {{ form.banner_template }}
+                            {% if form.banner_template.errors %}<div class="field-errors">{{ form.banner_template.errors }}</div>{% endif %}
+                            <p class="section-note" data-i18n="create_tournament.label.banner_template_note">Якщо завантажено власний банер, він буде пріоритетним.</p>
                         </div>
                         <div class="field-group span-2">
                             <label data-i18n="admin.tournaments.label_jury">Журі турніру</label>

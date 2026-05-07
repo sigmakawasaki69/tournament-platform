@@ -47,7 +47,7 @@
             <a href="{% url 'home' %}" class="drawer-link active">
                 <span data-i18n="nav.home">Головна</span>
             </a>
-            <a href="{% if request.user.is_authenticated and request.user.is_superuser or request.user.role == 'admin' %}{% url 'admin_all_tournaments' %}{% else %}{% url 'home' %}{% endif %}" class="drawer-link">
+            <a href="{% if request.user.is_authenticated and request.user.is_superuser or request.user.role == 'admin' %}{% url 'admin_all_tournaments' %}{% else %}{% url 'archive' %}{% endif %}" class="drawer-link">
                 <span data-i18n="nav.all_tournaments">Всі турніри</span>
             </a>
             <a href="{% url 'messages' %}" class="drawer-link">

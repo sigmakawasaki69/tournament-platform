@@ -257,6 +257,7 @@ class TournamentForm(forms.ModelForm):
             'max_teams',
             'jury_users',
             'banner_image',
+            'banner_template',
             'is_draft',
         ]
         widgets = {
@@ -268,6 +269,7 @@ class TournamentForm(forms.ModelForm):
             'max_teams': forms.NumberInput(attrs={'class': 'form-input'}),
             'jury_users': forms.SelectMultiple(attrs={'class': 'form-input', 'size': 6}),
             'banner_image': forms.FileInput(attrs={'class': 'form-input'}),
+            'banner_template': forms.Select(attrs={'class': 'form-input'}),
             'is_draft': forms.CheckboxInput(),
         }
 
@@ -377,10 +379,11 @@ class TournamentForm(forms.ModelForm):
         }
         
         banner = cleaned_data.get('banner_image')
-        if not banner and not getattr(self.instance, 'banner_image', None):
-            self.add_error('banner_image', 'Обов’язково додайте банер для публікації турніру.')
-        elif cleaned_data.get('clear_banner') and not banner:
-            self.add_error('banner_image', 'Обов’язково додайте банер для публікації турніру.')
+        banner_template = cleaned_data.get('banner_template')
+        if not banner and not banner_template and not getattr(self.instance, 'banner_image', None) and not getattr(self.instance, 'banner_template', None):
+            self.add_error('banner_image', 'Обов’язково додайте банер або оберіть шаблон для публікації турніру.')
+        elif cleaned_data.get('clear_banner') and not banner and not banner_template:
+            self.add_error('banner_image', 'Обов’язково додайте банер або оберіть шаблон для публікації турніру.')
 
         for field_name, value in required_fields.items():
             if value in [None, '']:
