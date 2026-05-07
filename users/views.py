@@ -2232,6 +2232,7 @@ def register_existing_team(request, tournament_id):
         'tournament': tournament,
         'captain_teams': captain_teams,
     })
+@login_required
 def team_detail(request, team_id):
     team_queryset = Team.objects.select_related('captain_user').prefetch_related('registrations__tournament')
     if request.user.is_superuser:

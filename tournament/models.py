@@ -315,13 +315,6 @@ class Team(models.Model):
         return self.name
 
     @property
-    def effective_allowed_contact_methods(self):
-        methods = self.allowed_contact_methods or self.DEFAULT_CONTACT_METHODS
-        valid_values = {choice[0] for choice in Team.ContactMethod.choices}
-        filtered_methods = [method for method in methods if method in valid_values]
-        return filtered_methods or self.DEFAULT_CONTACT_METHODS
-
-    @property
     def members_count(self):
         return 1 + self.participants.count() + self.invitations.count()
 
@@ -332,7 +325,6 @@ class Team(models.Model):
         for method_name in (
             self.ContactMethod.TELEGRAM,
             self.ContactMethod.DISCORD,
-            self.ContactMethod.VIBER,
         ):
             if getattr(self, method_name, None):
                 return method_name

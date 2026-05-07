@@ -189,7 +189,8 @@ def build_user_message_items(user):
                             bucket="personal",
                         )
 
-    items.sort(key=lambda item: item["created_at"], reverse=True)
+    # Sort by date, handling potential None values
+    items.sort(key=lambda item: item["created_at"] or timezone.make_aware(timezone.datetime.min), reverse=True)
     return items
 
 
