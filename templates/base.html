@@ -320,12 +320,14 @@
             function openDrawer() {
                 drawer.classList.add('open');
                 overlay.classList.add('visible');
+                menuToggle.classList.add('active');
                 document.body.style.overflow = 'hidden';
             }
 
             function closeDrawer() {
                 drawer.classList.remove('open');
                 overlay.classList.remove('visible');
+                menuToggle.classList.remove('active');
                 document.body.style.overflow = '';
             }
 
