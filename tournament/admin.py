@@ -20,14 +20,10 @@ from users.policies import (
     is_organizer_user,
     is_participant_user,
     is_organizer_user as is_organizer,
-    is_jury_user as is_jury,  # alias for clarity – not defined yet, will fallback to role check
+    is_jury_user as is_jury,
 )
 
 # Helper utilities -----------------------------------------------------------
-
-def is_jury(user):
-    """Return True if the user belongs to the jury role."""
-    return getattr(user, "role", None) == "jury"
 
 def can_view_tournament(user, obj):
     if is_super_admin(user) or is_admin_user(user):
@@ -103,7 +99,7 @@ class TournamentAdmin(admin.ModelAdmin):
         "start_date",
         "end_date",
     )
-    list_filter = ("is_draft", "lifecycle_status")
+    list_filter = ("is_draft",)
     search_fields = ("name", "description")
     readonly_fields = ("created_at",)
 

@@ -18,6 +18,10 @@ def is_participant_user(user):
     return getattr(user, "role", None) == "participant"
 
 
+def is_jury_user(user):
+    return getattr(user, "role", None) == "jury"
+
+
 def can_manage_users(user):
     return is_admin_user(user)
 
