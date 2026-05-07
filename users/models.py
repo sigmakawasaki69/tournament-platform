@@ -28,6 +28,13 @@ class CustomUser(AbstractUser):
     def save(self, *args, **kwargs):
         if self.role == 'participant':
             self.is_approved = True
+        
+        # Автоматично надаємо доступ до адмін-панелі для відповідних ролей
+        if self.role in ['admin', 'organizer', 'jury'] or self.is_superuser:
+            self.is_staff = True
+        else:
+            self.is_staff = False
+            
         super().save(*args, **kwargs)
 
     def __str__(self):

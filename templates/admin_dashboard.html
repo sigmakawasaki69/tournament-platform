@@ -35,6 +35,9 @@
             <p><span data-i18n="organizer.welcome">Вітаю</span>, {{ request.user.username }}. <span data-i18n="admin.sidebar.subtitle">Тут ви можете керувати користувачами, турнірами та заявками.</span></p>
         </div>
         <div class="stat-group">
+            <a href="{% url 'admin:index' %}" class="button" style="background: var(--primary); margin-right: 15px;">
+                <span>Django Адмінка</span>
+            </a>
             <div class="stat-item">
                 <strong>{{ tournaments|length }}</strong>
                 <span data-i18n="admin.stat.tournaments">Турніри</span>
