@@ -1970,7 +1970,7 @@ def set_primary_team(request):
 
 @login_required
 def my_team_view(request):
-    if not is_participant_user(request.user) and not request.user.is_superuser:
+    if not is_participant_user(request.user):
         return redirect('redirect_by_role')
 
     primary_team_id = request.session.get('primary_team_id')
@@ -2021,7 +2021,7 @@ def register_team_for_tournament(request, tournament_id):
     tournament = get_object_or_404(Tournament, id=tournament_id, is_draft=False)
     
     # Блокуємо всіх, крім звичайних учасників
-    is_participant = request.user.is_authenticated and request.user.role == 'participant' and not request.user.is_superuser
+    is_participant = is_participant_user(request.user)
     
     if not is_participant:
         return render(request, 'register_team_for_tournament.html', {
@@ -2100,7 +2100,7 @@ def tournament_registration_options(request, tournament_id):
     tournament = get_object_or_404(Tournament, id=tournament_id, is_draft=False)
     
     # Тільки для учасників
-    if request.user.role != 'participant' or request.user.is_superuser:
+    if not is_participant_user(request.user):
         return redirect('public_tournament_detail', tournament_id=tournament.id)
 
     # Check if registration is open
@@ -2136,7 +2136,7 @@ def register_existing_team(request, tournament_id):
     tournament = get_object_or_404(Tournament, id=tournament_id, is_draft=False)
     
     # Тільки для учасників
-    if request.user.role != 'participant' or request.user.is_superuser:
+    if not is_participant_user(request.user):
         return redirect('public_tournament_detail', tournament_id=tournament.id)
 
     if not tournament.is_registration_open:
