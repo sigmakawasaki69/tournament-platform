@@ -17,7 +17,7 @@
     }
     .auth-card {
         width: 100%;
-        max-width: min(480px, 100%);
+        max-width: min(520px, 100%);
         box-sizing: border-box;
         padding: 32px;
         background: var(--surface-strong);
@@ -28,7 +28,16 @@
     }
     .auth-card .page-title {
         max-width: 100%;
-        overflow-wrap: anywhere;
+        font-size: clamp(48px, 10vw, 74px);
+        line-height: 0.94;
+        letter-spacing: 0;
+        text-wrap: balance;
+        overflow-wrap: normal;
+    }
+    .auth-card .section-note {
+        max-width: 42ch;
+        margin-left: auto;
+        margin-right: auto;
     }
     @media (max-width: 520px) {
         .auth-shell {
@@ -36,6 +45,9 @@
         }
         .auth-card {
             padding: 26px 18px;
+        }
+        .auth-card .page-title {
+            font-size: clamp(40px, 16vw, 58px);
         }
     }
 </style>

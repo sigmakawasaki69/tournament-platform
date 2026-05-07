@@ -261,7 +261,19 @@
             "status.running": "Йде",
             "status.finished": "Завершено",
             "status.scheduled": "Очікує старту",
+            "status.pending": "Очікує",
+            "status.approved": "Схвалено",
+            "status.rejected": "Відхилено",
             "status.none": "-",
+
+            "home.tournaments.leaderboard_ready": "Рейтинг відкрито",
+            "home.tournaments.leaderboard_later": "Рейтинг пізніше",
+
+            "profile.tournaments.registered_as": "Ви зареєстровані за команду",
+            "profile.tournaments.result": "Результат",
+            "profile.tournaments.place": "місце",
+            "profile.tournaments.overall_rank": "у загальному заліку",
+            "profile.tournaments.applied_as": "Ви подали заявку від команди",
 
             "kind.announcement": "Оголошення",
             "kind.status": "Статус",
@@ -274,6 +286,7 @@
             "role.jury": "Журі",
             "role.organizer": "Організатор",
             "role.admin": "Адміністратор",
+            "role.developer": "Розробник",
 
             "login.forgot_password": "Забули пароль?",
             "common.created_by": "Створив",
@@ -350,6 +363,30 @@
             "certificates.recipient": "Отримувач",
             "nav.messages": "Повідомлення",
             "nav.certificates": "Сертифікати",
+            "public_profile.hero.kicker": "Профіль користувача",
+            "public_profile.stat.tournaments": "Турнірів",
+            "public_profile.stat.teams": "Команд",
+            "public_profile.stat.jury_tournaments": "Турнірів (журі)",
+            "public_profile.stat.evaluations": "Оцінок",
+            "public_profile.stat.created": "Створено турнірів",
+            "public_profile.tournaments.title": "Участь у турнірах",
+            "public_profile.tournaments.note": "Турніри, в яких цей користувач брав участь.",
+            "public_profile.teams.title": "Команди",
+            "public_profile.teams.note": "Команди, в яких бере участь цей користувач.",
+            "public_profile.organized.title": "Організовані турніри",
+            "public_profile.organized.note": "Ці турніри створені цим користувачем.",
+            "team.hero.members_confirmed": "Підтверджено",
+            "team.hero.members_pending": "Очікують",
+            "team.history.title": "Історія турнірів команди",
+            "team.history.note": "Турніри, у яких команда брала участь або бере участь зараз.",
+            "team.detail.your_tournament": "Ваш турнір",
+            "team.detail.your_task": "Ваше завдання",
+            "team.detail.no_tasks": "У турнірі поки немає опублікованих задач.",
+            "team.detail.last_submission": "Остання робота",
+            "team.detail.no_submissions": "Для цього турніру робіт ще немає.",
+            "team.detail.waiting_approval": "Команда ще не має схваленого турніру, тому швидкий блок поки порожній.",
+            "admin.tournaments.start_date": "Дата початку",
+            "common.view": "Переглянути",
 
             "tournament_tasks.back_to_profile": "Назад до профілю",
             "tournament_tasks.full_leaderboard": "Повний лідерборд",
@@ -499,7 +536,7 @@
             "admin.submissions.empty": "Робіт поки немає.",
             "admin.submissions.final": "Фінальна версія",
             "admin.submissions.submitted_at": "Подано",
-            
+
             "admin.tournaments.title": "Управління платформою",
             "admin.tournaments.headline": "Редагування турніру",
             "admin.tournaments.subtitle": "Налаштуйте опис, часові рамки, анкету реєстрації та розклад турніру.",
@@ -729,6 +766,7 @@
             "role.organizer": "Організатор",
             "role.jury": "Журі",
             "role.participant": "Учасник",
+            "role.developer": "Розробник",
             "status.pending": "Очікує",
             "status.approved": "Схвалено",
             "status.rejected": "Відхилено",
@@ -761,6 +799,11 @@
             "admin.tasks.btn_cancel": "Скасувати",
             "admin.tasks.btn_create": "Створити завдання",
             "admin.tasks.btn_save_changes": "Зберегти зміни",
+
+            "home.tournaments.default_description": "Деталі турніру з'являться тут, коли організатор їх опублікує.",
+            "home.tournaments.approved_count": "{count} команд",
+            "home.tournaments.leaderboard_ready": "Рейтинг відкрито",
+            "home.tournaments.leaderboard_later": "Рейтинг пізніше",
 
             "admin.tournaments.basic_title": "Основна інформація",
             "admin.tournaments.label_name": "Назва турніру",
@@ -805,6 +848,194 @@
             "admin.tournaments.headline_create": "Створення турніру",
             "admin.tasks.label_draft_status": "Чернетка",
             "admin.tasks.label_published_status": "Опубліковано",
+
+            "profile.invitations.title": "🔔 Запрошення в команду",
+            "profile.invitations.note": "Вас запросили стати учасником наступних команд. Підтвердіть участь, щоб з'явитися у списку команди.",
+            "profile.invitations.accept": "Прийняти запрошення",
+            "profile.team.switch_label": "Виберіть активну команду",
+            "profile.team.you_captain": "ВИ КАПІТАН",
+
+            "profile.hero.kicker": "Особистий кабінет",
+            "profile.hero.title": "Профіль користувача",
+            "profile.hero.text": "Тут зібрано вашу базову інформацію, команди, турніри, сертифікати та останні оголошення платформи.",
+            "profile.hero.text_jury": "Тут зібрано вашу базову інформацію та список оцінених робіт.",
+            "profile.hero.tournaments": "Турнірів у профілі",
+            "profile.hero.certificates": "Доступних сертифікатів",
+            "profile.info.title": "Основна інформація",
+            "profile.info.settings": "Налаштування",
+            "profile.info.username": "Логін",
+            "profile.info.email": "Електронна пошта",
+            "profile.info.role": "Роль",
+            "profile.team.title": "Мої команди",
+            "profile.team.note": "Команди, у яких ви є контактною особою (капітаном) або учасником.",
+            "profile.team.captain": "Контактна особа (капітан)",
+            "profile.team.open": "Відкрити",
+            "profile.team.results": "Результати",
+            "profile.team.empty": "У вас ще немає жодної команди.",
+            "profile.team.create": "Створити команду",
+            "profile.tournaments.title": "Мої турніри",
+            "profile.tournaments.note": "Стан ваших заявок, доступ до завдань і підсумкових результатів.",
+            "profile.tournaments.start": "Початок",
+            "profile.tournaments.end": "Завершення",
+            "profile.tournaments.reg_end": "Реєстрація до",
+            "profile.tournaments.status_approved": "Заявку схвалено. Команда допущена до турніру.",
+            "profile.tournaments.status_pending": "Заявку подано. Очікується рішення організатора.",
+            "profile.tournaments.status_rejected": "Вашу попередню заявку відхилено.",
+            "profile.tournaments.registered_as": "Ви зареєстровані за команду",
+            "profile.tournaments.applied_as": "Ви подали заявку від команди",
+            "profile.tournaments.result": "Результат",
+            "profile.tournaments.place": "місце",
+            "profile.tournaments.overall_rank": "у загальному заліку",
+            "profile.tournaments.page": "Сторінка турніру",
+            "profile.tournaments.tasks": "Завдання",
+            "profile.tournaments.leaderboard": "Лідерборд",
+            "profile.tournaments.empty": "Доступних турнірів зараз немає.",
+            "profile.certificates.title": "Мої сертифікати",
+            "profile.certificates.note": "Усі отримані сертифікати з можливістю завантаження PDF.",
+            "profile.certificates.team": "Команда",
+            "profile.certificates.date": "Дата видачі",
+            "profile.certificates.download": "Завантажити PDF",
+            "profile.certificates.empty": "Сертифікатів поки немає.",
+            "profile.announcements.title": "Оголошення",
+            "profile.announcements.note": "Останні повідомлення від адміністрації та організаторів.",
+            "profile.announcements.tournament": "Турнір",
+            "profile.announcements.date": "Дата",
+            "profile.announcements.empty": "Оголошень поки немає.",
+
+            "home.announcements.title": "Оголошення",
+            "home.announcements.headline": "Важливі оновлення",
+            "home.announcements.note": "Повідомлення платформи та окремих турнірів.",
+            "home.announcements.empty": "Оголошень поки немає.",
+            "home.news.title": "Пульс",
+            "home.news.headline": "Стан платформи",
+            "home.news.note": "Останні новини та оновлення системи.",
+            "home.news.empty": "Активності поки немає.",
+
+            "status.draft": "Чернетка",
+            "status.registration": "Реєстрація",
+            "status.running": "Триває",
+            "status.finished": "Завершено",
+            "status.scheduled": "Заплановано",
+            "status.upcoming": "Заплановано",
+            "status.rejected": "Відхилено",
+            "status.none": "-",
+            "status.pending": "Очікує",
+            "status.approved": "Схвалено",
+            "status.finished_evaluated": "Завершено (Оцінено)",
+            "status.finished_evaluating": "Завершено (Оцінюється)",
+
+            "public_tournament.hero_kicker": "Турнір",
+            "public_tournament.description_title": "Про турнір",
+            "public_tournament.schedule_title": "Розклад турніру",
+            "public_tournament.no_schedule": "Розклад турніру ще не додано.",
+            "public_tournament.registration_title": "Реєстрація",
+            "public_tournament.reg_approved": "Вашу заявку вже схвалено. Ви можете знайти цей турнір у своєму профілі.",
+            "public_tournament.reg_pending": "Ваша заявка знаходиться на розгляді у організатора.",
+            "public_tournament.reg_rejected": "Вашу попередню заявку було відхилено. Ви можете спробувати подати її ще раз.",
+            "public_tournament.reg_closed": "Реєстрація на цей турнір зараз закрита.",
+            "public_tournament.reg_login_required": "Для реєстрації на турнір необхідно увійти до системи.",
+            "public_tournament.register_cta": "Зареєструватися",
+            "public_tournament.tasks_title": "Завдання",
+            "public_tournament.no_tasks": "Завдання будуть опубліковані пізніше.",
+            "public_tournament.leaderboard_title": "Лідерборд",
+            "public_tournament.leaderboard_full": "Повний лідерборд",
+            "public_tournament.leaderboard_note": "Результати очікуються.",
+
+            "public_reg.participant_summary": "Додайте інших учасників команди (капітан вже врахований).",
+            "public_reg.add_participant": "+ Додати учасника",
+            "public_reg.submit": "Надіслати заявку",
+            "public_reg.participant_name": "ПІБ",
+            "public_reg.participant_email": "Email",
+            "public_reg.form_note": "Зверніть увагу: доступ до завдань і командного кабінету відкривається лише після того, як організатор схвалить вашу заявку. Той, хто заповнює форму, автоматично стає контактною особою (капітаном) команди.",
+
+            "місце": "місце",
+            "у загальному заліку": "у загальному заліку",
+            "Контактна особа": "Контактна особа",
+            "Учасники": "Учасники",
+            "капітан": "капітан",
+            "Дата": "Дата",
+            "Початок": "Початок",
+            "Завершення": "Завершення",
+            "Реєстрація до": "Реєстрація до",
+            "Створено": "Створено",
+            "команд": "команд",
+
+            "profile.hero.tournaments": "Турнірів у профілі",
+            "profile.hero.certificates": "Доступних сертифікатів",
+            "profile.info.title": "Основна інформація",
+            "profile.info.username": "Логін",
+            "profile.info.email": "Електронна пошта",
+            "profile.info.role": "Роль",
+            "profile.info.settings": "Налаштування",
+            "profile.team.title": "Мої команди",
+            "profile.team.note": "Команди, у яких ви є контактною особою (капітаном) або учасником.",
+            "profile.team.captain": "Контактна особа (капітан)",
+            "profile.team.open": "Відкрити",
+            "profile.team.results": "Результати",
+            "profile.team.empty": "У вас ще немає жодної команди.",
+            "profile.team.create": "Створити команду",
+            "profile.tournaments.title": "Мої турніри",
+            "profile.tournaments.note": "Стан ваших заявок, доступ до завдань і підсумкових результатів.",
+            "profile.tournaments.start": "Початок",
+            "profile.tournaments.end": "Завершення",
+            "profile.tournaments.reg_end": "Реєстрація до",
+            "profile.tournaments.status_approved": "Заявку схвалено. Команда допущена до турніру.",
+            "profile.tournaments.status_pending": "Заявку подано. Очікується рішення організатора.",
+            "profile.tournaments.status_rejected": "Вашу попередню заявку відхилено.",
+            "profile.tournaments.registered_as": "Ви зареєстровані за команду",
+            "profile.tournaments.applied_as": "Ви подали заявку від команди",
+            "profile.tournaments.result": "Результат",
+            "profile.tournaments.place": "місце",
+            "profile.tournaments.overall_rank": "у загальному заліку",
+            "profile.tournaments.page": "Сторінка турніру",
+            "profile.tournaments.tasks": "Завдання",
+            "profile.tournaments.leaderboard": "Лідерборд",
+            "profile.tournaments.empty": "Доступних турнірів зараз немає.",
+            "profile.certificates.title": "Мої сертифікати",
+            "profile.certificates.note": "Усі отримані сертифікати з можливістю завантаження PDF.",
+            "profile.certificates.team": "Команда",
+            "profile.certificates.date": "Дата видачі",
+            "profile.certificates.download": "Завантажити PDF",
+            "profile.certificates.empty": "Сертифікатів поки немає.",
+            "profile.announcements.title": "Оголошення",
+            "profile.announcements.note": "Останні повідомлення від адміністрації та організаторів.",
+            "profile.announcements.tournament": "Турнір",
+            "profile.announcements.date": "Дата",
+            "profile.announcements.empty": "Оголошень поки немає.",
+
+            "status.draft": "Чернетка",
+            "status.registration": "Реєстрація",
+            "status.running": "Триває",
+            "status.finished": "Завершено",
+            "status.scheduled": "Заплановано",
+            "status.rejected": "Відхилено",
+            "status.none": "-",
+            "status.pending": "Очікує",
+            "status.approved": "Схвалено",
+
+            "public_tournament.hero_kicker": "Турнір",
+            "public_tournament.description_title": "Про турнір",
+            "public_tournament.schedule_title": "Розклад турніру",
+            "public_tournament.no_schedule": "Розклад турніру ще не додано.",
+            "public_tournament.registration_title": "Реєстрація",
+            "public_tournament.reg_approved": "Вашу заявку вже схвалено. Ви можете знайти цей турнір у своєму профілі.",
+            "public_tournament.reg_pending": "Ваша заявка знаходиться на розгляді у організатора.",
+            "public_tournament.reg_rejected": "Вашу попередню заявку було відхилено. Ви можете спробувати подати її ще раз.",
+            "public_tournament.reg_closed": "Реєстрація на цей турнір зараз закрита.",
+            "public_tournament.reg_login_required": "Для реєстрації на турнір необхідно увійти до системи.",
+            "public_tournament.register_cta": "Зареєструватися",
+            "public_tournament.tasks_title": "Завдання",
+            "public_tournament.no_tasks": "Завдання будуть опубліковані пізніше.",
+            "public_tournament.leaderboard_title": "Лідерборд",
+            "public_tournament.leaderboard_full": "Повний лідерборд",
+            "public_tournament.leaderboard_note": "Результати очікуються.",
+
+            "public_reg.participant_summary": "Додайте інших учасників команди (капітан вже врахований).",
+            "public_reg.add_participant": "+ Додати учасника",
+            "public_reg.submit": "Надіслати заявку",
+            "public_reg.participant_name": "ПІБ",
+            "public_reg.participant_email": "Email",
+            "public_reg.form_note": "Зверніть увагу: доступ до завдань і командного кабінету відкривається лише після того, як організатор схвалить вашу заявку. Той, хто заповнює форму, автоматично стає контактною особою (капітаном) команди.",
             "builder.placeholder.label": "Назва поля",
             "schedule.btn_remove": "Видалити подію",
             "create_tournament.label.banner_preview_new": "Попередній перегляд нового банера",
@@ -966,6 +1197,10 @@
             "organizer.action.export_csv": "Експорт CSV",
             "organizer.action.start_now": "Розпочати зараз",
             "organizer.action.finish_now": "Завершити зараз",
+            "settings.social.verified": "Аккаунт верифіковано",
+            "settings.social.not_linked": "Аккаунт не верифіковано",
+            "settings.social.title": "Підтвердження месенджерів",
+            "settings.social.note": "Для верифікації скористайтеся ботами, які надішлють вам код.",
         },
         en: {
             "admin.hero.users.title": "User Management",
@@ -1248,7 +1483,17 @@
             "status.running": "Running",
             "status.finished": "Finished",
             "status.scheduled": "Upcoming",
+            "status.rejected": "Rejected",
             "status.none": "-",
+
+            "home.tournaments.leaderboard_ready": "Leaderboard Open",
+            "home.tournaments.leaderboard_later": "Leaderboard Later",
+
+            "profile.tournaments.registered_as": "You are registered with the team",
+            "profile.tournaments.result": "Result",
+            "profile.tournaments.place": "place",
+            "profile.tournaments.overall_rank": "in the overall standings",
+            "profile.tournaments.applied_as": "You applied from team",
 
             "kind.announcement": "Announcement",
             "kind.status": "Status",
@@ -1339,8 +1584,51 @@
             "tournament_tasks.tasks_count": "Tasks",
             "tournament_tasks.title": "Tournament Tasks",
             "tournament_tasks.task_start": "Task Start",
-            "tournament_tasks.task_deadline": "Deadline",
-            "tournament_tasks.requirements": "Requirements",
+            "profile.hero.kicker": "Personal Profile",
+            "profile.hero.title": "User Profile",
+            "profile.hero.text": "Here is your basic information, teams, tournaments, certificates, and latest platform announcements.",
+            "profile.hero.text_jury": "Here is your basic information and the list of evaluated submissions.",
+            "profile.info.settings": "Settings",
+
+            "profile.invitations.title": "🔔 Team Invitations",
+            "profile.invitations.note": "You have been invited to join the following teams. Confirm participation to appear in the team roster.",
+            "profile.invitations.accept": "Accept Invitation",
+            "profile.team.switch_label": "Choose Active Team",
+            "profile.team.you_captain": "YOU ARE CAPTAIN",
+
+            "home.announcements.title": "Announcements",
+            "home.announcements.headline": "Important Updates",
+            "home.announcements.note": "Platform and specific tournament messages.",
+            "home.announcements.empty": "No announcements yet.",
+            "home.news.title": "Pulse",
+            "home.news.headline": "Platform Status",
+            "home.news.note": "Latest news and system updates.",
+            "home.news.empty": "No recent activity.",
+
+            "status.draft": "Draft",
+            "status.registration": "Registration",
+            "status.running": "Running",
+            "status.finished": "Finished",
+            "status.scheduled": "Upcoming",
+            "status.upcoming": "Upcoming",
+            "status.rejected": "Rejected",
+            "status.none": "-",
+            "status.pending": "Pending",
+            "status.approved": "Approved",
+            "status.finished_evaluated": "Finished (Graded)",
+            "status.finished_evaluating": "Finished (Grading)",
+
+            "місце": "place",
+            "у загальному заліку": "overall rank",
+            "Контактна особа": "Contact person",
+            "Учасники": "Members",
+            "капітан": "captain",
+            "Дата": "Date",
+            "Початок": "Start",
+            "Завершення": "Finish",
+            "Реєстрація до": "Registration to",
+            "Створено": "Created",
+            "команд": "teams",
             "tournament_tasks.must_have": "Must Have",
             "tournament_tasks.official_solution": "Official Solution / Review",
             "tournament_tasks.not_open": "Submissions are not open yet. The task will become available at start time.",
@@ -1397,6 +1685,11 @@
             "leaderboard.header.submitted": "Submitted Works",
             "leaderboard.export_csv": "Export CSV Results",
             "leaderboard.empty": "No teams in the ranking yet.",
+
+            "home.tournaments.default_description": "Tournament details will appear here once the organizer publishes them.",
+            "home.tournaments.approved_count": "{count} teams",
+            "home.tournaments.leaderboard_ready": "Leaderboard Open",
+            "home.tournaments.leaderboard_later": "Leaderboard Later",
 
             "register_success.title": "Almost Done",
             "register_success.text": "Account created. We've sent an email to your address with a confirmation link.",
@@ -1598,6 +1891,30 @@
             "public_tournament.reg_rejected": "The previous application was rejected. You can submit a new one.",
             "public_tournament.reg_closed": "Registration is currently closed or has not started yet.",
             "public_tournament.reg_login_required": "To submit an application, please log in or register an account first.",
+            "public_profile.hero.kicker": "User Profile",
+            "public_profile.stat.tournaments": "Tournaments",
+            "public_profile.stat.teams": "Teams",
+            "public_profile.stat.jury_tournaments": "Tournaments (Jury)",
+            "public_profile.stat.evaluations": "Evaluations",
+            "public_profile.stat.created": "Tournaments Created",
+            "public_profile.tournaments.title": "Participation in Tournaments",
+            "public_profile.tournaments.note": "Tournaments in which this user participated.",
+            "public_profile.teams.title": "Teams",
+            "public_profile.teams.note": "Teams in which this user participates.",
+            "public_profile.organized.title": "Organized Tournaments",
+            "public_profile.organized.note": "These tournaments were created by this user.",
+            "team.hero.members_confirmed": "Confirmed",
+            "team.hero.members_pending": "Pending",
+            "team.history.title": "Team Tournament History",
+            "team.history.note": "Tournaments in which the team has participated or is currently participating.",
+            "team.detail.your_tournament": "Your Tournament",
+            "team.detail.your_task": "Your Task",
+            "team.detail.no_tasks": "No tasks published in this tournament yet.",
+            "team.detail.last_submission": "Last Submission",
+            "team.detail.no_submissions": "No submissions for this tournament yet.",
+            "team.detail.waiting_approval": "The team does not have an approved tournament yet, so the quick block is empty.",
+            "admin.tournaments.start_date": "Start Date",
+            "common.view": "View",
             "public_tournament.reg_permission_denied": "Applications can be submitted by participants and administrators.",
             "public_tournament.no_schedule": "Tournament schedule hasn't been added yet.",
             "public_tournament.no_tasks": "No tasks published yet.",
@@ -2000,6 +2317,19 @@
             "Виконується": "Виконується",
             "Завершено": "Завершено",
             "Заплановано": "Заплановано",
+            "Телеграм": "Телеграм",
+            "Діскорд": "Діскорд",
+            "Дата": "Дата",
+            "Початок": "Початок",
+            "Завершення": "Завершення",
+            "Реєстрація до": "Реєстрація до",
+            "Створено": "Створено",
+            "команд": "команд",
+            "місце": "місце",
+            "у загальному заліку": "у загальному заліку",
+            "Контактна особа": "Контактна особа",
+            "Учасники": "Учасники",
+            "капітан": "капітан",
         },
         en: {
             "Шаблон сертифіката успішно завантажено.": "Certificate template uploaded successfully.",
@@ -2067,6 +2397,19 @@
             "Виконується": "Running",
             "Завершено": "Finished",
             "Заплановано": "Scheduled",
+            "Телеграм": "Telegram",
+            "Діскорд": "Discord",
+            "Дата": "Date",
+            "Початок": "Start",
+            "Завершення": "Finish",
+            "Реєстрація до": "Registration until",
+            "Створено": "Created",
+            "команд": "teams",
+            "місце": "place",
+            "у загальному заліку": "in overall ranking",
+            "Контактна особа": "Contact person",
+            "Учасники": "Members",
+            "капітан": "captain",
         }
     };
 
@@ -2163,7 +2506,11 @@
         setStoredPreference(STORAGE_KEYS.language, resolvedLanguage);
 
         document.querySelectorAll("[data-i18n]").forEach(function (element) {
-            let text = getTranslation(resolvedLanguage, element.dataset.i18n);
+            const key = element.dataset.i18n;
+            // Skip if key still contains template tags (rendering failed on server)
+            if (key.includes("{{") || key.includes("{%")) return;
+
+            let text = getTranslation(resolvedLanguage, key);
             if (element.dataset.i18nArgs) {
                 try {
                     const args = JSON.parse(element.dataset.i18nArgs);
@@ -2195,7 +2542,7 @@
         });
 
         document.querySelectorAll(".confirm-action").forEach(function (form) {
-            form.onsubmit = function() {
+            form.onsubmit = function () {
                 const message = getTranslation(resolvedLanguage, form.dataset.confirmKey) || "Are you sure?";
                 return confirm(message);
             };
@@ -2249,22 +2596,29 @@
             button.setAttribute("aria-pressed", isHidden ? "false" : "true");
         }
 
+        function togglePassword(button) {
+            const wrapper = button.closest(".password-field-wrapper");
+            if (!wrapper) return;
+
+            const input = wrapper.querySelector("input");
+            if (!input) return;
+
+            input.type = input.type === "password" ? "text" : "password";
+            syncPasswordToggleIcon(button, input);
+        }
+
         document.querySelectorAll(".password-toggle").forEach(function (button) {
             const wrapper = button.closest(".password-field-wrapper");
             const initialInput = wrapper ? wrapper.querySelector("input") : null;
             if (initialInput) syncPasswordToggleIcon(button, initialInput);
+        });
 
-            button.addEventListener("click", function () {
-                const wrapper = button.closest(".password-field-wrapper");
-                if (!wrapper) return;
+        document.addEventListener("click", function (event) {
+            const button = event.target.closest(".password-toggle");
+            if (!button) return;
 
-                const input = wrapper.querySelector("input");
-                if (!input) return;
-
-                const isPassword = input.type === "password";
-                input.type = isPassword ? "text" : "password";
-                syncPasswordToggleIcon(button, input);
-            });
+            event.preventDefault();
+            togglePassword(button);
         });
     }
 
